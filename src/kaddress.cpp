@@ -1,4 +1,6 @@
 #include "../include/kaddress.h"
+#include <cstring>
+#include <iostream>
 
 
 namespace knet

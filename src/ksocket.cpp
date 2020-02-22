@@ -1,6 +1,7 @@
 #include "../include/ksocket.h"
 #include "../include/kworkable.h"
 #include <cassert>
+#include <cstring>
 
 
 namespace
@@ -346,7 +347,7 @@ namespace knet
         mark_flag(_flag, FlagWrite);
 #else // KNET_USE_IOCP
         size_t wrote = 0;
-        while (wrote < _wbuf.datasize)
+        while (wrote < _wbuf->datasize)
         {
             const auto ret = send(_rawsocket, _wbuf->databuf + wrote, 
                 _wbuf->datasize - wrote, MSG_NOSIGNAL | MSG_DONTWAIT);

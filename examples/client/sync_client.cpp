@@ -79,6 +79,7 @@ int main(int argc, char** argv)
         {
             if (0 == conn_num)
                 break;
+            lsner->disconnect_all();
         }
 
         total_delta_ms += delta_ms;

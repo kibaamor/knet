@@ -36,7 +36,3 @@ build_script:
 test_script:
   - cmd: cd %APPVEYOR_BUILD_FOLDER%\build
   - cmd: ctest -C %CONFIGURATION%
-
-notifications:
-  - provider: Slack
-    incoming_webhook: https://hook.bearychat.com/=bwIbo/incoming/c2f4fa09d0f04f6e780b43d80a745f58

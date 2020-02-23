@@ -11,8 +11,6 @@ image:
   - Visual Studio 2017
   - Visual Studio 2019
 
-clone_folder: c:\projects\knet
-
 matrix:
   fast_finish: true
 
@@ -37,11 +35,11 @@ before_build:
   - cmd: mkdir build
   - cmd: cd build
   - cmd: cmake --version
-  - cmd: cmake .. -G %generator% -DCMAKE_BUILD_TYPE=%CONFIGURATION%
+  - cmd: cmake .. -G %generator%
 
-build:
-  parallel: true
-  project: c:\projects\knet\build\knet.sln
+build_script:
+  - cmd: cd %APPVEYOR_BUILD_FOLDER%\build
+  - cmd: cmake --build . --config %CONFIGURATION% --target ALL_BUILD
 
 test_script:
   - cmd: cd %APPVEYOR_BUILD_FOLDER%\build

@@ -17,8 +17,8 @@ matrix:
   fast_finish: true
 
 platform:
-  - x86
-  - x64
+  - Win32
+  - Win64
   
 configuration:
   - Debug
@@ -26,7 +26,7 @@ configuration:
 
 init:
   - set arch=
-  - if "%arch%"=="Win64" ( set arch= Win64)
+  - if "%PLATFORM%"=="Win64" ( set arch= Win64)
   - echo %arch%
   - echo %APPVEYOR_BUILD_WORKER_IMAGE%
   - if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2017" ( set generator="Visual Studio 15 2017%arch%" )

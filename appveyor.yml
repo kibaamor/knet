@@ -18,7 +18,7 @@ matrix:
 
 platform:
   - Win32
-  - Win64
+  - x64
   
 configuration:
   - Debug
@@ -35,11 +35,16 @@ init:
   - echo %generator%
   
 before_build:
+  - cmd: cd %APPVEYOR_BUILD_FOLDER%
   - cmd: mkdir build
   - cmd: cd build
   - cmd: cmake --version
-  - cmd: cmake .. -G %generator% -DCMAKE_BUILD_TYPE=%CONFIGURATION%
+  - cmd: cmake .. -G "%generator%" -DCMAKE_BUILD_TYPE=%CONFIGURATION%
 
 build:
   parallel: true
   project: c:\projects\knet\build\knet.sln
+
+test_script:
+  - cmd: cd %APPVEYOR_BUILD_FOLDER%\build
+  - cmd: ctest -C %CONFIGURATION%

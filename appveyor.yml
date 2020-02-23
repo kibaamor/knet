@@ -39,7 +39,7 @@ before_build:
   - cmd: mkdir build
   - cmd: cd build
   - cmd: cmake --version
-  - cmd: cmake .. -G "%generator%" -DCMAKE_BUILD_TYPE=%CONFIGURATION%
+  - cmd: cmake .. -G %generator% -DCMAKE_BUILD_TYPE=%CONFIGURATION%
 
 build:
   parallel: true

@@ -33,7 +33,7 @@ int main(int argc, char** argv)
     const char* ip = argc > 1 ? argv[0] : "127.0.0.1";
     const in_port_t port = in_port_t(argc > 2 ? std::atoi(argv[1]) : 8888);
     const auto max_send_delay = argc > 3 ? std::atoi(argv[2]) : 0;
-    const auto client_num = argc > 4 ? std::atoi(argv[4]) : 100;
+    const auto client_num = argc > 4 ? std::atoi(argv[4]) : 1000;
 
     std::cout << "Hi, KNet(Sync Client)" << std::endl
         << "ip:" << ip << std::endl

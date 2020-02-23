@@ -6,9 +6,15 @@
 
 namespace
 {
+    // when using IOCP, FlagRead means socket has pending WSARecv
+    // when using epoll, FlagRead means socket can read
     constexpr uint8_t FlagRead = 1u << 0u;
+    // when using IOCP, FlagRead means socket has pending WSASend
+    // when using epoll, FlagRead means socket can write
     constexpr uint8_t FlagWrite = 1u << 1u;
+    // FlagCall means socket processing user callback
     constexpr uint8_t FlagCall = 1u << 2u;
+    // FlagClose means socket will be closed
     constexpr uint8_t FlagClose = 1u << 3u;
 
     inline bool is_flag_marked(uint8_t& flag, uint8_t test) noexcept
@@ -59,12 +65,9 @@ namespace knet
 
     socket::~socket()
     {
-        if (!(_flag == FlagClose || _flag == 0))
-        {
-            __asm int 3;
-        };
-        _worker->on_socket_destroy(*this);
+        assert((FlagClose == _flag || 0 == _flag));
         assert(INVALID_RAWSOCKET == _rawsocket);
+        _worker->on_socket_destroy(*this);
         if (nullptr != _rbuf)
         {
             delete _rbuf;
@@ -95,7 +98,7 @@ namespace knet
             _wbuf = new sockbuf();
 
         mark_flag(_flag, FlagCall);
-        _listener->on_conn(*this);
+        _listener->on_conn(*this); // user may write and close
         unmark_flag(_flag, FlagCall);
 
         if (is_flag_marked(_flag, FlagClose)
@@ -104,6 +107,14 @@ namespace knet
 #endif
             )
         {
+#ifdef KNET_USE_IOCP
+            if (is_flag_marked(_flag, FlagWrite))
+            {
+                // we have pending WSASend
+                close();
+                return true;
+            }
+#endif
             _listener->on_close(*this);
             detail::close_rawsocket(_rawsocket);
             return false;

@@ -2,40 +2,56 @@
 
 #ifdef _WIN32
 
+#ifndef _WIN32_WINNT
+# define _WIN32_WINNT   0x0600 // Win7
+#endif
+
 #ifndef NOMINMAX
-#define NOMINMAX
+# define NOMINMAX
 #endif
 #ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-# endif
+# define WIN32_LEAN_AND_MEAN
+#endif
 
 #include <ws2tcpip.h>
 #include <mswsock.h>
 
 #define KNET_USE_IOCP
 
-using sa_family_t = ADDRESS_FAMILY;
-using in_port_t = USHORT;
-using pollevent_t = OVERLAPPED_ENTRY;
-using rawsocket_t = SOCKET;
+namespace knet
+{
+    using sa_family_t = ADDRESS_FAMILY;
+    using in_port_t = USHORT;
+    using rawsocket_t = SOCKET;
+    using poller_t = HANDLE;
+    using pollevent_t = OVERLAPPED_ENTRY;
 
-constexpr rawsocket_t INVALID_RAWSOCKET = INVALID_SOCKET;
-constexpr int RAWSOCKET_ERROR = SOCKET_ERROR;
+    constexpr poller_t INVALID_POLLER = nullptr;
+    constexpr rawsocket_t INVALID_RAWSOCKET = INVALID_SOCKET;
+    constexpr int RAWSOCKET_ERROR = SOCKET_ERROR;
+}
 
-#else // _WIN32
+#else
 
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include <sys/epoll.h>
 
+//#define KNET_USE_EPOLL
+
 #define closesocket(s) ::close(s)
 
-using pollevent_t = epoll_event;
-using rawsocket_t = int;
+namespace knet
+{
+    using rawsocket_t = int;
+    using poller_t = int;
+    using pollevent_t = epoll_event;
 
-constexpr rawsocket_t INVALID_RAWSOCKET = -1;
-constexpr int RAWSOCKET_ERROR = -1;
+    constexpr poller_t INVALID_POLLER = -1;
+    constexpr rawsocket_t INVALID_RAWSOCKET = -1;
+    constexpr int RAWSOCKET_ERROR = -1;
+}
 
 #endif // _WIN32
 
@@ -55,6 +71,7 @@ namespace knet
         const noncopyable& operator= (const noncopyable&) = delete;
     };
 
+
     using socketid_t = int32_t;
 
     constexpr int IOCP_PENDING_ACCEPT_NUM = 64;
@@ -62,6 +79,7 @@ namespace knet
     constexpr int SOCKET_SNDRCVBUF_SIZE = 64 * 1024;
     constexpr int SOCKET_RWBUF_SIZE = 256 * 1024;
     constexpr socketid_t INVALID_SOCKETID = 0;
+
 
     void global_init() noexcept;
 
@@ -73,6 +91,8 @@ namespace knet
     int32_t s32rand_between(int32_t low, int32_t high) noexcept;
 
     int64_t now_ms() noexcept;
+    void sleep_ms(int64_t ms) noexcept;
+
     struct tm ms2tm(int64_t ms, bool local);
 
     template <unsigned int N = 32>
@@ -83,10 +103,19 @@ namespace knet
         return len > 0 ? std::string(buf, buf + len) : std::string();
     }
 
-    void sleep_ms(int64_t ms) noexcept;
+    namespace detail
+    {
+        inline void close_rawsocket(rawsocket_t& rawsocket)
+        {
+            if (INVALID_RAWSOCKET != rawsocket)
+            {
+                ::closesocket(rawsocket);
+                rawsocket = INVALID_RAWSOCKET;
+            }
+        }
+    }
 }
 
-
 // config
-
-//#define KNET_GRACEFUL_CLOSE_SOCKET
+#define KNET_GRACEFUL_CLOSE_SOCKET
+#define KNET_REUSE_ADDR

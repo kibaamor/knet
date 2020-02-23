@@ -8,20 +8,19 @@ namespace knet
     {
         assert(nullptr != _listener);
 #ifdef KNET_USE_IOCP
-        _iocp = CreateIoCompletionPort(INVALID_HANDLE_VALUE, nullptr, 0, 1);
-        assert(nullptr != _iocp);
+        _poller = CreateIoCompletionPort(INVALID_HANDLE_VALUE, nullptr, 0, 1);
 #else
-        _epfd = epoll_create(1);
-        assert(-1 != _epfd);
+        _poller = epoll_create(1);
 #endif
+        assert(INVALID_POLLER != _poller);
     }
 
     poller::~poller()
     {
 #ifdef KNET_USE_IOCP
-        CloseHandle(_iocp);
+        CloseHandle(_poller);
 #else
-        close(_epfd);
+        close(_poller);
 #endif
     }
 
@@ -29,13 +28,13 @@ namespace knet
     {
 #ifdef KNET_USE_IOCP
         return (nullptr != CreateIoCompletionPort(
-            reinterpret_cast<HANDLE>(rawsocket), _iocp,
+            reinterpret_cast<HANDLE>(rawsocket), _poller,
             reinterpret_cast<ULONG_PTR>(key), 0));
 #else
         epoll_event ev = {};
-        ev.events = EPOLLIN | EPOLLOUT | EPOLLRDHUP | EPOLLERR | EPOLLERR | EPOLLET;
+        ev.events = EPOLLIN | EPOLLOUT | EPOLLRDHUP | EPOLLERR | EPOLLET;
         ev.data.ptr = key;
-        return (0 == epoll_ctl(_epfd, EPOLL_CTL_ADD, rawsocket, &ev));
+        return (0 == epoll_ctl(_poller, EPOLL_CTL_ADD, rawsocket, &ev));
 #endif
     }
 
@@ -43,7 +42,7 @@ namespace knet
     {
 #ifdef KNET_USE_IOCP
         ULONG num = 0;
-        if (!GetQueuedCompletionStatusEx(_iocp, _pollevents, POLL_EVENT_NUM, &num, 0, FALSE))
+        if (!GetQueuedCompletionStatusEx(_poller, _pollevents, POLL_EVENT_NUM, &num, 0, FALSE))
             return WAIT_TIMEOUT == GetLastError();
         if (num > 0)
         {
@@ -53,7 +52,7 @@ namespace knet
         }
         return true;
 #else
-        const int num = epoll_wait(_epfd, _pollevents, POLL_EVENT_NUM, 0);
+        const int num = epoll_wait(_poller, _pollevents, POLL_EVENT_NUM, 0);
         if (num > 0)
         {
             for (int i = 0; i < num; ++i)

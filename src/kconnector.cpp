@@ -3,11 +3,12 @@
 
 namespace
 {
+    using namespace knet;
     rawsocket_t create_rawsocket(int domain) noexcept
     {
         rawsocket_t rawsocket = ::socket(domain, SOCK_STREAM, 0);
         if (INVALID_RAWSOCKET != rawsocket)
-            knet::set_rawsocket_sndrcvbufsize(rawsocket, knet::SOCKET_SNDRCVBUF_SIZE);
+            set_rawsocket_sndrcvbufsize(rawsocket, SOCKET_SNDRCVBUF_SIZE);
         return rawsocket;
     }
 }
@@ -29,8 +30,7 @@ namespace knet
 
     connector::~connector()
     {
-        if (INVALID_RAWSOCKET != _rawsocket)
-            closesocket(_rawsocket);
+        detail::close_rawsocket(_rawsocket);
     }
 
     bool connector::update(size_t ms) noexcept

@@ -25,7 +25,7 @@ namespace
         }
 
         while (wq->pop(rs))
-            closesocket(rs);
+            ::closesocket(rs);
     }
 
     static constexpr int64_t TIMERID_BIT_COUNT = 16;
@@ -120,7 +120,7 @@ namespace knet
         return true;
     }
 
-    void worker::on_poll(void *key, const pollevent_t &pollevent)
+    void worker::on_poll(void* key, const pollevent_t& pollevent)
     {
         auto sock = static_cast<socket*>(key);
         assert(nullptr != sock);
@@ -178,14 +178,14 @@ namespace knet
     {
         if (_threadinfos.empty())
         {
-            closesocket(rawsocket);
+            ::closesocket(rawsocket);
             return false;
         }
 
         auto& ti = _threadinfos[_next_thread_index];
         if (!ti.wq->push(rawsocket))
         {
-            closesocket(rawsocket);
+            ::closesocket(rawsocket);
             return false;
         }
         _next_thread_index = (_next_thread_index + 1) % _threadinfos.size();

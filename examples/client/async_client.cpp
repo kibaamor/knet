@@ -33,8 +33,8 @@ int main(int argc, char** argv)
     const char* ip = argc > 1 ? argv[0] : "127.0.0.1";
     const in_port_t port = in_port_t(argc > 2 ? std::atoi(argv[1]) : 8888);
     const auto max_send_delay = argc > 3 ? std::atoi(argv[2]) : 0;
-    const auto client_num = argc > 4 ? std::atoi(argv[4]) : 100;
-    const auto thread_num = argc > 5 ? std::atoi(argv[5]) : 4;
+    const auto client_num = argc > 4 ? std::atoi(argv[4]) : 1000;
+    const auto thread_num = argc > 5 ? std::atoi(argv[5]) : 8;
 
     std::cout << "Hi, KNet(Async Client)" << std::endl
         << "ip:" << ip << std::endl
@@ -93,12 +93,14 @@ int main(int argc, char** argv)
             const auto total_delta_s = total_delta_ms / 1000;
             total_delta_ms %= 1000;
 
-            const auto total_wrote_kb = lsner->get_total_wrote() / 1024;
+            const auto total_wrote_mb = lsner->get_total_wrote() / 1024 / 1024;
             lsner->clear_total_wrote();
 
-            const auto speed = total_wrote_kb * 1.0 / total_delta_s;
+            const auto speed = (1 == total_delta_s
+                ? total_wrote_mb
+                : total_wrote_mb * 1.0 / total_delta_s);
             std::cout << "connection num: " << conn_num
-                << ", c2s send speed: " << speed << " KB/second" << std::endl;
+                << ", c2s send speed: " << speed << " MB/Second" << std::endl;
         }
 
         const auto end_ms = now_ms();

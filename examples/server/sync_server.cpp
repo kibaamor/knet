@@ -82,12 +82,14 @@ int main(int argc, char** argv)
             const auto total_delta_s = total_delta_ms / 1000;
             total_delta_ms %= 1000;
 
-            const auto total_wrote_kb = lsner->get_total_wrote() / 1024;
+            const auto total_wrote_mb = lsner->get_total_wrote() / 1024 / 1024;
             lsner->clear_total_wrote();
 
-            const auto speed = total_wrote_kb * 1.0 / total_delta_s;
+            const auto speed = (1 == total_delta_s
+                ? total_wrote_mb
+                : total_wrote_mb * 1.0 / total_delta_s);
             std::cout << "connection num: " << conn_num
-                << ", s2c send speed: " << speed << " KB/second" << std::endl;
+                << ", s2c send speed: " << speed << " MB/Second" << std::endl;
         }
 
         const auto end_ms = now_ms();

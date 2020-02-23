@@ -1,27 +1,49 @@
 #include "../include/klistener.h"
 #include <cassert>
 
+#ifdef _WIN32
+# ifndef WSA_FLAG_NO_HANDLE_INHERIT
+#  define WSA_FLAG_NO_HANDLE_INHERIT 0x80
+# endif
+#endif
+
 
 namespace
 {
+    using namespace knet;
+
     rawsocket_t create_rawsocket(int domain, int type, bool nonblock) noexcept
     {
         rawsocket_t rawsocket =
 #ifdef _WIN32
-#ifndef WSA_FLAG_NO_HANDLE_INHERIT
-#define WSA_FLAG_NO_HANDLE_INHERIT 0x80
-#endif
             WSASocketW(domain, type, 0, nullptr, 0, 
                 (nonblock ? WSA_FLAG_OVERLAPPED : 0) | WSA_FLAG_NO_HANDLE_INHERIT);
-#else // _WIN32
+#else
             ::socket(domain, type | SOCK_CLOEXEC | (nonblock ? SOCK_NONBLOCK : 0), 0);
-#endif // _WIN32
+#endif
 
         if (INVALID_RAWSOCKET != rawsocket)
-            knet::set_rawsocket_sndrcvbufsize(rawsocket, knet::SOCKET_SNDRCVBUF_SIZE);
+            set_rawsocket_sndrcvbufsize(rawsocket, SOCKET_SNDRCVBUF_SIZE);
 
         return rawsocket;
     }
+
+#ifdef _WIN32
+    LPFN_ACCEPTEX get_accept_ex(rawsocket_t rawsocket)
+    {
+        static thread_local LPFN_ACCEPTEX _accept_ex = nullptr;
+        if (nullptr == _accept_ex)
+        {
+            GUID guid = WSAID_ACCEPTEX;
+            DWORD dw = 0;
+            WSAIoctl(rawsocket, SIO_GET_EXTENSION_FUNCTION_POINTER, 
+                &guid, sizeof(guid), &_accept_ex, sizeof(_accept_ex), 
+                &dw, nullptr, nullptr);
+        }
+        return _accept_ex;
+    }
+
+#endif
 
     bool set_rawsocket_reuse_addr(rawsocket_t rawsocket) noexcept
     {
@@ -33,6 +55,38 @@ namespace
 
 namespace knet
 {
+    struct listener::accept_io
+    {
+        WSAOVERLAPPED ol = {};
+        char buf[(sizeof(sockaddr_storage) + 16) * 2] = {};
+        rawsocket_t rawsocket = INVALID_RAWSOCKET;
+        accept_io* next = nullptr;
+
+        bool post_accept(rawsocket_t srv_rawsocket, sa_family_t family)
+        {
+            rawsocket = create_rawsocket(family, SOCK_STREAM, true);
+            if (INVALID_SOCKET == rawsocket)
+                return false;
+
+            memset(&ol, 0, sizeof(ol));
+
+            DWORD dw = 0;
+            const auto accept_ex = get_accept_ex(rawsocket);
+            if (nullptr == accept_ex)
+                return false;
+
+            if (!accept_ex(srv_rawsocket, rawsocket, buf, 0, 
+                sizeof(SOCKADDR_STORAGE) + 16, sizeof(SOCKADDR_STORAGE) + 16, &dw, &ol)
+                && ERROR_IO_PENDING != WSAGetLastError())
+            {
+                detail::close_rawsocket(rawsocket);
+                return false;
+            }
+
+            return true;
+        }
+    };
+
     listener::listener(const address& addr, workable* workable) noexcept
         : _addr(addr), _workable(workable), _poller(this)
     {
@@ -42,6 +96,10 @@ namespace knet
     listener::~listener()
     {
         assert(INVALID_RAWSOCKET == _rawsocket);
+#ifdef KNET_USE_IOCP
+        assert(nullptr == _pending_accepts);
+        assert(nullptr == _free_pending_accepts);
+#endif
     }
 
     bool listener::start() noexcept
@@ -53,32 +111,22 @@ namespace knet
         if (INVALID_RAWSOCKET == _rawsocket)
             return false;
 
-#if 0
-        if (!set_rawsocket_reuse_addr(rawsocket_))
+#ifdef KNET_REUSE_ADDR
+        if (!set_rawsocket_reuse_addr(_rawsocket))
         {
-            closesocket(rawsocket_);
-            rawsocket_ = INVALID_RAWSOCKET;
+            detail::close_rawsocket(_rawsocket);
             return false;
         }
 #endif
 
 #ifdef KNET_USE_IOCP
-        GUID guid = WSAID_ACCEPTEX;
-        DWORD dw = 0;
-        if (SOCKET_ERROR == WSAIoctl(_rawsocket, SIO_GET_EXTENSION_FUNCTION_POINTER, 
-            &guid, sizeof(guid), &_accept_ex, sizeof(_accept_ex), &dw, nullptr, nullptr))
+        assert(nullptr == _pending_accepts);
+        assert(nullptr == _free_pending_accepts);
+        _pending_accepts = new accept_io[IOCP_PENDING_ACCEPT_NUM];
+        for (int i = 0; i < IOCP_PENDING_ACCEPT_NUM; ++i)
         {
-            closesocket(_rawsocket);
-            _rawsocket = INVALID_RAWSOCKET;
-            return false;
-        }
-
-        for (int i = 0, N = _countof(_pending_accepts); i < N; ++i)
-        {
-            if (N != i + 1)
+            if (IOCP_PENDING_ACCEPT_NUM != i + 1)
                 _pending_accepts[i].next = &_pending_accepts[i + 1];
-            else
-                _pending_accepts[i].next = nullptr;
         }
         _free_pending_accepts = _pending_accepts;
 #endif // KNET_USE_IOCP
@@ -89,8 +137,7 @@ namespace knet
             || RAWSOCKET_ERROR == listen(_rawsocket, SOMAXCONN)
             || !_poller.add(_rawsocket, this))
         {
-            closesocket(_rawsocket);
-            _rawsocket = INVALID_RAWSOCKET;
+            detail::close_rawsocket(_rawsocket);
             return false;
         }
 
@@ -103,21 +150,15 @@ namespace knet
     void listener::stop() noexcept
     {
 #ifdef KNET_USE_IOCP
-        for (int i = 0, N = _countof(_pending_accepts); i < N; ++i)
+        if (nullptr != _pending_accepts)
         {
-            if (INVALID_SOCKET != _pending_accepts[i].rawsocket)
-            {
-                closesocket(_pending_accepts[i].rawsocket);
-                _pending_accepts[i].rawsocket = INVALID_RAWSOCKET;
-            }
+            for (int i = 0; i < IOCP_PENDING_ACCEPT_NUM; ++i)
+                detail::close_rawsocket(_pending_accepts[i].rawsocket);
+            _free_pending_accepts = _pending_accepts = nullptr;
         }
 #endif // KNET_USE_IOCP
 
-        if (INVALID_RAWSOCKET != _rawsocket)
-        {
-            closesocket(_rawsocket);
-            _rawsocket = INVALID_RAWSOCKET;
-        }
+        detail::close_rawsocket(_rawsocket);
     }
 
     void listener::on_poll(void* key, const pollevent_t& pollevent)
@@ -125,7 +166,7 @@ namespace knet
         (void)key;
 #ifdef KNET_USE_IOCP
         accept_io* io = CONTAINING_RECORD(pollevent.lpOverlapped, accept_io, ol);
-        SOCKET s = io->rawsocket;
+        auto s = io->rawsocket;
         io->rawsocket = INVALID_SOCKET;
         io->next = _free_pending_accepts;
         _free_pending_accepts = io;
@@ -153,25 +194,12 @@ namespace knet
 #ifdef KNET_USE_IOCP
     void listener::post_accept() noexcept
     {
-        for (; nullptr != _free_pending_accepts;
+        for (; 
+            nullptr != _free_pending_accepts; 
             _free_pending_accepts = _free_pending_accepts->next)
         {
-            _free_pending_accepts->rawsocket = create_rawsocket(
-                _addr.get_family(), SOCK_STREAM, true);
-            if (INVALID_SOCKET == _free_pending_accepts->rawsocket)
+            if (!_free_pending_accepts->post_accept(_rawsocket, _addr.get_family()))
                 return;
-
-            memset(&_free_pending_accepts->ol, 0, sizeof(_free_pending_accepts->ol));
-            DWORD dw = 0;
-            if (!_accept_ex(_rawsocket, _free_pending_accepts->rawsocket, 
-                _free_pending_accepts->buf, 0, sizeof(SOCKADDR_STORAGE) + 16, 
-                sizeof(SOCKADDR_STORAGE) + 16, &dw, &_free_pending_accepts->ol)
-                && ERROR_IO_PENDING != WSAGetLastError())
-            {
-                closesocket(_free_pending_accepts->rawsocket);
-                _free_pending_accepts->rawsocket = INVALID_SOCKET;
-                return;
-            }
         }
     }
 #endif

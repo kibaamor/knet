@@ -31,17 +31,9 @@ namespace knet
 
 #ifdef KNET_USE_IOCP
         void post_accept() noexcept;
-
-        LPFN_ACCEPTEX _accept_ex = nullptr;
-        struct accept_io
-        {
-            WSAOVERLAPPED ol = {};
-            char buf[(sizeof(sockaddr_storage) + 16) * 2] = {};
-            rawsocket_t rawsocket = INVALID_RAWSOCKET;
-            accept_io* next = nullptr;
-        };
-        accept_io _pending_accepts[IOCP_PENDING_ACCEPT_NUM];
+        struct accept_io;
+        accept_io* _pending_accepts = nullptr;
         accept_io* _free_pending_accepts = nullptr;
-#endif // KNET_USE_IOCP
+#endif
     };
 }

@@ -25,11 +25,7 @@ namespace knet
 
     private:
         listener* const _listener = nullptr;
-#ifdef KNET_USE_IOCP
-        HANDLE _iocp = nullptr;
-#else
-        int _epfd = -1;
-#endif
+        poller_t _poller = INVALID_POLLER;
         pollevent_t _pollevents[POLL_EVENT_NUM] = {};
     };
 }

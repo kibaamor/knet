@@ -80,6 +80,15 @@ namespace knet
 #endif // _WIN32
     }
 
+    void sleep_ms(int64_t ms) noexcept
+    {
+#ifdef _WIN32
+        Sleep(static_cast<DWORD>(ms));
+#else
+        usleep(static_cast<useconds_t>(ms * 1000));
+#endif
+    }
+
     struct tm ms2tm(int64_t ms, bool local)
     {
         time_t tt = ms / 1000;
@@ -90,14 +99,5 @@ namespace knet
         local ? localtime_r(&tt, &t) : gmtime_r(&tt, &t);
 #endif
         return t;
-    }
-
-    void sleep_ms(int64_t ms) noexcept
-    {
-#ifdef _WIN32
-        Sleep(static_cast<DWORD>(ms));
-#else
-        usleep(static_cast<useconds_t>(ms * 1000));
-#endif
     }
 }

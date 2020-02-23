@@ -59,6 +59,10 @@ namespace knet
 
     socket::~socket()
     {
+        if (!(_flag == FlagClose || _flag == 0))
+        {
+            __asm int 3;
+        };
         _worker->on_socket_destroy(*this);
         assert(INVALID_RAWSOCKET == _rawsocket);
         if (nullptr != _rbuf)
@@ -93,6 +97,7 @@ namespace knet
         mark_flag(_flag, FlagCall);
         _listener->on_conn(*this);
         unmark_flag(_flag, FlagCall);
+
         if (is_flag_marked(_flag, FlagClose)
 #ifdef KNET_USE_IOCP
             || !try_read()
@@ -100,8 +105,7 @@ namespace knet
             )
         {
             _listener->on_close(*this);
-            closesocket(_rawsocket);
-            _rawsocket = INVALID_RAWSOCKET;
+            detail::close_rawsocket(_rawsocket);
             return false;
         }
         return true;
@@ -139,8 +143,7 @@ namespace knet
 #define SHUT_RD SD_RECEIVE
 #endif
         shutdown(_rawsocket, SHUT_RD);
-        closesocket(_rawsocket);
-        _rawsocket = INVALID_RAWSOCKET;
+        detail::close_rawsocket(_rawsocket);
         delete this;
     }
 

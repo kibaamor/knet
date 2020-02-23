@@ -1,4 +1,4 @@
-version: {build}
+version: '{build}'
 
 branches:
   only:
@@ -33,11 +33,10 @@ init:
   - echo %generator%
   
 before_build:
-  - cmd: |-
-    mkdir build
-    cd build
-    cmake --version
-    cmake .. -G %generator%
+  - cmd: mkdir build
+  - cmd: cd build
+  - cmd: cmake --version
+  - cmd: cmake .. -G %generator%
 
 build:
   parallel: true

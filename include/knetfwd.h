@@ -40,7 +40,7 @@ namespace knet
 
 //#define KNET_USE_EPOLL
 
-#define closesocket(s) ::close(s)
+#define closesocket(s) close(s)
 
 namespace knet
 {

@@ -22,20 +22,12 @@ configuration:
   - Debug
   - Release
 
-init:
-  - set arch=
-  - if "%PLATFORM%"=="x64" ( set arch= Win64)
-  - if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2019" ( set generator="Visual Studio 16 2019%arch%" )
-  - if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2017" ( set generator="Visual Studio 15 2017%arch%" )
-  - if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2015" ( set generator="Visual Studio 14 2015%arch%" )
-  - echo %generator%
-  
 before_build:
   - cmd: cd %APPVEYOR_BUILD_FOLDER%
   - cmd: mkdir build
   - cmd: cd build
   - cmd: cmake --version
-  - cmd: cmake .. -G %generator%
+  - cmd: cmake .. -A %PLATFORM%
 
 build_script:
   - cmd: cd %APPVEYOR_BUILD_FOLDER%\build

@@ -42,15 +42,11 @@ namespace knet
         return (a < b) || (a == b && lhs.sid < rhs.sid);
     }
 
-    worker::worker(socket::listener *listener) noexcept
-        : worker(listener, 0, 1)
-    {
-    }
-
-    worker::worker(socket::listener *listener, socketid_t start_sid, 
-        socketid_t sid_inc) noexcept
-        : _listener(listener), _next_sid(start_sid)
-        , _sid_inc(sid_inc), _poller(this)
+    worker::worker(socket::listener* listener, socket_creator* creator,
+        socketid_t start_sid, socketid_t sid_inc) noexcept
+        : _listener(listener), _creator(creator)
+        , _sid_inc(sid_inc), _next_sid(start_sid)
+        , _poller(this)
     {
         assert(nullptr != listener);
     }
@@ -107,10 +103,25 @@ namespace knet
         _socks.erase(sock.get_socketid());
     }
 
+    socketid_t worker::get_next_socketid()
+    {
+        _next_sid += _sid_inc;
+        return _next_sid;
+    }
+
     bool worker::addwork(rawsocket_t rawsocket)
     {
-        auto sock = new socket(this, rawsocket, _next_sid, _listener);
-        _next_sid += _sid_inc;
+        socket* sock = nullptr;
+        if (nullptr != _creator)
+            sock = _creator->create_socket(this, rawsocket);
+        else
+            sock = new socket(this, rawsocket);
+        if (nullptr == sock)
+        {
+            closesocket(rawsocket);
+            return false;
+        }
+
         if (!_poller.add(rawsocket, sock) || !sock->start())
         {
             delete sock;
@@ -127,8 +138,9 @@ namespace knet
         sock->on_pollevent(pollevent);
     }
 
-    async_worker::async_worker(socket::listener *listener) noexcept
-        : _listener(listener)
+    async_worker::async_worker(socket::listener* listener,
+        socket_creator* creator) noexcept
+        : _listener(listener), _creator(creator)
     {
         assert(nullptr != listener);
     }
@@ -150,8 +162,11 @@ namespace knet
             _threadinfos.emplace_back();
             auto& ti = _threadinfos.back();
             ti.wq = new spsc_queue<rawsocket_t, 1024>();
-            ti.wkr = new worker(_listener, static_cast<socketid_t>(i), static_cast<socketid_t>(thread_num));
-            ti.thd = new std::thread(&async_worker_thread, ti.wkr, ti.wq, std::ref(_running));
+            ti.wkr = new worker(_listener, _creator,
+                static_cast<socketid_t>(i),
+                static_cast<socketid_t>(thread_num));
+            ti.thd = new std::thread(&async_worker_thread, 
+                ti.wkr, ti.wq, std::ref(_running));
         }
 
         return true;

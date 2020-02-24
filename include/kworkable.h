@@ -19,15 +19,23 @@ namespace knet
         virtual bool addwork(rawsocket_t rawsocket) = 0;
     };
 
+    class worker;
+    class socket_creator
+    {
+    public:
+        virtual ~socket_creator() = default;
+
+        virtual socket* create_socket(worker* wkr, rawsocket_t rawsock) = 0;
+    };
+
     class worker final
         : public workable
         , public poller::listener
         , noncopyable
     {
     public:
-        explicit worker(socket::listener* listener) noexcept;
-        worker(socket::listener* listener, socketid_t start_sid,
-            socketid_t sid_inc) noexcept;
+        worker(socket::listener* listener, socket_creator* creator = nullptr, 
+            socketid_t start_sid = 0, socketid_t sid_inc = 1) noexcept;
         ~worker() override = default;
 
         void update(int64_t absms) noexcept;
@@ -40,10 +48,14 @@ namespace knet
         bool addwork(rawsocket_t rawsocket) override;
         void on_poll(void* key, const pollevent_t& pollevent) override;
 
+        socketid_t get_next_socketid();
+        socket::listener* get_socket_listener() const { return _listener; }
+
     private:
         socket::listener* const _listener = nullptr;
-        socketid_t _next_sid = 0;
+        socket_creator* const _creator = nullptr;
         const socketid_t _sid_inc = 1;
+        socketid_t _next_sid = 0;
         poller _poller;
 
         std::unordered_map<socketid_t, socket*> _socks;
@@ -70,7 +82,8 @@ namespace knet
         , noncopyable
     {
     public:
-        explicit async_worker(socket::listener* listener) noexcept;
+        explicit async_worker(socket::listener* listener, 
+            socket_creator* creator = nullptr) noexcept;
         ~async_worker() override;
 
         bool start(size_t thread_num);
@@ -80,6 +93,7 @@ namespace knet
 
     private:
         socket::listener *const _listener = nullptr;
+        socket_creator* const _creator = nullptr;
         bool _running = false;
 
         struct threadinfo

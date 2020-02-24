@@ -8,7 +8,7 @@ namespace knet
     class worker;
     struct sockbuf;
 
-    class socket final : noncopyable
+    class socket : noncopyable
     {
     public:
         struct writebuf
@@ -34,9 +34,8 @@ namespace knet
         };
 
     public:
-        socket(worker* wkr, rawsocket_t rawsock, socketid_t socketid, 
-            listener* listener) noexcept;
-        ~socket();
+        socket(worker* wkr, rawsocket_t rawsock) noexcept;
+        virtual ~socket();
 
         int64_t set_abs_timer(int64_t absms, const userdata& ud);
         int64_t set_rel_timer(int64_t relms, const userdata& ud)
@@ -46,7 +45,6 @@ namespace knet
         void close() noexcept;
 
         bool write(const writebuf* buf, size_t num) noexcept;
-        void on_pollevent(const pollevent_t& pollevent) noexcept;
 
         bool get_sockaddr(address& addr) const noexcept;
         bool get_peeraddr(address& addr) const noexcept;
@@ -59,6 +57,7 @@ namespace knet
     private:
         friend class worker;
         bool start() noexcept;
+        void on_pollevent(const pollevent_t& pollevent) noexcept;
 
 #ifdef KNET_USE_IOCP
         bool try_read() noexcept;

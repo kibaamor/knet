@@ -53,12 +53,12 @@ namespace knet
 
 namespace knet
 {
-    socket::socket(worker* wkr, rawsocket_t rawsock, socketid_t socketid, 
-        listener* listener) noexcept
-        : _worker(wkr), _rawsocket(rawsock)
-        , _socketid(socketid), _listener(listener)
+    socket::socket(worker* wkr, rawsocket_t rawsock) noexcept
+        : _worker(wkr)
+        , _rawsocket(rawsock)
+        , _socketid(wkr->get_next_socketid())
+        , _listener(wkr->get_socket_listener())
     {
-        assert(nullptr != _worker);
         assert(INVALID_RAWSOCKET != _rawsocket);
         assert(nullptr != _listener);
     }

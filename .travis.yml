@@ -1,8 +1,6 @@
 language: cpp
 
-dist:
-  - xenial
-  - bionic
+dist: xenial
 
 compiler:
   - clang
@@ -20,8 +18,8 @@ before_script:
   - mkdir -p $TRAVIS_BUILD_DIR/build && cd $TRAVIS_BUILD_DIR/build && cmake ..
 
 script:
-  - cd $TRAVIS_BUILD_DIR/build && cmake --build . --config Debug --target ALL_BUILD -j2 && ctest .
-  - cd $TRAVIS_BUILD_DIR/build && cmake --build . --config Release --target ALL_BUILD -j2 && ctest .
+  - cd $TRAVIS_BUILD_DIR/build && cmake --build . --config Debug -j2 && ctest .
+  - cd $TRAVIS_BUILD_DIR/build && cmake --build . --config Release -j2 && ctest .
 
 notifications:
   email: false

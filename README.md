@@ -1,6 +1,7 @@
 # knet
 
 [![Build status](https://ci.appveyor.com/api/projects/status/blxl6hpmf3vuag6m?svg=true)](https://ci.appveyor.com/project/KibaAmor/knet)
+[![Build Status](https://travis-ci.org/KibaAmor/knet.svg?branch=master)](https://travis-ci.org/KibaAmor/knet)
 
 简单易用的C++11网络库
 

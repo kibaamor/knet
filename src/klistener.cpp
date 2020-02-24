@@ -55,6 +55,7 @@ namespace
 
 namespace knet
 {
+#ifdef KNET_USE_IOCP
     struct listener::accept_io
     {
         WSAOVERLAPPED ol = {};
@@ -86,6 +87,7 @@ namespace knet
             return true;
         }
     };
+#endif
 
     listener::listener(const address& addr, workable* workable) noexcept
         : _addr(addr), _workable(workable), _poller(this)

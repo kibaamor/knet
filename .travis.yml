@@ -1,10 +1,6 @@
 language: cpp
-
 dist: xenial
-
-compiler:
-  - clang
-  - gcc
+compiler: gcc
 
 os:
   - linux

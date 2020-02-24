@@ -1,5 +1,3 @@
 cd ..
-mkdir build
-cd build
-cmake -G "Visual Studio 15 2017" ..
-knet.sln
+cmake . -B build -G "Visual Studio 15 2017"
+cmake --open build

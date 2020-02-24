@@ -10,17 +10,39 @@
 * 支持Window和Linux
 * 同时支持同步、异步两种使用方式
 * 易于扩展，支持网络粘包
-* 代码少，无库依赖
+* 代码少，无第三方库依赖
 * 无锁设计，每个socket都在一个固定的线程处理
 
-## 如何编译
+## 编译环境
+
+* CMake 3.1及以上
+* Visual Studio 2015及以上(Windows)
+* Gcc 4.9及以上(Linux)
+
+## 如何使用
+
+Windows和Linux下都可以使用下面的命令
+
+### 编译
+```bash
+# 进入源码根目录
+cd knet
+
+# 生成工程
+cmake . -B build
+
+# 编译Relase
+cmake --build build --config Release
+```
+
+### 测试
 
 ```bash
-cd knet
-mkdir build
+# 进入源码根目录下的build目录
 cd build
-cmake ..
-make -j6
+
+# 运行测试
+ctest -C Release
 ```
 
 ## 示例程序

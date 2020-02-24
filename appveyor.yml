@@ -4,8 +4,6 @@ branches:
   only:
     - master
 
-max_jobs: 16
-
 image:
   - Visual Studio 2015
   - Visual Studio 2017
@@ -23,15 +21,13 @@ configuration:
   - Release
 
 before_build:
-  - cmd: cd %APPVEYOR_BUILD_FOLDER%
-  - cmd: mkdir build
-  - cmd: cd build
   - cmd: cmake --version
-  - cmd: cmake .. -A %PLATFORM%
+  - cmd: cd %APPVEYOR_BUILD_FOLDER%
+  - cmd: cmake . -B build -A %PLATFORM%
 
 build_script:
   - cmd: cd %APPVEYOR_BUILD_FOLDER%\build
-  - cmd: cmake --build . --config %CONFIGURATION% --target ALL_BUILD
+  - cmd: cmake --build build --config %CONFIGURATION%
 
 test_script:
   - cmd: cd %APPVEYOR_BUILD_FOLDER%\build

@@ -26,7 +26,7 @@ before_build:
   - cmd: cmake . -B build -A %PLATFORM%
 
 build_script:
-  - cmd: cd %APPVEYOR_BUILD_FOLDER%\build
+  - cmd: cd %APPVEYOR_BUILD_FOLDER%
   - cmd: cmake --build build --config %CONFIGURATION%
 
 test_script:

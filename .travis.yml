@@ -18,8 +18,8 @@ before_script:
   - mkdir -p $TRAVIS_BUILD_DIR/build && cd $TRAVIS_BUILD_DIR/build && cmake ..
 
 script:
-  - cd $TRAVIS_BUILD_DIR/build && cmake --build . -j2 --clean-first --config Debug && ctest .
-  - cd $TRAVIS_BUILD_DIR/build && cmake --build . -j2 --clean-first --config Release && ctest .
+  - cd $TRAVIS_BUILD_DIR/build && cmake --build . --parallel 2 --clean-first --config Debug && ctest .
+  - cd $TRAVIS_BUILD_DIR/build && cmake --build . --parallel 2 --clean-first --config Release && ctest .
 
 notifications:
   email: false

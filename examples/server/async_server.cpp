@@ -1,6 +1,6 @@
 #include "echo_conn.h"
-#include <klistener.h>
-#include <kworkable.h>
+#include <kacceptor.h>
+#include <kworker.h>
 #include <iostream>
 
 
@@ -34,7 +34,7 @@ int main(int argc, char** argv)
     }
 
     auto mgr = std::make_shared <echo_conn_mgr>();
-    auto srv_listener = std::make_shared<listener>(wkr.get(), mgr.get());
+    auto srv_listener = std::make_shared<acceptor>(wkr.get(), mgr.get());
     if (!srv_listener->start(addr))
     {
         std::cerr << "srv_listener::start failed" << std::endl;

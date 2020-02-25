@@ -1,5 +1,5 @@
-#include "../include/klistener.h"
-#include "../include/kworkable.h"
+#include "../include/kacceptor.h"
+#include "../include/kworker.h"
 
 #ifdef _WIN32
 # ifndef WSA_FLAG_NO_HANDLE_INHERIT
@@ -65,7 +65,7 @@ namespace
 namespace knet
 {
 #ifdef KNET_USE_IOCP
-    struct listener::accept_io
+    struct acceptor::accept_io
     {
         WSAOVERLAPPED ol = {};
         char buf[(sizeof(sockaddr_storage) + 16) * 2] = {};
@@ -99,14 +99,14 @@ namespace knet
 #endif
 
 
-    listener::listener(workable* wkr, connection_factory* cf) noexcept
+    acceptor::acceptor(workable* wkr, connection_factory* cf) noexcept
         : _wkr(wkr), _cf(cf), _poller(this)
     {
         kassert(nullptr != _wkr);
         kassert(nullptr != _cf);
     }
 
-    listener::~listener()
+    acceptor::~acceptor()
     {
         kassert(INVALID_RAWSOCKET == _rs);
 #ifdef KNET_USE_IOCP
@@ -115,7 +115,7 @@ namespace knet
 #endif
     }
 
-    bool listener::start(const address& addr) noexcept
+    bool acceptor::start(const address& addr) noexcept
     {
         if (INVALID_RAWSOCKET != _rs)
             return false;
@@ -160,7 +160,7 @@ namespace knet
         return true;
     }
 
-    void listener::stop() noexcept
+    void acceptor::stop() noexcept
     {
 #ifdef KNET_USE_IOCP
         if (nullptr != _ios)
@@ -175,7 +175,7 @@ namespace knet
         close_rawsocket(_rs);
     }
 
-    void listener::on_poll(void* key, const rawpollevent_t& evt)
+    void acceptor::on_poll(void* key, const rawpollevent_t& evt)
     {
         (void)key;
 #ifdef KNET_USE_IOCP
@@ -206,7 +206,7 @@ namespace knet
     }
 
 #ifdef KNET_USE_IOCP
-    void listener::post_accept() noexcept
+    void acceptor::post_accept() noexcept
     {
         for (; nullptr != _free_ios; _free_ios = _free_ios->next)
         {

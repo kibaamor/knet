@@ -1,5 +1,5 @@
 #include "../include/kconnector.h"
-#include "../include/kworkable.h"
+#include "../include/kworker.h"
 
 
 namespace knet

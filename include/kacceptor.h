@@ -8,13 +8,13 @@ namespace knet
     class workable;
     class connection_factory;
 
-    class listener
+    class acceptor
         : public poller::listener
         , noncopyable
     {
     public:
-        listener(workable* wkr, connection_factory* cf) noexcept;
-        ~listener() override;
+        acceptor(workable* wkr, connection_factory* cf) noexcept;
+        ~acceptor() override;
 
         bool start(const address& addr) noexcept;
         void stop() noexcept;

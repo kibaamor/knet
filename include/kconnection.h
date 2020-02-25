@@ -13,6 +13,7 @@ namespace knet
         buffer(const void* data_, size_t size_) noexcept : data(data_), size(size_) {}
     };
 
+    class socket;
     class connection
     {
     public:

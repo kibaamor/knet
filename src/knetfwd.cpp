@@ -28,10 +28,9 @@ namespace knet
 
     void set_rawsocket_sndrcvbufsize(rawsocket_t rawsocket, int size)
     {
-        setsockopt(rawsocket, SOL_SOCKET, SO_RCVBUF,
-            reinterpret_cast<const char*>(&size), sizeof(size));
-        setsockopt(rawsocket, SOL_SOCKET, SO_SNDBUF,
-            reinterpret_cast<const char*>(&size), sizeof(size));
+        auto optval = reinterpret_cast<const char*>(&size);
+        setsockopt(rawsocket, SOL_SOCKET, SO_RCVBUF, optval, sizeof(size));
+        setsockopt(rawsocket, SOL_SOCKET, SO_SNDBUF, optval, sizeof(size));
     }
 
     uint32_t u32rand() noexcept

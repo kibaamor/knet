@@ -6,30 +6,33 @@
 namespace knet
 {
     class workable;
+    class connection_factory;
 
     class listener
         : public poller::listener
         , noncopyable
     {
     public:
-        listener(const address& addr, workable* workable) noexcept;
+        listener(workable* wkr, connection_factory* cf) noexcept;
         ~listener() override;
 
-        bool start() noexcept;
+        bool start(const address& addr) noexcept;
         void stop() noexcept;
 
         void update() noexcept { _poller.poll(); }
 
-        void on_poll(void* key, const pollevent_t& pollevent) override;
+        void on_poll(void* key, const rawpollevent_t& evt) override;
 #ifdef KNET_USE_IOCP
         void on_postpoll() override { post_accept(); }
 #endif
 
     private:
-        const address _addr;
-        workable* _workable = nullptr;
+        workable* const _wkr;
+        connection_factory* _cf;
+
+        sa_family_t _family;
         poller _poller;
-        rawsocket_t _rawsocket = INVALID_RAWSOCKET;
+        rawsocket_t _rs = INVALID_RAWSOCKET;
 
 #ifdef KNET_USE_IOCP
         void post_accept() noexcept;

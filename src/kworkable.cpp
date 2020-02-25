@@ -6,14 +6,21 @@
 
 namespace knet
 {
-    using queue_t = spsc_queue<rawsocket_t, 1024>;
-
-    worker::worker(connection_factory* conn_factory, socketid_gener sid_gener) noexcept
-        : _conn_factory(conn_factory)
-        , _sid_gener(sid_gener)
-        , _poller(this)
+    struct work
     {
-        kassert(nullptr != _conn_factory);
+        work(connection_factory* c = nullptr, rawsocket_t s = INVALID_RAWSOCKET)
+            : cf(c), rs(s)
+        {
+        }
+
+        connection_factory* cf;
+        rawsocket_t rs;
+    };
+    using workqueue_t = spsc_queue<work, 1024>;
+
+    worker::worker() noexcept
+        :_poller(this)
+    {
     }
 
     worker::~worker()
@@ -35,23 +42,17 @@ namespace knet
         _adds.clear();
     }
 
-    void worker::add_work(rawsocket_t rawsocket)
+    void worker::add_work(connection_factory* cf, rawsocket_t rs)
     {
-        auto sock = new socket(this, rawsocket);
+        auto sock = new socket(cf, rs);
         _adds.push_back(sock);
     }
 
-    void worker::on_poll(void* key, const pollevent_t& pollevent)
+    void worker::on_poll(void* key, const rawpollevent_t& evt)
     {
         auto sock = static_cast<socket*>(key);
         kassert(nullptr != sock);
-        sock->on_pollevent(pollevent);
-    }
-
-    async_worker::async_worker(connection_factory* conn_factory) noexcept
-        : _conn_factory(conn_factory)
-    {
-        kassert(nullptr != _conn_factory);
+        sock->on_rawpollevent(evt);
     }
 
     async_worker::~async_worker()
@@ -60,17 +61,18 @@ namespace knet
         kassert(_infos.empty());
     }
 
-    void async_worker::add_work(rawsocket_t rawsocket)
+    void async_worker::add_work(connection_factory* cf, rawsocket_t rs)
     {
         for (size_t i = 0, N = _infos.size(); i < N; ++i)
         {
             auto& info = _infos[_index];
             _index = (_index + 1) % N;
 
-            if (static_cast<queue_t*>(info.q)->push(rawsocket))
+            auto wq = static_cast<workqueue_t*>(info.q);
+            if (wq->push(work(cf, rs)))
                 return;
         }
-        ::closesocket(rawsocket);
+        ::closesocket(rs);
     }
     bool async_worker::start(size_t thread_num)
     {
@@ -81,8 +83,8 @@ namespace knet
         for (size_t i = 0; i < thread_num; ++i)
         {
             auto& info = _infos[i];
-            info.q = new queue_t();
-            info.w = new worker(_conn_factory, socketid_gener(i, thread_num));
+            info.q = new workqueue_t();
+            info.w = new worker();
             info.t = new std::thread(&worker_thread, &info);
         }
 
@@ -100,10 +102,12 @@ namespace knet
         for (auto& info : _infos)
         {
             info.t->join();
-            kassert(static_cast<queue_t*>(info.q)->is_empty());
+
+            auto wq = static_cast<workqueue_t*>(info.q);
+            kassert(wq->is_empty());
             delete info.t;
             delete info.w;
-            delete static_cast<queue_t*>(info.q);
+            delete wq;
         }
         std::vector<info>().swap(_infos);
     }
@@ -111,25 +115,25 @@ namespace knet
     void async_worker::worker_thread(info* i)
     {
         constexpr int64_t min_interval_ms = 50;
-        auto queue = static_cast<queue_t*>(i->q);
+        auto queue = static_cast<workqueue_t*>(i->q);
         auto worker = i->w;
 
-        rawsocket_t rs;
+        work wk;
         while (i->r)
         {
             const auto beg_ms = now_ms();
             worker->update();
 
-            while (queue->pop(rs))
-                worker->add_work(rs);
+            while (queue->pop(wk))
+                worker->add_work(wk.cf, wk.rs);
 
             const auto end_ms = now_ms();
             const auto cost_ms = end_ms > beg_ms ? end_ms - beg_ms : 0;
             sleep_ms(cost_ms < min_interval_ms ? min_interval_ms - cost_ms : 1);
         }
 
-        while (queue->pop(rs))
-            ::closesocket(rs);
+        while (queue->pop(wk))
+            ::closesocket(wk.rs);
     }
 }
 

@@ -23,10 +23,10 @@ namespace knet
     using sa_family_t = ADDRESS_FAMILY;
     using in_port_t = USHORT;
     using rawsocket_t = SOCKET;
-    using poller_t = HANDLE;
-    using pollevent_t = OVERLAPPED_ENTRY;
+    using rawpoller_t = HANDLE;
+    using rawpollevent_t = OVERLAPPED_ENTRY;
 
-    constexpr poller_t INVALID_POLLER = nullptr;
+    constexpr rawpoller_t INVALID_RAWPOLLER = nullptr;
     constexpr rawsocket_t INVALID_RAWSOCKET = INVALID_SOCKET;
     constexpr int RAWSOCKET_ERROR = SOCKET_ERROR;
 }
@@ -45,10 +45,10 @@ namespace knet
 namespace knet
 {
     using rawsocket_t = int;
-    using poller_t = int;
-    using pollevent_t = epoll_event;
+    using rawpoller_t = int;
+    using rawpollevent_t = epoll_event;
 
-    constexpr poller_t INVALID_POLLER = -1;
+    constexpr rawpoller_t INVALID_RAWPOLLER = -1;
     constexpr rawsocket_t INVALID_RAWSOCKET = -1;
     constexpr int RAWSOCKET_ERROR = -1;
 }
@@ -83,13 +83,9 @@ namespace knet
     };
 
 
-    using socketid_t = int32_t;
-
     constexpr int IOCP_PENDING_ACCEPT_NUM = 64;
-    constexpr int POLL_EVENT_NUM = 64;
-    constexpr int SOCKET_SNDRCVBUF_SIZE = 64 * 1024;
+    constexpr int POLL_EVENT_NUM = 128;
     constexpr int SOCKET_RWBUF_SIZE = 256 * 1024;
-    constexpr socketid_t INVALID_SOCKETID = 0;
 
 
     void global_init() noexcept;
@@ -116,5 +112,4 @@ namespace knet
 }
 
 // config
-#define KNET_GRACEFUL_CLOSE_SOCKET
 #define KNET_REUSE_ADDR

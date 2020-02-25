@@ -6,7 +6,7 @@
 void echo_conn::on_connected()
 {
     //std::cout << "on_connected: " << _sockaddr << " <===> " << _peeraddr << std::endl;
-    if (_conn_mgr->get_disconnect_all())
+    if (_mgr->get_disconnect_all())
         disconnect();
     else
         send_package();
@@ -14,7 +14,7 @@ void echo_conn::on_connected()
 
 size_t echo_conn::on_recv_data(char* data, size_t size)
 {
-    if (_conn_mgr->get_disconnect_all())
+    if (_mgr->get_disconnect_all())
     {
         disconnect();
         return 0;
@@ -31,7 +31,7 @@ size_t echo_conn::on_recv_data(char* data, size_t size)
     if (len == 0)
         return 0;
 
-    _conn_mgr->add_send(len);
+    _mgr->add_send(len);
 
     send_package();
 
@@ -77,18 +77,18 @@ int32_t echo_conn::check_package(char* data, size_t size)
     return len;
 }
 
-void echo_conn::on_attach_socket(knet::rawsocket_t rawsocket)
+void echo_conn::on_attach_socket(knet::rawsocket_t rs)
 {
-    knet::set_rawsocket_sndrcvbufsize(rawsocket, 256 * 1204);
+    knet::set_rawsocket_sndrcvbufsize(rs, 256 * 1204);
     {
         auto& sa = _sockaddr.get_sockaddr();
         socklen_t len = sizeof(sa);
-        getsockname(rawsocket, reinterpret_cast<sockaddr*>(&sa), &len);
+        getsockname(rs, reinterpret_cast<sockaddr*>(&sa), &len);
     }
     {
         auto& sa = _peeraddr.get_sockaddr();
         socklen_t len = sizeof(sa);
-        getpeername(rawsocket, reinterpret_cast<sockaddr*>(&sa), &len);
+        getpeername(rs, reinterpret_cast<sockaddr*>(&sa), &len);
     }
 }
 
@@ -116,20 +116,20 @@ void echo_conn_mgr::on_reconn_failed(const knet::address& addr)
     std::cout << "on_reconn_failed to " << addr << std::endl;
 }
 
-void check_input(echo_conn_mgr* conn_mgr)
+void check_input(echo_conn_mgr* mgr)
 {
-    auto thd = std::thread([](echo_conn_mgr* conn_mgr) {
+    auto thd = std::thread([](echo_conn_mgr* mgr) {
         std::string s;
         while (true)
         {
             std::cin >> s;
             if (s == "exit")
             {
-                conn_mgr->set_disconnect_all();
+                mgr->set_disconnect_all();
                 break;
             }
         }
-    }, conn_mgr);
+    }, mgr);
     thd.detach();
     std::cout << R"(enter "exit" to exit program)" << std::endl;
 }

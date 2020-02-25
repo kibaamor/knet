@@ -9,8 +9,7 @@ namespace knet
         const void* data;
         size_t size;
 
-        buffer() noexcept : data(nullptr), size(0) {}
-        buffer(const void* data_, size_t size_) noexcept : data(data_), size(size_) {}
+        buffer(const void* d = nullptr, size_t s = 0) noexcept : data(d), size(s) {}
     };
 
     class socket;
@@ -27,7 +26,7 @@ namespace knet
         void disconnect();
 
     protected:
-        virtual void on_attach_socket(rawsocket_t rawsocket) {}
+        virtual void on_attach_socket(rawsocket_t rs) {}
 
     private:
         friend class socket;

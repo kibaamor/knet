@@ -4,24 +4,23 @@
 
 namespace knet
 {
-    class worker;
+    class connection_factory;
     class poller;
     struct sockbuf;
 
     class socket final : noncopyable
     {
     public:
-        socket(worker* worker, rawsocket_t rawsock) noexcept;
+        socket(connection_factory* cf, rawsocket_t rs) noexcept;
         ~socket();
 
         bool attach_poller(poller& poller);
-        void on_pollevent(const pollevent_t& pollevent) noexcept;
 
         void close() noexcept;
 
         bool write(buffer* buf, size_t num) noexcept;
 
-        socketid_t get_socketid() const noexcept { return _socketid; }
+        void on_rawpollevent(const rawpollevent_t& evt) noexcept;
 
     private:
         bool start() noexcept;
@@ -34,10 +33,9 @@ namespace knet
         bool try_write() noexcept;
 
     private:
-        worker* const _worker = nullptr;
-        rawsocket_t _rawsocket = INVALID_RAWSOCKET;
+        connection_factory* const _cf;
+        rawsocket_t _rs;
 
-        socketid_t _socketid = INVALID_SOCKETID;
         connection* _conn = nullptr;
 
         uint8_t _flag = 0;

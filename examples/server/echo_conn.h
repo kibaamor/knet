@@ -13,15 +13,15 @@ public:
     size_t on_recv_data(char* data, size_t size) override;
     void on_disconnect() override;
 
-    void set_conn_mgr(echo_conn_mgr* conn_mgr) { _conn_mgr = conn_mgr; }
+    void set_conn_mgr(echo_conn_mgr* mgr) { _mgr = mgr; }
 
 protected:
-    virtual void on_attach_socket(knet::rawsocket_t rawsocket) override;
+    virtual void on_attach_socket(knet::rawsocket_t rs) override;
 
 private:
     knet::address _sockaddr;
     knet::address _peeraddr;
-    echo_conn_mgr* _conn_mgr = nullptr;
+    echo_conn_mgr* _mgr = nullptr;
 };
 
 //-------------------------------------------------------------------------
@@ -64,4 +64,4 @@ private:
 
 //-------------------------------------------------------------------------
 
-void check_input(echo_conn_mgr* conn_mgr);
+void check_input(echo_conn_mgr* mgr);

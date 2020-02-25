@@ -26,23 +26,23 @@ int main(int argc, char** argv)
         return -1;
     }
 
-    auto conn_mgr = std::make_shared <echo_conn_mgr>();
-    auto wkr = std::make_shared<async_worker>(conn_mgr.get());
+    auto wkr = std::make_shared<async_worker>();
     if (!wkr->start(thread_num))
     {
         std::cerr << "async_worker::start failed" << std::endl;
         return -1;
     }
 
-    auto srv_listener = std::make_shared<listener>(addr, wkr.get());
-    if (!srv_listener->start())
+    auto mgr = std::make_shared <echo_conn_mgr>();
+    auto srv_listener = std::make_shared<listener>(wkr.get(), mgr.get());
+    if (!srv_listener->start(addr))
     {
         std::cerr << "srv_listener::start failed" << std::endl;
         wkr->stop();
         return -1;
     }
 
-    check_input(conn_mgr.get());
+    check_input(mgr.get());
 
     constexpr int64_t min_interval_ms = 50;
     auto last_ms = now_ms();
@@ -55,8 +55,8 @@ int main(int argc, char** argv)
 
         srv_listener->update();
 
-        const auto conn_num = conn_mgr->get_conn_num();
-        const auto loop = !conn_mgr->get_disconnect_all();
+        const auto conn_num = mgr->get_conn_num();
+        const auto loop = !mgr->get_disconnect_all();
         if (!loop)
         {
             if (0 == conn_num)
@@ -69,8 +69,8 @@ int main(int argc, char** argv)
             const auto total_delta_s = total_delta_ms / 1000;
             total_delta_ms %= 1000;
 
-            const auto total_send_mb = conn_mgr->get_total_send() / 1024 / 1024;
-            conn_mgr->clear_total_send();
+            const auto total_send_mb = mgr->get_total_send() / 1024 / 1024;
+            mgr->clear_total_send();
 
             const auto speed = (1 == total_delta_s 
                 ? total_send_mb

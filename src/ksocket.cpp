@@ -40,30 +40,29 @@ namespace knet
         : WSABUF
 #endif
     {
-        char databuf[SOCKET_RWBUF_SIZE] = {};
-        size_t datasize = 0;
+        char chunk[SOCKET_RWBUF_SIZE] = {};
+        size_t used_size = 0;
 #ifdef KNET_USE_IOCP
         WSAOVERLAPPED ol = {};
 #endif
 
-        char* rwptr() noexcept { return databuf + datasize; }
-        size_t validsize() const  noexcept { return sizeof(databuf) - datasize; }
+        char* wptr() noexcept { return chunk + used_size; }
+        size_t unused_size() const  noexcept { return sizeof(chunk) - used_size; }
     };
 }
 
 namespace knet
 {
-    socket::socket(worker* worker, rawsocket_t rawsock) noexcept
-        : _worker(worker)
-        , _rawsocket(rawsock)
+    socket::socket(connection_factory* cf, rawsocket_t rs) noexcept
+        : _cf(cf), _rs(rs)
     {
-        kassert(nullptr != worker);
-        kassert(INVALID_RAWSOCKET != _rawsocket);
+        kassert(nullptr != _cf);
+        kassert(INVALID_RAWSOCKET != _rs);
     }
 
     socket::~socket()
     {
-        kassert((FlagClose == _flag || 0 == _flag));
+        kassert(FlagClose == _flag || 0 == _flag);
 
         if (nullptr != _rbuf)
         {
@@ -75,31 +74,30 @@ namespace knet
             delete _wbuf;
             _wbuf = nullptr;
         }
-        _worker->get_connection_factory()->destroy_connection(_conn);
-        if (INVALID_RAWSOCKET != _rawsocket)
+        _cf->destroy_connection(_conn);
+        if (INVALID_RAWSOCKET != _rs)
         {
-            ::closesocket(_rawsocket);
-            _rawsocket = INVALID_RAWSOCKET;
+            ::closesocket(_rs);
+            _rs = INVALID_RAWSOCKET;
         }
     }
 
     bool socket::attach_poller(poller& poller)
     {
-        if (!poller.add(_rawsocket, this))
+        if (!poller.add(_rs, this))
             return false;
 
-        kassert(INVALID_RAWSOCKET != _socketid);
+        kassert(INVALID_RAWSOCKET != _rs);
         kassert(nullptr == _conn);
         kassert(nullptr == _rbuf);
         kassert(nullptr == _wbuf);
 
-        _socketid = _worker->get_next_socketid();
-        _conn = _worker->get_connection_factory()->create_connection();
+        _conn = _cf->create_connection();
         _rbuf = new sockbuf();
         _wbuf = new sockbuf();
 
         _conn->_socket = this;
-        _conn->on_attach_socket(_rawsocket);
+        _conn->on_attach_socket(_rs);
 
         return start();
     }
@@ -142,7 +140,7 @@ namespace knet
             {
                 mark_flag(_flag, FlagClose);
 #ifdef KNET_USE_IOCP
-                CancelIoEx(reinterpret_cast<HANDLE>(_rawsocket), nullptr);
+                CancelIoEx(reinterpret_cast<HANDLE>(_rs), nullptr);
 #endif
             }
             return;
@@ -152,21 +150,10 @@ namespace knet
         _conn->on_disconnect();
         unmark_flag(_flag, FlagCall);
 
-#ifndef KNET_GRACEFUL_CLOSE_SOCKET
-        linger lg = {1, 0};
-        setsockopt(_rawsocket, SOL_SOCKET, SO_LINGER, 
-            reinterpret_cast<const char*>(&lg), sizeof(lg));
-#endif
-
 #ifdef _WIN32
-#define SHUT_RD SD_RECEIVE
+#define SHUT_RDWR SD_BOTH
 #endif
-        shutdown(_rawsocket, SHUT_RD);
-        if (INVALID_RAWSOCKET != _rawsocket)
-        {
-            ::closesocket(_rawsocket);
-            _rawsocket = INVALID_RAWSOCKET;
-        }
+        shutdown(_rs, SHUT_RDWR);
         delete this;
     }
 
@@ -178,15 +165,15 @@ namespace knet
         size_t size = 0;
         for (size_t i = 0; i < num; ++i)
             size += buf[i].size;
-        if (size > _wbuf->validsize())
+        if (size > _wbuf->unused_size())
             return false;
 
         for (size_t i = 0; i < num; ++i)
         {
             if (buf[i].size > 0 && nullptr != buf[i].data)
             {
-                memcpy(_wbuf->rwptr(), buf[i].data, buf[i].size);
-                _wbuf->datasize += buf[i].size;
+                memcpy(_wbuf->wptr(), buf[i].data, buf[i].size);
+                _wbuf->used_size += buf[i].size;
             }
         }
 
@@ -199,42 +186,46 @@ namespace knet
         return true;
     }
 
-    void socket::on_pollevent(const pollevent_t &pollevent) noexcept
+    void socket::on_rawpollevent(const rawpollevent_t& evt) noexcept
     {
 #ifdef KNET_USE_IOCP
-        if (0 == pollevent.dwNumberOfBytesTransferred)
+        if (0 == evt.dwNumberOfBytesTransferred)
         {
-            if (&_rbuf->ol == pollevent.lpOverlapped)
+            if (&_rbuf->ol == evt.lpOverlapped)
                 unmark_flag(_flag, FlagRead);
             else
                 unmark_flag(_flag, FlagWrite);
+
             close();
             return;
         }
-        if (&_rbuf->ol == pollevent.lpOverlapped)
+
+        const auto size = static_cast<size_t>(evt.dwNumberOfBytesTransferred);
+        if (&_rbuf->ol == evt.lpOverlapped)
         {
-            _rbuf->datasize += static_cast<size_t>(pollevent.dwNumberOfBytesTransferred);
+            _rbuf->used_size += size;
             if (!handle_read() || is_flag_marked(_flag, FlagClose))
                 close();
         }
         else
         {
-            handle_write(static_cast<size_t>(pollevent.dwNumberOfBytesTransferred));
-            if ((_wbuf->datasize > 0 && !try_write()) || is_flag_marked(_flag, FlagClose))
+            handle_write(size);
+            if ((_wbuf->used_size > 0 && !try_write()) || is_flag_marked(_flag, FlagClose))
                 close();
         }
 #else // KNET_USE_IOCP
-        if (0 != (pollevent.events & (EPOLLERR | EPOLLHUP)))
+        if (0 != (evt.events & (EPOLLERR | EPOLLHUP)))
         {
             close();
             return;
         }
-        if (0 != (pollevent.events & EPOLLIN))
+
+        if (0 != (evt.events & EPOLLIN))
         {
             size_t count = 0;
-            while (true)
+            while (_rbuf->unused_size() > 0)
             {
-                const auto ret = recv(_rawsocket, _rbuf->rwptr(), _rbuf->validsize(), MSG_DONTWAIT);
+                const auto ret = recv(_rs, _rbuf->wptr(), _rbuf->unused_size(), MSG_DONTWAIT);
                 if (RAWSOCKET_ERROR == ret)
                 {
                     if (EAGAIN != errno && EWOULDBLOCK != errno)
@@ -247,28 +238,27 @@ namespace knet
                 }
                 else
                 {
-                    _rbuf->datasize += ret;
+                    _rbuf->used_size += ret;
                     ++count;
                 }
-                if (0 == _rbuf->validsize())
+
+                if (0 == _rbuf->unused_size() &&!handle_read())
                 {
-                    if (!handle_read())
-                    {
-                        count = 0;
-                        break;
-                    }
+                    count = 0;
+                    break;
                 }
             }
-            if (0 == count || (_rbuf->datasize > 0 && !handle_read()))
+
+            if (0 == count || (_rbuf->used_size > 0 && !handle_read()))
             {
                 close();
                 return;
             }
         }
-        if (0 != (pollevent.events & EPOLLOUT) && !is_flag_marked(_flag, FlagWrite))
+        if (0 != (evt.events & EPOLLOUT) && !is_flag_marked(_flag, FlagWrite))
         {
             mark_flag(_flag, FlagWrite);
-            if (_wbuf->datasize > 0 && !try_write())
+            if (_wbuf->used_size > 0 && !try_write())
             {
                 close();
                 return;
@@ -280,13 +270,16 @@ namespace knet
 #ifdef KNET_USE_IOCP
     bool socket::try_read() noexcept
     {
+        if (0 == _rbuf->unused_size())
+            return false;
+
         memset(&_rbuf->ol, 0, sizeof(_rbuf->ol));
-        _rbuf->buf = _rbuf->rwptr();
-        _rbuf->len = static_cast<decltype(_rbuf->len)>(_rbuf->validsize());
+        _rbuf->buf = _rbuf->wptr();
+        _rbuf->len = static_cast<ULONG>(_rbuf->unused_size());
 
         DWORD dw = 0;
         DWORD flag = 0;
-        if (RAWSOCKET_ERROR == WSARecv(_rawsocket, _rbuf, 1, &dw, &flag, &_rbuf->ol, nullptr)
+        if (RAWSOCKET_ERROR == WSARecv(_rs, _rbuf, 1, &dw, &flag, &_rbuf->ol, nullptr)
             && ERROR_IO_PENDING != WSAGetLastError())
         {
             return false;
@@ -298,10 +291,10 @@ namespace knet
 
     void socket::handle_write(size_t wrote) noexcept
     {
-        kassert(_wbuf->datasize >= wrote);
-        _wbuf->datasize -= wrote;
-        if (_wbuf->datasize > 0)
-            memmove(_wbuf->databuf, _wbuf->databuf + wrote, _wbuf->datasize);
+        kassert(_wbuf->used_size >= wrote);
+        _wbuf->used_size -= wrote;
+        if (_wbuf->used_size > 0)
+            memmove(_wbuf->chunk, _wbuf->chunk + wrote, _wbuf->used_size);
         unmark_flag(_flag, FlagWrite);
     }
 #endif // KNET_USE_IOCP
@@ -316,26 +309,26 @@ namespace knet
         do 
         {
             const size_t cost = _conn->on_recv_data(
-                _rbuf->databuf + ret, _rbuf->datasize - ret);
+                _rbuf->chunk + ret, _rbuf->used_size - ret);
             if (0 == cost)
                 break;
 
             ret += cost;
-        } while (ret < _rbuf->datasize);
+        } while (ret < _rbuf->used_size);
         unmark_flag(_flag, FlagCall);
 
-        if (ret > _rbuf->datasize)
-            ret = _rbuf->datasize;
-        _rbuf->datasize -= ret;
+        if (ret > _rbuf->used_size)
+            ret = _rbuf->used_size;
+        _rbuf->used_size -= ret;
 
-        if (0 == _rbuf->validsize())
+        if (0 == _rbuf->unused_size())
             mark_flag(_flag, FlagClose);
 
         if (is_flag_marked(_flag, FlagClose))
             return false;
 
-        if (_rbuf->datasize > 0 && ret > 0)
-            memmove(_rbuf->databuf, _rbuf->databuf + ret, _rbuf->datasize);
+        if (_rbuf->used_size > 0 && ret > 0)
+            memmove(_rbuf->chunk, _rbuf->chunk + ret, _rbuf->used_size);
 
 #ifdef KNET_USE_IOCP
         return try_read();
@@ -347,11 +340,11 @@ namespace knet
     bool socket::try_write() noexcept
     {
 #ifdef KNET_USE_IOCP
-        _wbuf->buf = _wbuf->databuf;
-        _wbuf->len = static_cast<decltype(_wbuf->len)>(_wbuf->datasize);
+        _wbuf->buf = _wbuf->chunk;
+        _wbuf->len = static_cast<decltype(_wbuf->len)>(_wbuf->used_size);
         memset(&_wbuf->ol, 0, sizeof(_wbuf->ol));
         DWORD dw = 0;
-        if (RAWSOCKET_ERROR == WSASend(_rawsocket, _wbuf, 1, &dw, 0, &_wbuf->ol, nullptr)
+        if (RAWSOCKET_ERROR == WSASend(_rs, _wbuf, 1, &dw, 0, &_wbuf->ol, nullptr)
             && ERROR_IO_PENDING != WSAGetLastError())
         {
             return false;
@@ -359,10 +352,10 @@ namespace knet
         mark_flag(_flag, FlagWrite);
 #else // KNET_USE_IOCP
         size_t wrote = 0;
-        while (wrote < _wbuf->datasize)
+        while (wrote < _wbuf->used_size)
         {
-            const auto ret = send(_rawsocket, _wbuf->databuf + wrote, 
-                _wbuf->datasize - wrote, MSG_NOSIGNAL | MSG_DONTWAIT);
+            const auto ret = send(_rs, _wbuf->chunk + wrote, 
+                _wbuf->used_size - wrote, MSG_NOSIGNAL | MSG_DONTWAIT);
             if (RAWSOCKET_ERROR == ret && (EAGAIN == errno || EWOULDBLOCK == errno))
                 break;
             else if (RAWSOCKET_ERROR == ret || 0 == ret)
@@ -370,10 +363,10 @@ namespace knet
             else
                 wrote += ret;
         }
-        _wbuf->datasize -= wrote;
-        if (_wbuf->datasize > 0)
+        _wbuf->used_size -= wrote;
+        if (_wbuf->used_size > 0)
         {
-            memmove(_wbuf->databuf, _wbuf->databuf + wrote, _wbuf->datasize);
+            memmove(_wbuf->chunk, _wbuf->chunk + wrote, _wbuf->used_size);
             unmark_flag(_flag, FlagWrite);
         }
 #endif // KNET_USE_IOCP

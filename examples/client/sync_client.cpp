@@ -1,4 +1,5 @@
 #include "echo_conn.h"
+#include <kworkable.h>
 #include <iostream>
 
 
@@ -28,11 +29,12 @@ int main(int argc, char** argv)
         return -1;
     }
 
-    auto conn_mgr = std::make_shared <echo_conn_mgr>();
-    auto wkr = std::make_shared<worker>(conn_mgr.get());
+    auto wkr = std::make_shared<worker>();
 
-    auto create_connector = [&addr, &wkr, &conn_mgr]() {
-        return std::make_shared<connector>(addr, wkr.get(), true, 1000, conn_mgr.get());
+    auto mgr = std::make_shared <echo_conn_mgr>();
+    auto create_connector = [&addr, &wkr, &mgr]() {
+        return std::make_shared<connector>(
+            addr, wkr.get(), mgr.get(), true, 1000, mgr.get());
     };
 
     auto cnctor = create_connector();
@@ -41,7 +43,7 @@ int main(int argc, char** argv)
     auto last_ms = now_ms();
     int64_t total_delta_ms = 0;
 
-    check_input(conn_mgr.get());
+    check_input(mgr.get());
     while (true)
     {
         const auto beg_ms = now_ms();
@@ -53,11 +55,11 @@ int main(int argc, char** argv)
 
         wkr->update();
 
-        const auto conn_num = conn_mgr->get_conn_num();
-        const auto loop = !conn_mgr->get_disconnect_all();
+        const auto conn_num = mgr->get_conn_num();
+        const auto loop = !mgr->get_disconnect_all();
         if (loop)
         {
-            if (conn_num < client_num)
+            if (nullptr == cnctor && conn_num < client_num)
                 cnctor = create_connector();
         }
         else
@@ -72,8 +74,8 @@ int main(int argc, char** argv)
             const auto total_delta_s = total_delta_ms / 1000;
             total_delta_ms %= 1000;
 
-            const auto total_send_mb = conn_mgr->get_total_send() / 1024 / 1024;
-            conn_mgr->clear_total_send();
+            const auto total_send_mb = mgr->get_total_send() / 1024 / 1024;
+            mgr->clear_total_send();
 
             const auto speed = (1 == total_delta_s
                 ? total_send_mb

@@ -96,13 +96,18 @@ enable_testing()
 
 #######################################################################################
 
-file(GLOB SRC_LIST
+file(GLOB HDR_LIST
     "${CMAKE_SOURCE_DIR}/include/*.h"
+)
+
+file(GLOB SRC_LIST
     "${CMAKE_SOURCE_DIR}/src/*.h"
     "${CMAKE_SOURCE_DIR}/src/*.cpp"
 )
 
-add_library(${CMAKE_PROJECT_NAME} ${SRC_LIST})
+source_group("hdrs" FILES ${HDR_LIST})
+source_group("srcs" FILES ${SRC_LIST})
+add_library(${CMAKE_PROJECT_NAME} ${HDR_LIST} ${SRC_LIST})
 
 target_include_directories(${CMAKE_PROJECT_NAME}
     PUBLIC ${CMAKE_SOURCE_DIR}/include

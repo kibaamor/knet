@@ -18,7 +18,7 @@ namespace knet
         _rs = ::socket(_addr.get_family(), SOCK_STREAM, 0);
     }
 
-    connector::~connector()
+    connector::~connector() noexcept
     {
         if (INVALID_RAWSOCKET != _rs)
         {

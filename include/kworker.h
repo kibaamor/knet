@@ -23,7 +23,7 @@ namespace knet
     {
     public:
         worker() noexcept;
-        ~worker() override;
+        ~worker() noexcept override;
 
         void update() noexcept;
 
@@ -40,8 +40,8 @@ namespace knet
         , noncopyable
     {
     public:
-        async_worker() noexcept = default;
-        ~async_worker() override;
+        async_worker() noexcept {}
+        ~async_worker() noexcept override;
 
         void add_work(connection_factory* cf, rawsocket_t rs) override;
 

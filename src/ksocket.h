@@ -12,7 +12,7 @@ namespace knet
     {
     public:
         socket(connection_factory* cf, rawsocket_t rs) noexcept;
-        ~socket();
+        ~socket() noexcept;
 
         bool attach_poller(poller& poller);
 

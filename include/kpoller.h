@@ -18,7 +18,7 @@ namespace knet
 
     public:
         explicit poller(listener* l) noexcept;
-        ~poller();
+        ~poller() noexcept;
 
         bool add(rawsocket_t rs, void* key) noexcept;
         bool poll() noexcept;

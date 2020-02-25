@@ -60,7 +60,7 @@ namespace knet
         kassert(INVALID_RAWSOCKET != _rs);
     }
 
-    socket::~socket()
+    socket::~socket() noexcept
     {
         kassert(FlagClose == _flag || 0 == _flag);
 

@@ -14,7 +14,7 @@ namespace knet
     {
     public:
         acceptor(workable* wkr, connection_factory* cf) noexcept;
-        ~acceptor() override;
+        ~acceptor() noexcept override;
 
         bool start(const address& addr) noexcept;
         void stop() noexcept;

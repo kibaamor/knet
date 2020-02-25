@@ -106,7 +106,7 @@ namespace knet
         kassert(nullptr != _cf);
     }
 
-    acceptor::~acceptor()
+    acceptor::~acceptor() noexcept
     {
         kassert(INVALID_RAWSOCKET == _rs);
 #ifdef KNET_USE_IOCP

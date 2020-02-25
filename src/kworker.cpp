@@ -23,7 +23,7 @@ namespace knet
     {
     }
 
-    worker::~worker()
+    worker::~worker() noexcept
     {
         for (auto sock : _adds)
             delete sock;
@@ -55,7 +55,7 @@ namespace knet
         sock->on_rawpollevent(evt);
     }
 
-    async_worker::~async_worker()
+    async_worker::~async_worker() noexcept
     {
         stop();
         kassert(_infos.empty());

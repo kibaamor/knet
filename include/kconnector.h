@@ -23,7 +23,7 @@ namespace knet
         connector(const address& addr, workable* wkr, connection_factory* cf) noexcept;
         connector(const address& addr, workable* wkr, connection_factory* cf, 
             bool reconn, size_t interval_ms, listener* listener) noexcept;
-        ~connector();
+        ~connector() noexcept;
 
         bool update(size_t ms) noexcept;
 

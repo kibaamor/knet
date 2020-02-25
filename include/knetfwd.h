@@ -90,7 +90,7 @@ namespace knet
 
     void global_init() noexcept;
 
-    void set_rawsocket_sndrcvbufsize(rawsocket_t rawsocket, int size);
+    void set_rawsocket_sndrcvbufsize(rawsocket_t rs, int size) noexcept;
 
     uint32_t u32rand() noexcept;
     float f32rand() noexcept;

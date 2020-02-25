@@ -15,7 +15,7 @@ namespace knet
         kassert(INVALID_RAWPOLLER != _rp);
     }
 
-    poller::~poller()
+    poller::~poller() noexcept
     {
 #ifdef KNET_USE_IOCP
         CloseHandle(_rp);
@@ -34,7 +34,7 @@ namespace knet
         epoll_event ev = {};
         ev.events = EPOLLIN | EPOLLOUT | EPOLLRDHUP | EPOLLERR | EPOLLET;
         ev.data.ptr = key;
-        return 0 == epoll_ctl(_poller, EPOLL_CTL_ADD, rs, &ev);
+        return 0 == epoll_ctl(_rp, EPOLL_CTL_ADD, rs, &ev);
 #endif
     }
 

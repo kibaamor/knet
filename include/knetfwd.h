@@ -60,7 +60,8 @@ namespace knet
 
 #ifdef _DEBUG
 # ifdef _MSC_VER
-#  define kassert(cond) do { if (!(cond)) __asm { int 3 }; } while (false)
+#  include <intrin.h>
+#  define kassert(cond) do { if (!(cond)) __debugbreak(); } while (false)
 # else
 #  include <cassert>
 #  define kassert assert

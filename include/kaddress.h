@@ -7,14 +7,14 @@ namespace knet
     class address
     {
     public:
-        bool pton(sa_family_t family, const std::string& addr, in_port_t port) noexcept;
-        bool ntop(std::string& addr, in_port_t& port) const noexcept;
+        bool pton(sa_family_t family, const std::string& addr, in_port_t port);
+        bool ntop(std::string& addr, in_port_t& port) const;
 
         std::string to_string() const;
 
-        sa_family_t get_family() const noexcept { return _addr.ss_family; }
-        sockaddr_storage& get_sockaddr() noexcept { return _addr; }
-        const sockaddr_storage& get_sockaddr() const noexcept { return _addr; }
+        sa_family_t get_family() const { return _addr.ss_family; }
+        sockaddr_storage& get_sockaddr() { return _addr; }
+        const sockaddr_storage& get_sockaddr() const { return _addr; }
 
     private:
         sockaddr_storage _addr = {};

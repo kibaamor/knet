@@ -22,10 +22,10 @@ namespace knet
         , noncopyable
     {
     public:
-        worker() noexcept;
-        ~worker() noexcept override;
+        worker();
+        ~worker() override;
 
-        void update() noexcept;
+        void update();
 
         void add_work(connection_factory* cf, rawsocket_t rs) override;
         void on_poll(void* key, const rawpollevent_t& evt) override;
@@ -40,13 +40,13 @@ namespace knet
         , noncopyable
     {
     public:
-        async_worker() noexcept {}
-        ~async_worker() noexcept override;
+        async_worker() {}
+        ~async_worker() override;
 
         void add_work(connection_factory* cf, rawsocket_t rs) override;
 
         bool start(size_t thread_num);
-        void stop() noexcept;
+        void stop();
 
     private:
         struct info

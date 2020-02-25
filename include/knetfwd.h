@@ -88,17 +88,17 @@ namespace knet
     constexpr int SOCKET_RWBUF_SIZE = 256 * 1024;
 
 
-    void global_init() noexcept;
+    void global_init();
 
-    void set_rawsocket_sndrcvbufsize(rawsocket_t rs, int size) noexcept;
+    void set_rawsocket_sndrcvbufsize(rawsocket_t rs, int size);
 
-    uint32_t u32rand() noexcept;
-    float f32rand() noexcept;
-    uint32_t u32rand_between(uint32_t low, uint32_t high) noexcept;
-    int32_t s32rand_between(int32_t low, int32_t high) noexcept;
+    uint32_t u32rand();
+    float f32rand();
+    uint32_t u32rand_between(uint32_t low, uint32_t high);
+    int32_t s32rand_between(int32_t low, int32_t high);
 
-    int64_t now_ms() noexcept;
-    void sleep_ms(int64_t ms) noexcept;
+    int64_t now_ms();
+    void sleep_ms(int64_t ms);
 
     struct tm ms2tm(int64_t ms, bool local);
 

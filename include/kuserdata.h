@@ -21,20 +21,20 @@ namespace knet
             int64_t i64 = 0;
         } data;
 
-        userdata() noexcept = default;
-        userdata(void* v) noexcept : type(pointer)
+        userdata() = default;
+        userdata(void* v) : type(pointer)
         {
             data.ptr = v;
         }
         template <typename T, typename std::enable_if<
             std::is_floating_point<T>::value, int>::type = 0>
-            userdata(T v) noexcept : type(floatpoint)
+            userdata(T v) : type(floatpoint)
         {
             data.f64 = static_cast<double>(v);
         }
         template <typename T, typename std::enable_if<
             std::is_integral<T>::value, int>::type = 0>
-            userdata(T v) noexcept : type(integral)
+            userdata(T v) : type(integral)
         {
             data.i64 = static_cast<int64_t>(v);
         }

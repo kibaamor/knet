@@ -20,12 +20,12 @@ namespace knet
         };
 
     public:
-        connector(const address& addr, workable* wkr, connection_factory* cf) noexcept;
+        connector(const address& addr, workable* wkr, connection_factory* cf);
         connector(const address& addr, workable* wkr, connection_factory* cf, 
-            bool reconn, size_t interval_ms, listener* listener) noexcept;
-        ~connector() noexcept;
+            bool reconn, size_t interval_ms, listener* listener);
+        ~connector();
 
-        bool update(size_t ms) noexcept;
+        bool update(size_t ms);
 
     private:
         const address _addr;

@@ -5,7 +5,7 @@
 
 namespace knet
 {
-    bool address::pton(sa_family_t family, const std::string& addr, in_port_t port) noexcept
+    bool address::pton(sa_family_t family, const std::string& addr, in_port_t port)
     {
         memset(&_addr, 0, sizeof(_addr));
 
@@ -35,7 +35,7 @@ namespace knet
         return false;
     }
 
-    bool address::ntop(std::string& addr, in_port_t& port) const noexcept
+    bool address::ntop(std::string& addr, in_port_t& port) const
     {
         addr.clear();
         port = 0;
@@ -44,7 +44,8 @@ namespace knet
         {
             char buf[INET_ADDRSTRLEN] = {};
             const auto& addr4 = reinterpret_cast<const sockaddr_in&>(_addr);
-            auto sa = static_cast<const void*>(&addr4.sin_addr);
+            auto csa = static_cast<const void*>(&addr4.sin_addr);
+            auto sa = const_cast<void*>(csa);
 
             if (nullptr == inet_ntop(get_family(), sa, buf, INET_ADDRSTRLEN))
                 return false;
@@ -56,7 +57,8 @@ namespace knet
         {
             char buf[INET6_ADDRSTRLEN] = {};
             const auto& addr6 = reinterpret_cast<const sockaddr_in6&>(_addr);
-            auto sa = static_cast<const void*>(&addr6.sin6_addr);
+            auto csa = static_cast<const void*>(&addr6.sin6_addr);
+            auto sa = const_cast<void*>(csa);
 
             if (nullptr == inet_ntop(get_family(), sa, buf, INET6_ADDRSTRLEN))
                 return false;

@@ -17,11 +17,11 @@ namespace knet
         };
 
     public:
-        explicit poller(listener* l) noexcept;
-        ~poller() noexcept;
+        explicit poller(listener* l);
+        ~poller();
 
-        bool add(rawsocket_t rs, void* key) noexcept;
-        bool poll() noexcept;
+        bool add(rawsocket_t rs, void* key);
+        bool poll();
 
     private:
         listener* const _l = nullptr;

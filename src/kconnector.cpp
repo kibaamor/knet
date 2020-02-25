@@ -4,13 +4,13 @@
 
 namespace knet
 {
-    connector::connector(const address& addr, workable* wkr, connection_factory* cf) noexcept
+    connector::connector(const address& addr, workable* wkr, connection_factory* cf)
         : connector(addr, wkr, cf, false, 0, nullptr)
     {
     }
 
     connector::connector(const address& addr, workable* wkr, connection_factory* cf, 
-        bool reconn, size_t interval_ms, listener* listener) noexcept
+        bool reconn, size_t interval_ms, listener* listener)
         : _addr(addr), _wkr(wkr), _cf(cf), _reconn(reconn), _interval_ms(interval_ms), _listener(listener)
     {
         kassert(nullptr != _wkr);
@@ -18,7 +18,7 @@ namespace knet
         _rs = ::socket(_addr.get_family(), SOCK_STREAM, 0);
     }
 
-    connector::~connector() noexcept
+    connector::~connector()
     {
         if (INVALID_RAWSOCKET != _rs)
         {
@@ -27,7 +27,7 @@ namespace knet
         }
     }
 
-    bool connector::update(size_t ms) noexcept
+    bool connector::update(size_t ms)
     {
         if (_succ || (INVALID_RAWSOCKET == _rs && !_reconn))
             return false;

@@ -18,19 +18,19 @@ namespace knet
     };
     using workqueue_t = spsc_queue<work, 1024>;
 
-    worker::worker() noexcept
+    worker::worker()
         :_poller(this)
     {
     }
 
-    worker::~worker() noexcept
+    worker::~worker()
     {
         for (auto sock : _adds)
             delete sock;
         std::vector<socket*>().swap(_adds);
     }
 
-    void worker::update() noexcept
+    void worker::update()
     {
         _poller.poll();
 
@@ -55,7 +55,7 @@ namespace knet
         sock->on_rawpollevent(evt);
     }
 
-    async_worker::~async_worker() noexcept
+    async_worker::~async_worker()
     {
         stop();
         kassert(_infos.empty());
@@ -91,7 +91,7 @@ namespace knet
         return true;
     }
 
-    void async_worker::stop() noexcept
+    void async_worker::stop()
     {
         if (_infos.empty())
             return;

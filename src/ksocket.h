@@ -11,26 +11,26 @@ namespace knet
     class socket final : noncopyable
     {
     public:
-        socket(connection_factory* cf, rawsocket_t rs) noexcept;
-        ~socket() noexcept;
+        socket(connection_factory* cf, rawsocket_t rs);
+        ~socket();
 
         bool attach_poller(poller& poller);
 
-        void close() noexcept;
+        void close();
 
-        bool write(buffer* buf, size_t num) noexcept;
+        bool write(buffer* buf, size_t num);
 
-        void on_rawpollevent(const rawpollevent_t& evt) noexcept;
+        void on_rawpollevent(const rawpollevent_t& evt);
 
     private:
-        bool start() noexcept;
+        bool start();
 
 #ifdef KNET_USE_IOCP
-        bool try_read() noexcept;
-        void handle_write(size_t wrote) noexcept;
+        bool try_read();
+        void handle_write(size_t wrote);
 #endif
-        bool handle_read() noexcept;
-        bool try_write() noexcept;
+        bool handle_read();
+        bool try_write();
 
     private:
         connection_factory* const _cf;

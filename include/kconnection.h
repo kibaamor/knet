@@ -9,7 +9,7 @@ namespace knet
         const void* data;
         size_t size;
 
-        buffer(const void* d = nullptr, size_t s = 0) noexcept
+        buffer(const void* d = nullptr, size_t s = 0)
             : data(d), size(s)
         {
         }
@@ -25,8 +25,8 @@ namespace knet
         virtual size_t on_recv_data(char* data, size_t size) = 0;
         virtual void on_disconnect() {}
 
-        bool send_data(buffer* buf, size_t num) noexcept;
-        void disconnect() noexcept;
+        bool send_data(buffer* buf, size_t num);
+        void disconnect();
 
     protected:
         virtual void on_attach_socket(rawsocket_t rs) {}

@@ -17,16 +17,16 @@ namespace
     // FlagClose means socket will be closed
     constexpr uint8_t FlagClose = 1u << 3u;
 
-    inline bool is_flag_marked(uint8_t& flag, uint8_t test) noexcept
+    inline bool is_flag_marked(uint8_t& flag, uint8_t test)
     {
         return (0 != (flag & test));
     }
-    inline void mark_flag(uint8_t& flag, uint8_t test) noexcept
+    inline void mark_flag(uint8_t& flag, uint8_t test)
     {
         kassert(!is_flag_marked(flag, test));
         flag |= test;
     }
-    inline void unmark_flag(uint8_t& flag, uint8_t test) noexcept
+    inline void unmark_flag(uint8_t& flag, uint8_t test)
     {
         kassert(is_flag_marked(flag, test));
         flag &= ~test;
@@ -46,21 +46,21 @@ namespace knet
         WSAOVERLAPPED ol = {};
 #endif
 
-        char* wptr() noexcept { return chunk + used_size; }
-        size_t unused_size() const  noexcept { return sizeof(chunk) - used_size; }
+        char* wptr() { return chunk + used_size; }
+        size_t unused_size() const  { return sizeof(chunk) - used_size; }
     };
 }
 
 namespace knet
 {
-    socket::socket(connection_factory* cf, rawsocket_t rs) noexcept
+    socket::socket(connection_factory* cf, rawsocket_t rs)
         : _cf(cf), _rs(rs)
     {
         kassert(nullptr != _cf);
         kassert(INVALID_RAWSOCKET != _rs);
     }
 
-    socket::~socket() noexcept
+    socket::~socket()
     {
         kassert(FlagClose == _flag || 0 == _flag);
 
@@ -102,7 +102,7 @@ namespace knet
         return start();
     }
 
-    bool socket::start() noexcept
+    bool socket::start()
     {
         mark_flag(_flag, FlagCall);
         _conn->on_connected();
@@ -128,7 +128,7 @@ namespace knet
         return true;
     }
 
-    void socket::close() noexcept
+    void socket::close()
     {
         if (is_flag_marked(_flag, FlagCall
 #ifdef KNET_USE_IOCP
@@ -157,7 +157,7 @@ namespace knet
         delete this;
     }
 
-    bool socket::write(buffer* buf, size_t num) noexcept
+    bool socket::write(buffer* buf, size_t num)
     {
         if (is_flag_marked(_flag, FlagClose))
             return false;
@@ -186,7 +186,7 @@ namespace knet
         return true;
     }
 
-    void socket::on_rawpollevent(const rawpollevent_t& evt) noexcept
+    void socket::on_rawpollevent(const rawpollevent_t& evt)
     {
 #ifdef KNET_USE_IOCP
         if (0 == evt.dwNumberOfBytesTransferred)
@@ -268,7 +268,7 @@ namespace knet
     }
 
 #ifdef KNET_USE_IOCP
-    bool socket::try_read() noexcept
+    bool socket::try_read()
     {
         if (0 == _rbuf->unused_size())
             return false;
@@ -289,7 +289,7 @@ namespace knet
         return true;
     }
 
-    void socket::handle_write(size_t wrote) noexcept
+    void socket::handle_write(size_t wrote)
     {
         kassert(_wbuf->used_size >= wrote);
         _wbuf->used_size -= wrote;
@@ -299,7 +299,7 @@ namespace knet
     }
 #endif // KNET_USE_IOCP
 
-    bool socket::handle_read() noexcept
+    bool socket::handle_read()
     {
 #ifdef KNET_USE_IOCP
         unmark_flag(_flag, FlagRead);
@@ -337,7 +337,7 @@ namespace knet
 #endif
     }
 
-    bool socket::try_write() noexcept
+    bool socket::try_write()
     {
 #ifdef KNET_USE_IOCP
         _wbuf->buf = _wbuf->chunk;

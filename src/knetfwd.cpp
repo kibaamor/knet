@@ -17,7 +17,7 @@ namespace
 
 namespace knet
 {
-    void global_init() noexcept
+    void global_init()
     {
 #ifdef _WIN32
         WSADATA wsadata;
@@ -26,37 +26,37 @@ namespace knet
         get_random_engine().seed(static_cast<uint32_t>(time(nullptr)));
     }
 
-    void set_rawsocket_sndrcvbufsize(rawsocket_t rs, int size) noexcept
+    void set_rawsocket_sndrcvbufsize(rawsocket_t rs, int size)
     {
         auto optval = reinterpret_cast<const char*>(&size);
         setsockopt(rs, SOL_SOCKET, SO_RCVBUF, optval, sizeof(size));
         setsockopt(rs, SOL_SOCKET, SO_SNDBUF, optval, sizeof(size));
     }
 
-    uint32_t u32rand() noexcept
+    uint32_t u32rand()
     {
         return get_random_engine()();
     }
 
-    float f32rand() noexcept
+    float f32rand()
     {
         std::uniform_real_distribution<float> distribution(0.f, 1.f);
         return distribution(get_random_engine());
     }
 
-    uint32_t u32rand_between(uint32_t low, uint32_t high) noexcept
+    uint32_t u32rand_between(uint32_t low, uint32_t high)
     {
         std::uniform_int_distribution<uint32_t> distribution(low, high);
         return distribution(get_random_engine());
     }
 
-    int32_t s32rand_between(int32_t low, int32_t high) noexcept
+    int32_t s32rand_between(int32_t low, int32_t high)
     {
         std::uniform_int_distribution<int32_t> distribution(low, high);
         return distribution(get_random_engine());
     }
 
-    int64_t now_ms() noexcept
+    int64_t now_ms()
     {
 #ifdef _WIN32
         static thread_local FILETIME ft;
@@ -79,7 +79,7 @@ namespace knet
 #endif // _WIN32
     }
 
-    void sleep_ms(int64_t ms) noexcept
+    void sleep_ms(int64_t ms)
     {
 #ifdef _WIN32
         Sleep(static_cast<DWORD>(ms));

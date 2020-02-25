@@ -21,7 +21,7 @@ namespace
         }
     }
 
-    rawsocket_t create_rawsocket(int domain, int type, bool nonblock) noexcept
+    rawsocket_t create_rawsocket(int domain, int type, bool nonblock)
     {
 #ifdef _WIN32
         auto flag = WSA_FLAG_NO_HANDLE_INHERIT;
@@ -53,7 +53,7 @@ namespace
 #endif
 
 #ifdef KNET_REUSE_ADDR
-    bool set_rawsocket_reuse_addr(rawsocket_t rs) noexcept
+    bool set_rawsocket_reuse_addr(rawsocket_t rs)
     {
         int reuse = 1;
         auto optval = reinterpret_cast<const char*>(&reuse);
@@ -99,14 +99,14 @@ namespace knet
 #endif
 
 
-    acceptor::acceptor(workable* wkr, connection_factory* cf) noexcept
+    acceptor::acceptor(workable* wkr, connection_factory* cf)
         : _wkr(wkr), _cf(cf), _poller(this)
     {
         kassert(nullptr != _wkr);
         kassert(nullptr != _cf);
     }
 
-    acceptor::~acceptor() noexcept
+    acceptor::~acceptor()
     {
         kassert(INVALID_RAWSOCKET == _rs);
 #ifdef KNET_USE_IOCP
@@ -115,7 +115,7 @@ namespace knet
 #endif
     }
 
-    bool acceptor::start(const address& addr) noexcept
+    bool acceptor::start(const address& addr)
     {
         if (INVALID_RAWSOCKET != _rs)
             return false;
@@ -160,7 +160,7 @@ namespace knet
         return true;
     }
 
-    void acceptor::stop() noexcept
+    void acceptor::stop()
     {
 #ifdef KNET_USE_IOCP
         if (nullptr != _ios)
@@ -206,7 +206,7 @@ namespace knet
     }
 
 #ifdef KNET_USE_IOCP
-    void acceptor::post_accept() noexcept
+    void acceptor::post_accept()
     {
         for (; nullptr != _free_ios; _free_ios = _free_ios->next)
         {

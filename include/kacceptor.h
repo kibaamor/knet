@@ -13,13 +13,13 @@ namespace knet
         , noncopyable
     {
     public:
-        acceptor(workable* wkr, connection_factory* cf) noexcept;
-        ~acceptor() noexcept override;
+        acceptor(workable* wkr, connection_factory* cf);
+        ~acceptor() override;
 
-        bool start(const address& addr) noexcept;
-        void stop() noexcept;
+        bool start(const address& addr);
+        void stop();
 
-        void update() noexcept { _poller.poll(); }
+        void update() { _poller.poll(); }
 
         void on_poll(void* key, const rawpollevent_t& evt) override;
 #ifdef KNET_USE_IOCP
@@ -35,7 +35,7 @@ namespace knet
         rawsocket_t _rs = INVALID_RAWSOCKET;
 
 #ifdef KNET_USE_IOCP
-        void post_accept() noexcept;
+        void post_accept();
         struct accept_io;
         accept_io* _ios = nullptr;
         accept_io* _free_ios = nullptr;

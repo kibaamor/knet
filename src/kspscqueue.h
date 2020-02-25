@@ -15,18 +15,18 @@ namespace knet
         spsc_queue &operator=(spsc_queue&&) = delete;
         ~spsc_queue() = default;
 
-        bool is_lock_free() const noexcept
+        bool is_lock_free() const
         {
             return _rpos.is_lock_free() && _wpos.is_lock_free();
         }
 
-        bool is_empty() const noexcept
+        bool is_empty() const
         {
             return _rpos.load(std::memory_order_acquire) == 
                 _wpos.load(std::memory_order_acquire);
         }
 
-        bool is_full() const noexcept
+        bool is_full() const
         {
             return _rpos.load(std::memory_order_acquire) == 
                 (_wpos.load(std::memory_order_acquire) + 1) % N;

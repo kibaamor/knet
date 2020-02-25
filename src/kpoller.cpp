@@ -3,7 +3,7 @@
 
 namespace knet
 {
-    poller::poller(listener* l) noexcept
+    poller::poller(listener* l)
         : _l(l)
     {
         kassert(nullptr != _l);
@@ -15,7 +15,7 @@ namespace knet
         kassert(INVALID_RAWPOLLER != _rp);
     }
 
-    poller::~poller() noexcept
+    poller::~poller()
     {
 #ifdef KNET_USE_IOCP
         CloseHandle(_rp);
@@ -24,7 +24,7 @@ namespace knet
 #endif
     }
 
-    bool poller::add(rawsocket_t rs, void* key) noexcept
+    bool poller::add(rawsocket_t rs, void* key)
     {
 #ifdef KNET_USE_IOCP
         auto h = reinterpret_cast<HANDLE>(rs);
@@ -38,7 +38,7 @@ namespace knet
 #endif
     }
 
-    bool poller::poll() noexcept
+    bool poller::poll()
     {
 #ifdef KNET_USE_IOCP
         ULONG num = 0;

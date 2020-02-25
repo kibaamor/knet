@@ -44,28 +44,28 @@ public:
 
     void on_reconn_failed(const knet::address& addr) override;
 
-    int64_t get_conn_num() const noexcept
+    int64_t get_conn_num() const
     {
         return _conn_num.load(std::memory_order_acquire);
     }
 
-    int64_t get_total_send() const noexcept
+    int64_t get_total_send() const
     {
         return _total_send.load(std::memory_order_acquire);
     }
 
-    void add_send(int64_t num) noexcept
+    void add_send(int64_t num)
     {
         _total_send.fetch_add(num, std::memory_order_release);
     }
 
-    void clear_total_send() noexcept
+    void clear_total_send()
     {
         _total_send.store(0, std::memory_order_release);
     }
 
-    void set_disconnect_all() noexcept { _disconnect_all = true; }
-    bool get_disconnect_all() const noexcept { return _disconnect_all; }
+    void set_disconnect_all() { _disconnect_all = true; }
+    bool get_disconnect_all() const { return _disconnect_all; }
 
 private:
     std::atomic<int64_t> _conn_num = { 0 };

@@ -1,6 +1,6 @@
-#include "../include/ksocket.h"
+#include "ksocket.h"
 #include "../include/kworkable.h"
-#include <cassert>
+#include "../include/kpoller.h"
 #include <cstring>
 
 
@@ -23,12 +23,12 @@ namespace
     }
     inline void mark_flag(uint8_t& flag, uint8_t test) noexcept
     {
-        assert(!is_flag_marked(flag, test));
+        kassert(!is_flag_marked(flag, test));
         flag |= test;
     }
     inline void unmark_flag(uint8_t& flag, uint8_t test) noexcept
     {
-        assert(is_flag_marked(flag, test));
+        kassert(is_flag_marked(flag, test));
         flag &= ~test;
     }
 }
@@ -53,21 +53,18 @@ namespace knet
 
 namespace knet
 {
-    socket::socket(worker* wkr, rawsocket_t rawsock) noexcept
-        : _worker(wkr)
+    socket::socket(worker* worker, rawsocket_t rawsock) noexcept
+        : _worker(worker)
         , _rawsocket(rawsock)
-        , _socketid(wkr->get_next_socketid())
-        , _listener(wkr->get_socket_listener())
     {
-        assert(INVALID_RAWSOCKET != _rawsocket);
-        assert(nullptr != _listener);
+        kassert(nullptr != worker);
+        kassert(INVALID_RAWSOCKET != _rawsocket);
     }
 
     socket::~socket()
     {
-        assert((FlagClose == _flag || 0 == _flag));
-        assert(INVALID_RAWSOCKET == _rawsocket);
-        _worker->on_socket_destroy(*this);
+        kassert((FlagClose == _flag || 0 == _flag));
+
         if (nullptr != _rbuf)
         {
             delete _rbuf;
@@ -78,27 +75,39 @@ namespace knet
             delete _wbuf;
             _wbuf = nullptr;
         }
+        _worker->get_connection_factory()->destroy_connection(_conn);
+        if (INVALID_RAWSOCKET != _rawsocket)
+        {
+            ::closesocket(_rawsocket);
+            _rawsocket = INVALID_RAWSOCKET;
+        }
     }
 
-    int64_t socket::set_abs_timer(int64_t absms, const userdata& ud)
+    bool socket::attach_poller(poller& poller)
     {
-        return _worker->set_timer(*this, absms, ud);
-    }
+        if (!poller.add(_rawsocket, this))
+            return false;
 
-    void socket::del_timer(int64_t absms)
-    {
-        _worker->del_timer(*this, absms);
+        kassert(INVALID_RAWSOCKET != _socketid);
+        kassert(nullptr == _conn);
+        kassert(nullptr == _rbuf);
+        kassert(nullptr == _wbuf);
+
+        _socketid = _worker->get_next_socketid();
+        _conn = _worker->get_connection_factory()->create_connection();
+        _rbuf = new sockbuf();
+        _wbuf = new sockbuf();
+
+        _conn->_socket = this;
+        _conn->on_attach_socket(_rawsocket);
+
+        return start();
     }
 
     bool socket::start() noexcept
     {
-        if (nullptr == _rbuf)
-            _rbuf = new sockbuf();
-        if (nullptr == _wbuf)
-            _wbuf = new sockbuf();
-
         mark_flag(_flag, FlagCall);
-        _listener->on_conn(*this); // user may write and close
+        _conn->on_connected();
         unmark_flag(_flag, FlagCall);
 
         if (is_flag_marked(_flag, FlagClose)
@@ -115,8 +124,7 @@ namespace knet
                 return true;
             }
 #endif
-            _listener->on_close(*this);
-            detail::close_rawsocket(_rawsocket);
+            _conn->on_disconnect();
             return false;
         }
         return true;
@@ -141,7 +149,7 @@ namespace knet
         }
 
         mark_flag(_flag, FlagCall);
-        _listener->on_close(*this);
+        _conn->on_disconnect();
         unmark_flag(_flag, FlagCall);
 
 #ifndef KNET_GRACEFUL_CLOSE_SOCKET
@@ -154,11 +162,15 @@ namespace knet
 #define SHUT_RD SD_RECEIVE
 #endif
         shutdown(_rawsocket, SHUT_RD);
-        detail::close_rawsocket(_rawsocket);
+        if (INVALID_RAWSOCKET != _rawsocket)
+        {
+            ::closesocket(_rawsocket);
+            _rawsocket = INVALID_RAWSOCKET;
+        }
         delete this;
     }
 
-    bool socket::write(const writebuf* buf, size_t num) noexcept
+    bool socket::write(buffer* buf, size_t num) noexcept
     {
         if (is_flag_marked(_flag, FlagClose))
             return false;
@@ -265,20 +277,6 @@ namespace knet
 #endif // KNET_USE_IOCP
     }
 
-    bool socket::get_sockaddr(address &addr) const noexcept
-    {
-        auto& sa = addr.get_sockaddr();
-        socklen_t len = sizeof(sa);
-        return (0 == getsockname(_rawsocket, reinterpret_cast<sockaddr*>(&sa), &len));
-    }
-
-    bool socket::get_peeraddr(address &addr) const noexcept
-    {
-        auto& sa = addr.get_sockaddr();
-        socklen_t len = sizeof(sa);
-        return (0 == getpeername(_rawsocket, reinterpret_cast<sockaddr*>(&sa), &len));
-    }
-
 #ifdef KNET_USE_IOCP
     bool socket::try_read() noexcept
     {
@@ -300,7 +298,7 @@ namespace knet
 
     void socket::handle_write(size_t wrote) noexcept
     {
-        assert(_wbuf->datasize >= wrote);
+        kassert(_wbuf->datasize >= wrote);
         _wbuf->datasize -= wrote;
         if (_wbuf->datasize > 0)
             memmove(_wbuf->databuf, _wbuf->databuf + wrote, _wbuf->datasize);
@@ -317,7 +315,7 @@ namespace knet
         size_t ret = 0;
         do 
         {
-            const size_t cost = _listener->on_data(*this, 
+            const size_t cost = _conn->on_recv_data(
                 _rbuf->databuf + ret, _rbuf->datasize - ret);
             if (0 == cost)
                 break;

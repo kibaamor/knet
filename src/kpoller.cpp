@@ -1,18 +1,18 @@
 #include "../include/kpoller.h"
-#include <cassert>
+
 
 namespace knet
 {
     poller::poller(listener* listener) noexcept
         : _listener(listener)
     {
-        assert(nullptr != _listener);
+        kassert(nullptr != _listener);
 #ifdef KNET_USE_IOCP
         _poller = CreateIoCompletionPort(INVALID_HANDLE_VALUE, nullptr, 0, 1);
 #else
         _poller = epoll_create(1);
 #endif
-        assert(INVALID_POLLER != _poller);
+        kassert(INVALID_POLLER != _poller);
     }
 
     poller::~poller()

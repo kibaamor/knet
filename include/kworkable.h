@@ -1,12 +1,9 @@
 #pragma once
-#include "ksocket.h"
+#include "kconnection.h"
 #include "kpoller.h"
-#include "kspscqueue.h"
-#include <thread>
-#include <set>
-#include <map>
-#include <unordered_map>
 #include <vector>
+#include <unordered_map>
+#include <thread>
 
 
 namespace knet
@@ -16,16 +13,27 @@ namespace knet
     public:
         virtual ~workable() = default;
 
-        virtual bool addwork(rawsocket_t rawsocket) = 0;
+        virtual void add_work(rawsocket_t rawsocket) = 0;
     };
+    class poller;
 
-    class worker;
-    class socket_creator
+    class socketid_gener
     {
     public:
-        virtual ~socket_creator() = default;
+        socketid_gener(socketid_t start = 0, socketid_t step = 1) noexcept
+            : _val(start), _step(step)
+        {
+        }
 
-        virtual socket* create_socket(worker* wkr, rawsocket_t rawsock) = 0;
+        socketid_t operator()() noexcept
+        {
+            _val += _step;
+            return _val;
+        }
+
+    private:
+        socketid_t _val;
+        socketid_t _step;
     };
 
     class worker final
@@ -34,47 +42,25 @@ namespace knet
         , noncopyable
     {
     public:
-        worker(socket::listener* listener, socket_creator* creator = nullptr, 
-            socketid_t start_sid = 0, socketid_t sid_inc = 1) noexcept;
-        ~worker() override = default;
+        worker(connection_factory* conn_factory, 
+            socketid_gener sid_gener = socketid_gener()) noexcept;
+        ~worker() override;
 
-        void update(int64_t absms) noexcept;
+        void update() noexcept;
 
-        int64_t set_timer(socket& sock, int64_t absms, const userdata& ud);
-        void del_timer(socket& sock, int64_t absms);
-
-        void on_socket_destroy(socket& sock);
-
-        bool addwork(rawsocket_t rawsocket) override;
+        void add_work(rawsocket_t rawsocket) override;
         void on_poll(void* key, const pollevent_t& pollevent) override;
 
-        socketid_t get_next_socketid();
-        socket::listener* get_socket_listener() const { return _listener; }
+        connection_factory* get_connection_factory() const { return _conn_factory; }
+        socketid_t get_next_socketid() { return _sid_gener(); }
 
     private:
-        socket::listener* const _listener = nullptr;
-        socket_creator* const _creator = nullptr;
-        const socketid_t _sid_inc = 1;
-        socketid_t _next_sid = 0;
+        connection_factory* const _conn_factory;
+        socketid_gener _sid_gener;
         poller _poller;
 
-        std::unordered_map<socketid_t, socket*> _socks;
+        std::vector<socket*> _adds;
 
-        struct timer_key
-        {
-            int64_t tid;
-            socketid_t sid;
-            timer_key(int64_t t = 0, socketid_t s = 0) : tid(t), sid(s) {}
-        };
-        struct timer_key_cmp
-        {
-            bool operator()(
-                const timer_key& lhs, const timer_key& rhs) const noexcept;
-        };
-        int64_t _next_tid = 0;
-        std::map<timer_key, userdata, timer_key_cmp> _timers;
-        std::map<timer_key, userdata, timer_key_cmp> _timer_to_add;
-        std::set<timer_key, timer_key_cmp> _timer_to_del;
     };
 
     class async_worker final
@@ -82,27 +68,28 @@ namespace knet
         , noncopyable
     {
     public:
-        explicit async_worker(socket::listener* listener, 
-            socket_creator* creator = nullptr) noexcept;
+        explicit async_worker(connection_factory* conn_factory) noexcept;
         ~async_worker() override;
+
+        void add_work(rawsocket_t rawsocket) override;
 
         bool start(size_t thread_num);
         void stop() noexcept;
 
-        bool addwork(rawsocket_t rawsocket) override;
+    private:
+        struct info
+        {
+            bool r = true;
+            void* q = nullptr;
+            worker* w = nullptr;
+            std::thread* t = nullptr;
+        };
+        static void worker_thread(info* i);
 
     private:
-        socket::listener *const _listener = nullptr;
-        socket_creator* const _creator = nullptr;
-        bool _running = false;
+        connection_factory* const _conn_factory;
 
-        struct threadinfo
-        {
-            std::thread* thd = nullptr;
-            worker* wkr = nullptr;
-            spsc_queue<rawsocket_t, 1024>* wq = nullptr;
-        };
-        std::vector<threadinfo> _threadinfos;
-        size_t _next_thread_index = 0;
+        std::vector<info> _infos;
+        size_t _index = 0;
     };
 }

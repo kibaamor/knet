@@ -1,172 +1,89 @@
 #include "../include/kworkable.h"
-#include <cassert>
+#include "../include/kpoller.h"
+#include "ksocket.h"
+#include "kspscqueue.h"
 
-
-namespace
-{
-    using namespace knet;
-    void async_worker_thread(worker* wkr, spsc_queue<rawsocket_t, 1024>* wq, bool& running)
-    {
-        constexpr int64_t max_interval = 50;
-        constexpr int64_t min_interval = 3;
-
-        rawsocket_t rs;
-        while (running)
-        {
-            const auto beg = now_ms();
-            wkr->update(beg);
-
-            while (wq->pop(rs))
-                wkr->addwork(rs);
-
-            const auto end = now_ms();
-            const auto cost = end > beg ? end - beg : 0;
-            sleep_ms(max_interval > cost + min_interval ? max_interval - cost : min_interval);
-        }
-
-        while (wq->pop(rs))
-            ::closesocket(rs);
-    }
-
-    static constexpr int64_t TIMERID_BIT_COUNT = 16;
-    static constexpr int64_t TIMERID_BIT_MASK = 0xffff;
-}
 
 namespace knet
 {
-    bool worker::timer_key_cmp::operator()(
-        const timer_key& lhs, const timer_key& rhs) const noexcept
-    {
-        const int64_t a = (lhs.tid >> TIMERID_BIT_COUNT);
-        const int64_t b = (rhs.tid >> TIMERID_BIT_COUNT);
-        return (a < b) || (a == b && lhs.sid < rhs.sid);
-    }
+    using queue_t = spsc_queue<rawsocket_t, 1024>;
 
-    worker::worker(socket::listener* listener, socket_creator* creator,
-        socketid_t start_sid, socketid_t sid_inc) noexcept
-        : _listener(listener), _creator(creator)
-        , _sid_inc(sid_inc), _next_sid(start_sid)
+    worker::worker(connection_factory* conn_factory, socketid_gener sid_gener) noexcept
+        : _conn_factory(conn_factory)
+        , _sid_gener(sid_gener)
         , _poller(this)
     {
-        assert(nullptr != listener);
+        kassert(nullptr != _conn_factory);
     }
 
-    void worker::update(int64_t absms) noexcept
+    worker::~worker()
+    {
+        for (auto sock : _adds)
+            delete sock;
+        std::vector<socket*>().swap(_adds);
+    }
+
+    void worker::update() noexcept
     {
         _poller.poll();
 
-        if (!_timers.empty())
+        for (auto sock : _adds)
         {
-            const int64_t base_tid = (absms << TIMERID_BIT_COUNT) | TIMERID_BIT_MASK;
-            for (auto iter = _timers.begin(); iter != _timers.end();)
-            {
-                const auto& tk = iter->first;
-                if (tk.tid > base_tid)
-                    break;
-
-                auto it = _socks.find(tk.sid);
-                if (it != _socks.end())
-                    _listener->on_timer(*it->second, iter->second, (tk.tid >> TIMERID_BIT_COUNT));
-                iter = _timers.erase(iter);
-            }
+            if (!sock->attach_poller(_poller))
+                delete sock;
         }
-
-        if (!_timer_to_del.empty())
-        {
-            for (const auto& tk : _timer_to_del)
-                _timers.erase(tk);
-            _timer_to_del.clear();
-        }
-        if (!_timer_to_add.empty())
-        {
-            for (const auto& pr : _timer_to_add)
-                _timers.emplace(pr);
-            _timer_to_add.clear();
-        }
+        _adds.clear();
     }
 
-    int64_t worker::set_timer(socket& sock, int64_t absms, const userdata& ud)
+    void worker::add_work(rawsocket_t rawsocket)
     {
-        const int64_t tid = (absms << TIMERID_BIT_COUNT) | ((_next_tid++) & TIMERID_BIT_MASK);
-        _timer_to_add.emplace(timer_key(tid, sock.get_socketid()), ud);
-        return tid;
-    }
-
-    void worker::del_timer(socket& sock, int64_t absms)
-    {
-        const int64_t tid = (absms << TIMERID_BIT_COUNT);
-        _timer_to_del.emplace(tid, sock.get_socketid());
-    }
-
-    void worker::on_socket_destroy(socket& sock)
-    {
-        _socks.erase(sock.get_socketid());
-    }
-
-    socketid_t worker::get_next_socketid()
-    {
-        _next_sid += _sid_inc;
-        return _next_sid;
-    }
-
-    bool worker::addwork(rawsocket_t rawsocket)
-    {
-        socket* sock = nullptr;
-        if (nullptr != _creator)
-            sock = _creator->create_socket(this, rawsocket);
-        else
-            sock = new socket(this, rawsocket);
-        if (nullptr == sock)
-        {
-            closesocket(rawsocket);
-            return false;
-        }
-
-        if (!_poller.add(rawsocket, sock) || !sock->start())
-        {
-            delete sock;
-            return false;
-        }
-        _socks.emplace(sock->get_socketid(), sock);
-        return true;
+        auto sock = new socket(this, rawsocket);
+        _adds.push_back(sock);
     }
 
     void worker::on_poll(void* key, const pollevent_t& pollevent)
     {
         auto sock = static_cast<socket*>(key);
-        assert(nullptr != sock);
+        kassert(nullptr != sock);
         sock->on_pollevent(pollevent);
     }
 
-    async_worker::async_worker(socket::listener* listener,
-        socket_creator* creator) noexcept
-        : _listener(listener), _creator(creator)
+    async_worker::async_worker(connection_factory* conn_factory) noexcept
+        : _conn_factory(conn_factory)
     {
-        assert(nullptr != listener);
+        kassert(nullptr != _conn_factory);
     }
 
     async_worker::~async_worker()
     {
-        assert(_threadinfos.empty());
+        stop();
+        kassert(_infos.empty());
     }
 
+    void async_worker::add_work(rawsocket_t rawsocket)
+    {
+        for (size_t i = 0, N = _infos.size(); i < N; ++i)
+        {
+            auto& info = _infos[_index];
+            _index = (_index + 1) % N;
+
+            if (static_cast<queue_t*>(info.q)->push(rawsocket))
+                return;
+        }
+        ::closesocket(rawsocket);
+    }
     bool async_worker::start(size_t thread_num)
     {
-        if (thread_num <= 0 || !_threadinfos.empty())
+        if (thread_num <= 0 || !_infos.empty())
             return false;
 
-        _running = true;
-        _threadinfos.reserve(thread_num);
+        _infos.resize(thread_num);
         for (size_t i = 0; i < thread_num; ++i)
         {
-            _threadinfos.emplace_back();
-            auto& ti = _threadinfos.back();
-            ti.wq = new spsc_queue<rawsocket_t, 1024>();
-            ti.wkr = new worker(_listener, _creator,
-                static_cast<socketid_t>(i),
-                static_cast<socketid_t>(thread_num));
-            ti.thd = new std::thread(&async_worker_thread, 
-                ti.wkr, ti.wq, std::ref(_running));
+            auto& info = _infos[i];
+            info.q = new queue_t();
+            info.w = new worker(_conn_factory, socketid_gener(i, thread_num));
+            info.t = new std::thread(&worker_thread, &info);
         }
 
         return true;
@@ -174,37 +91,45 @@ namespace knet
 
     void async_worker::stop() noexcept
     {
-        if (_threadinfos.empty())
+        if (_infos.empty())
             return;
 
-        _running = false;
-        for (auto& ti : _threadinfos)
+        for (auto& info : _infos)
+            info.r = false;
+
+        for (auto& info : _infos)
         {
-            ti.thd->join();
-            assert(ti.wq->is_empty());
-            delete ti.thd;
-            delete ti.wkr;
-            delete ti.wq;
+            info.t->join();
+            kassert(static_cast<queue_t*>(info.q)->is_empty());
+            delete info.t;
+            delete info.w;
+            delete static_cast<queue_t*>(info.q);
         }
-        _threadinfos.clear();
+        std::vector<info>().swap(_infos);
     }
 
-    bool async_worker::addwork(rawsocket_t rawsocket)
+    void async_worker::worker_thread(info* i)
     {
-        if (_threadinfos.empty())
+        constexpr int64_t min_interval_ms = 50;
+        auto queue = static_cast<queue_t*>(i->q);
+        auto worker = i->w;
+
+        rawsocket_t rs;
+        while (i->r)
         {
-            ::closesocket(rawsocket);
-            return false;
+            const auto beg_ms = now_ms();
+            worker->update();
+
+            while (queue->pop(rs))
+                worker->add_work(rs);
+
+            const auto end_ms = now_ms();
+            const auto cost_ms = end_ms > beg_ms ? end_ms - beg_ms : 0;
+            sleep_ms(cost_ms < min_interval_ms ? min_interval_ms - cost_ms : 1);
         }
 
-        auto& ti = _threadinfos[_next_thread_index];
-        if (!ti.wq->push(rawsocket))
-        {
-            ::closesocket(rawsocket);
-            return false;
-        }
-        _next_thread_index = (_next_thread_index + 1) % _threadinfos.size();
-        return true;
+        while (queue->pop(rs))
+            ::closesocket(rs);
     }
 }
 

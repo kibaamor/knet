@@ -1,28 +1,8 @@
-#include "socket_listener.h"
+#include "echo_conn.h"
 #include <klistener.h>
 #include <kworkable.h>
 #include <iostream>
 
-
-bool g_loop = true;
-
-void check_input(bool& flag)
-{
-    auto thd = std::thread([](bool& b) {
-        std::string s;
-        while (true)
-        {
-            std::cin >> s;
-            if (s == "exit")
-            {
-                b = false;
-                break;
-            }
-        }
-    }, std::ref(flag));
-    thd.detach();
-    std::cout << R"(enter "exit" to exit program)" << std::endl;
-}
 
 int main(int argc, char** argv)
 {
@@ -44,8 +24,8 @@ int main(int argc, char** argv)
         return -1;
     }
 
-    auto lsner = std::make_shared<server::socket_listener>(false);
-    auto wkr = std::make_shared<worker>(lsner.get());
+    auto conn_mgr = std::make_shared <echo_conn_mgr>();
+    auto wkr = std::make_shared<worker>(conn_mgr.get());
 
     auto srv_listener = std::make_shared<listener>(addr, wkr.get());
     if (!srv_listener->start())
@@ -54,11 +34,11 @@ int main(int argc, char** argv)
         return -1;
     }
 
+    check_input(conn_mgr.get());
+
     constexpr int64_t max_interval_ms = 50;
     auto last_ms = now_ms();
     int64_t total_delta_ms = 0;
-
-    check_input(g_loop);
     while (true)
     {
         const auto beg_ms = now_ms();
@@ -66,14 +46,14 @@ int main(int argc, char** argv)
         last_ms = beg_ms;
 
         srv_listener->update();
-        wkr->update(beg_ms);
+        wkr->update();
 
-        const auto conn_num = lsner->get_conn_num();
-        if (!g_loop)
+        const auto conn_num = conn_mgr->get_conn_num();
+        const auto loop = !conn_mgr->get_disconnect_all();
+        if (!loop)
         {
             if (0 == conn_num)
                 break;
-            lsner->disconnect_all();
         }
 
         total_delta_ms += delta_ms;
@@ -82,12 +62,12 @@ int main(int argc, char** argv)
             const auto total_delta_s = total_delta_ms / 1000;
             total_delta_ms %= 1000;
 
-            const auto total_wrote_mb = lsner->get_total_wrote() / 1024 / 1024;
-            lsner->clear_total_wrote();
+            const auto total_send_mb = conn_mgr->get_total_send() / 1024 / 1024;
+            conn_mgr->clear_total_send();
 
             const auto speed = (1 == total_delta_s
-                ? total_wrote_mb
-                : total_wrote_mb * 1.0 / total_delta_s);
+                ? total_send_mb
+                : total_send_mb * 1.0 / total_delta_s);
             std::cout << "connection num: " << conn_num
                 << ", s2c send speed: " << speed << " MB/Second" << std::endl;
         }

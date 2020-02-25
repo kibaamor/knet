@@ -58,6 +58,16 @@ namespace knet
 #include <cstdint>
 #include <string>
 
+#ifdef _DEBUG
+# ifdef _MSC_VER
+#  define kassert(cond) do { if (!(cond)) __asm { int 3 }; } while (false)
+# else
+#  include <cassert>
+#  define kassert assert
+# endif
+#else
+# define kassert(cond)
+#endif
 
 namespace knet
 {
@@ -101,18 +111,6 @@ namespace knet
         char buf[N] = {};
         const auto len = strftime(buf, sizeof(buf), fmt, &t);
         return len > 0 ? std::string(buf, buf + len) : std::string();
-    }
-
-    namespace detail
-    {
-        inline void close_rawsocket(rawsocket_t& rawsocket)
-        {
-            if (INVALID_RAWSOCKET != rawsocket)
-            {
-                ::closesocket(rawsocket);
-                rawsocket = INVALID_RAWSOCKET;
-            }
-        }
     }
 }
 

@@ -30,7 +30,11 @@ namespace knet
 
     connector::~connector()
     {
-        detail::close_rawsocket(_rawsocket);
+        if (INVALID_RAWSOCKET != _rawsocket)
+        {
+            ::closesocket(_rawsocket);
+            _rawsocket = INVALID_RAWSOCKET;
+        }
     }
 
     bool connector::update(size_t ms) noexcept
@@ -55,12 +59,10 @@ namespace knet
                 reinterpret_cast<const sockaddr*>(&_addr.get_sockaddr()),
                 sizeof(decltype(_addr.get_sockaddr()))))
             {
-                _succ = _workable->addwork(_rawsocket);
-                if (_succ)
-                {
-                    _rawsocket = INVALID_RAWSOCKET;
-                    return false;
-                }
+                _workable->add_work(_rawsocket);
+                _succ = true;
+                _rawsocket = INVALID_RAWSOCKET;
+                return false;
             }
             else if (!_reconn && nullptr != _listener)
             {

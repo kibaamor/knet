@@ -1,10 +1,12 @@
 #pragma once
 #include "kaddress.h"
-#include "kworkable.h"
+#include "kpoller.h"
 
 
 namespace knet
 {
+    class workable;
+
     class listener
         : public poller::listener
         , noncopyable
@@ -32,8 +34,8 @@ namespace knet
 #ifdef KNET_USE_IOCP
         void post_accept() noexcept;
         struct accept_io;
-        accept_io* _pending_accepts = nullptr;
-        accept_io* _free_pending_accepts = nullptr;
+        accept_io* _ios = nullptr;
+        accept_io* _free_ios = nullptr;
 #endif
     };
 }

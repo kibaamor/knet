@@ -98,6 +98,7 @@ enable_testing()
 
 file(GLOB SRC_LIST
     "${CMAKE_SOURCE_DIR}/include/*.h"
+    "${CMAKE_SOURCE_DIR}/src/*.h"
     "${CMAKE_SOURCE_DIR}/src/*.cpp"
 )
 

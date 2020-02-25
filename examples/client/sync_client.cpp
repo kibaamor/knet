@@ -1,26 +1,6 @@
-#include "socket_listener.h"
+#include "echo_conn.h"
 #include <iostream>
 
-
-auto g_loop = true;
-
-void check_input(bool& flag)
-{
-    auto thd = std::thread([](bool& b) {
-        std::string s;
-        while (true)
-        {
-            std::cin >> s;
-            if (s == "exit")
-            {
-                b = false;
-                break;
-            }
-        }
-    }, std::ref(flag));
-    thd.detach();
-    std::cout << R"(enter "exit" to exit program)" << std::endl;
-}
 
 int main(int argc, char** argv)
 {
@@ -48,16 +28,20 @@ int main(int argc, char** argv)
         return -1;
     }
 
-    auto lsner = std::make_shared<client::socket_listener>(false, max_send_delay);
-    auto wkr = std::make_shared<worker>(lsner.get());
+    auto conn_mgr = std::make_shared <echo_conn_mgr>();
+    auto wkr = std::make_shared<worker>(conn_mgr.get());
 
-    auto cnctor = std::make_shared<connector>(addr, wkr.get(), true, 1000, lsner.get());
+    auto create_connector = [&addr, &wkr, &conn_mgr]() {
+        return std::make_shared<connector>(addr, wkr.get(), true, 1000, conn_mgr.get());
+    };
 
-    constexpr int64_t max_interval_ms = 50;
+    auto cnctor = create_connector();
+
+    constexpr int64_t min_interval_ms = 50;
     auto last_ms = now_ms();
     int64_t total_delta_ms = 0;
 
-    check_input(g_loop);
+    check_input(conn_mgr.get());
     while (true)
     {
         const auto beg_ms = now_ms();
@@ -67,19 +51,19 @@ int main(int argc, char** argv)
         if (nullptr != cnctor && !cnctor->update(static_cast<size_t>(delta_ms)))
             cnctor = nullptr;
 
-        wkr->update(beg_ms);
+        wkr->update();
 
-        const auto conn_num = lsner->get_conn_num();
-        if (g_loop)
+        const auto conn_num = conn_mgr->get_conn_num();
+        const auto loop = !conn_mgr->get_disconnect_all();
+        if (loop)
         {
             if (conn_num < client_num)
-                cnctor = std::make_shared<connector>(addr, wkr.get(), true, 1000, lsner.get());
+                cnctor = create_connector();
         }
         else
         {
             if (0 == conn_num)
                 break;
-            lsner->disconnect_all();
         }
 
         total_delta_ms += delta_ms;
@@ -88,19 +72,19 @@ int main(int argc, char** argv)
             const auto total_delta_s = total_delta_ms / 1000;
             total_delta_ms %= 1000;
 
-            const auto total_wrote_mb = lsner->get_total_wrote() / 1024 / 1024;
-            lsner->clear_total_wrote();
+            const auto total_send_mb = conn_mgr->get_total_send() / 1024 / 1024;
+            conn_mgr->clear_total_send();
 
             const auto speed = (1 == total_delta_s
-                ? total_wrote_mb
-                : total_wrote_mb * 1.0 / total_delta_s);
+                ? total_send_mb
+                : total_send_mb * 1.0 / total_delta_s);
             std::cout << "connection num: " << conn_num
                 << ", c2s send speed: " << speed << " MB/Second" << std::endl;
         }
 
         const auto end_ms = now_ms();
         const auto cost_ms = end_ms > beg_ms ? end_ms - beg_ms : 0;
-        sleep_ms(cost_ms < max_interval_ms ? max_interval_ms - cost_ms : 1);
+        sleep_ms(cost_ms < min_interval_ms ? min_interval_ms - cost_ms : 1);
     }
 
     return 0;

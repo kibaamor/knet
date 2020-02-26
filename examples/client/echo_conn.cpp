@@ -106,16 +106,6 @@ void echo_conn_mgr::destroy_connection(knet::connection* conn)
     _conn_num.fetch_sub(1, std::memory_order_release);
 }
 
-void echo_conn_mgr::on_reconn(const knet::address& addr)
-{
-    std::cout << "on_reconn to " << addr << std::endl;
-}
-
-void echo_conn_mgr::on_reconn_failed(const knet::address& addr)
-{
-    std::cout << "on_reconn_failed to " << addr << std::endl;
-}
-
 void check_input(echo_conn_mgr* mgr)
 {
     auto thd = std::thread([](echo_conn_mgr* mgr) {

@@ -14,7 +14,7 @@ namespace knet
         socket(connection_factory* cf, rawsocket_t rs);
         ~socket();
 
-        bool attach_poller(poller& poller);
+        bool attach_poller(poller* poller);
 
         void close();
 

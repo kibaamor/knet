@@ -82,9 +82,9 @@ namespace knet
         }
     }
 
-    bool socket::attach_poller(poller& poller)
+    bool socket::attach_poller(poller* poller)
     {
-        if (!poller.add(_rs, this))
+        if (!poller->add(_rs, this))
             return false;
 
         kassert(INVALID_RAWSOCKET != _rs);

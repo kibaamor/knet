@@ -38,8 +38,7 @@ int main(int argc, char** argv)
 
     auto mgr = std::make_shared <echo_conn_mgr>();
     auto create_connector = [&addr, &wkr, &mgr]() {
-        return std::make_shared<connector>(
-            addr, wkr.get(), mgr.get(), true, 1000, mgr.get());
+        return std::make_shared<connector>(addr, wkr.get(), mgr.get());
     };
 
     auto cnctor = create_connector();

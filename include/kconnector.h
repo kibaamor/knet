@@ -10,22 +10,16 @@ namespace knet
     class connector final : noncopyable
     {
     public:
-        class listener
-        {
-        public:
-            virtual ~listener() = default;
-
-            virtual void on_reconn(const address& addr) = 0;
-            virtual void on_reconn_failed(const address& addr) = 0;
-        };
-
-    public:
-        connector(const address& addr, workable* wkr, connection_factory* cf);
         connector(const address& addr, workable* wkr, connection_factory* cf, 
-            bool reconn, size_t interval_ms, listener* listener);
+            bool reconn = true, size_t interval_ms = 1000);
         ~connector();
 
         bool update(size_t ms);
+
+        virtual void on_reconn() {}
+        virtual void on_reconn_failed() {}
+
+        const address& get_address() const { return _addr; }
 
     private:
         const address _addr;
@@ -34,7 +28,6 @@ namespace knet
 
         const bool _reconn = false;
         const size_t _interval_ms = 0;
-        listener* const _listener = nullptr;
 
         rawsocket_t _rs = INVALID_RAWSOCKET;
         size_t _last_interval_ms = 0;

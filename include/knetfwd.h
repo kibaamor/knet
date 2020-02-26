@@ -75,7 +75,7 @@ namespace knet
     class noncopyable
     {
     protected:
-        constexpr noncopyable() = default;
+        noncopyable() = default;
         ~noncopyable() = default;
 
         noncopyable(const noncopyable&) = delete;

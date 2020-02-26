@@ -27,10 +27,10 @@ int main(int argc, char** argv)
     auto wkr = std::make_shared<worker>();
 
     auto mgr = std::make_shared <echo_conn_mgr>();
-    auto srv_listener = std::make_shared<acceptor>(wkr.get(), mgr.get());
-    if (!srv_listener->start(addr))
+    auto acc = std::make_shared<acceptor>(wkr.get(), mgr.get());
+    if (!acc->start(addr))
     {
-        std::cerr << "srv_listener::start failed" << std::endl;
+        std::cerr << "acceptor::start failed" << std::endl;
         return -1;
     }
 
@@ -45,8 +45,8 @@ int main(int argc, char** argv)
         const auto delta_ms = (beg_ms > last_ms ? beg_ms - last_ms : 0);
         last_ms = beg_ms;
 
-        srv_listener->update();
-        wkr->update();
+        acc->poll();
+        wkr->poll();
 
         const auto conn_num = mgr->get_conn_num();
         const auto loop = !mgr->get_disconnect_all();
@@ -77,7 +77,7 @@ int main(int argc, char** argv)
         sleep_ms(cost_ms < max_interval_ms ? max_interval_ms - cost_ms : 1);
     }
 
-    srv_listener->stop();
+    acc->stop();
 
     return 0;
 }

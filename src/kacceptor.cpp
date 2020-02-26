@@ -100,7 +100,7 @@ namespace knet
 
 
     acceptor::acceptor(workable* wkr, connection_factory* cf)
-        : _wkr(wkr), _cf(cf), _poller(this)
+        : _wkr(wkr), _cf(cf)
     {
         kassert(nullptr != _wkr);
         kassert(nullptr != _cf);
@@ -133,6 +133,15 @@ namespace knet
         }
 #endif
 
+        auto sa = reinterpret_cast<const sockaddr*>(&addr.get_sockaddr());
+        if (RAWSOCKET_ERROR == bind(_rs, sa, sizeof(sockaddr_storage))
+            || RAWSOCKET_ERROR == listen(_rs, SOMAXCONN)
+            || !add(_rs, this))
+        {
+            close_rawsocket(_rs);
+            return false;
+        }
+
 #ifdef KNET_USE_IOCP
         kassert(nullptr == _ios);
         kassert(nullptr == _free_ios);
@@ -143,20 +152,9 @@ namespace knet
                 _ios[i].next = &_ios[i + 1];
         }
         _free_ios = _ios;
-#endif // KNET_USE_IOCP
 
-        auto sa = reinterpret_cast<const sockaddr*>(&addr.get_sockaddr());
-        if (RAWSOCKET_ERROR == bind(_rs, sa, sizeof(sockaddr_storage))
-            || RAWSOCKET_ERROR == listen(_rs, SOMAXCONN)
-            || !_poller.add(_rs, this))
-        {
-            close_rawsocket(_rs);
-            return false;
-        }
-
-#ifdef KNET_USE_IOCP
         post_accept();
-#endif
+#endif // KNET_USE_IOCP
         return true;
     }
 
@@ -174,6 +172,17 @@ namespace knet
 
         close_rawsocket(_rs);
     }
+
+#ifdef KNET_USE_IOCP
+    bool acceptor::poll()
+    {
+        if (!poller::poll())
+            return false;
+
+        post_accept();
+        return true;
+    }
+#endif
 
     void acceptor::on_poll(void* key, const rawpollevent_t& evt)
     {

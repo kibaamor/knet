@@ -22,7 +22,7 @@ namespace knet
         virtual ~connection() = default;
 
         virtual void on_connected() {}
-        virtual size_t on_recv_data(char* data, size_t size) = 0;
+        virtual size_t on_recv_data(char* data, size_t size) { return size; }
         virtual void on_disconnect() {}
 
         bool send_data(buffer* buf, size_t num);
@@ -41,7 +41,7 @@ namespace knet
     public:
         virtual ~connection_factory() = default;
 
-        virtual connection* create_connection() = 0;
+        virtual connection* create_connection() { return new connection(); }
         virtual void destroy_connection(connection* conn) { delete conn; }
     };
 }

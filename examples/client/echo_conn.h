@@ -31,18 +31,12 @@ private:
 
 //-------------------------------------------------------------------------
 
-class echo_conn_mgr
-    : public knet::connection_factory
-    , public knet::connector::listener
+class echo_conn_mgr : public knet::connection_factory
 {
 public:
     knet::connection* create_connection() override;
 
     void destroy_connection(knet::connection* conn) override;
-
-    void on_reconn(const knet::address& addr) override;
-
-    void on_reconn_failed(const knet::address& addr) override;
 
     int64_t get_conn_num() const
     {

@@ -4,27 +4,19 @@
 
 namespace knet
 {
-    class poller final : noncopyable
+    class poller : noncopyable
     {
     public:
-        class listener
-        {
-        public:
-            virtual ~listener() = default;
+        poller();
+        virtual ~poller();
 
-            virtual void on_poll(void* key, const rawpollevent_t& evt) = 0;
-            virtual void on_postpoll() {}
-        };
+        virtual bool add(rawsocket_t rs, void* key);
+        virtual bool poll();
 
-    public:
-        explicit poller(listener* l);
-        ~poller();
-
-        bool add(rawsocket_t rs, void* key);
-        bool poll();
+    protected:
+        virtual void on_poll(void* key, const rawpollevent_t& evt) = 0;
 
     private:
-        listener* const _l = nullptr;
         rawpoller_t _rp = INVALID_RAWPOLLER;
         rawpollevent_t _evts[POLL_EVENT_NUM] = {};
     };

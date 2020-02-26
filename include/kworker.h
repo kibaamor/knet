@@ -2,7 +2,6 @@
 #include "kconnection.h"
 #include "kpoller.h"
 #include <vector>
-#include <unordered_map>
 #include <thread>
 
 
@@ -18,20 +17,20 @@ namespace knet
 
     class worker final
         : public workable
-        , public poller::listener
-        , noncopyable
+        , public poller
     {
     public:
-        worker();
+        worker() = default;
         ~worker() override;
 
-        void update();
-
         void add_work(connection_factory* cf, rawsocket_t rs) override;
+
+        bool poll() override;
+
+    protected:
         void on_poll(void* key, const rawpollevent_t& evt) override;
 
     private:
-        poller _poller;
         std::vector<socket*> _adds;
     };
 
@@ -40,7 +39,7 @@ namespace knet
         , noncopyable
     {
     public:
-        async_worker() {}
+        async_worker() = default;
         ~async_worker() override;
 
         void add_work(connection_factory* cf, rawsocket_t rs) override;
@@ -53,7 +52,6 @@ namespace knet
         {
             bool r = true;
             void* q = nullptr;
-            worker* w = nullptr;
             std::thread* t = nullptr;
         };
         static void worker_thread(info* i);

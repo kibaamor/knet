@@ -2,6 +2,7 @@
 #include "../include/kpoller.h"
 #include "ksocket.h"
 #include "kspscqueue.h"
+#include <memory>
 
 
 namespace knet
@@ -18,11 +19,6 @@ namespace knet
     };
     using workqueue_t = spsc_queue<work, 1024>;
 
-    worker::worker()
-        :_poller(this)
-    {
-    }
-
     worker::~worker()
     {
         for (auto sock : _adds)
@@ -30,16 +26,21 @@ namespace knet
         std::vector<socket*>().swap(_adds);
     }
 
-    void worker::update()
+    bool worker::poll()
     {
-        _poller.poll();
+        if (!poller::poll())
+            return false;
 
-        for (auto sock : _adds)
+        if (!_adds.empty())
         {
-            if (!sock->attach_poller(_poller))
-                delete sock;
+            for (auto sock : _adds)
+            {
+                if (!sock->attach_poller(this))
+                    delete sock;
+            }
+            _adds.clear();
         }
-        _adds.clear();
+        return true;
     }
 
     void worker::add_work(connection_factory* cf, rawsocket_t rs)
@@ -74,6 +75,7 @@ namespace knet
         }
         ::closesocket(rs);
     }
+
     bool async_worker::start(size_t thread_num)
     {
         if (thread_num <= 0 || !_infos.empty())
@@ -84,7 +86,6 @@ namespace knet
         {
             auto& info = _infos[i];
             info.q = new workqueue_t();
-            info.w = new worker();
             info.t = new std::thread(&worker_thread, &info);
         }
 
@@ -101,13 +102,12 @@ namespace knet
 
         for (auto& info : _infos)
         {
-            info.t->join();
+            auto q = static_cast<workqueue_t*>(info.q);
 
-            auto wq = static_cast<workqueue_t*>(info.q);
-            kassert(wq->is_empty());
+            info.t->join();
+            kassert(q->is_empty());
             delete info.t;
-            delete info.w;
-            delete wq;
+            delete q;
         }
         std::vector<info>().swap(_infos);
     }
@@ -115,24 +115,25 @@ namespace knet
     void async_worker::worker_thread(info* i)
     {
         constexpr int64_t min_interval_ms = 50;
-        auto queue = static_cast<workqueue_t*>(i->q);
-        auto worker = i->w;
+        auto q = static_cast<workqueue_t*>(i->q);
+        std::unique_ptr<worker> wkr(new worker());
 
         work wk;
         while (i->r)
         {
             const auto beg_ms = now_ms();
-            worker->update();
 
-            while (queue->pop(wk))
-                worker->add_work(wk.cf, wk.rs);
+            while (q->pop(wk))
+                wkr->add_work(wk.cf, wk.rs);
+
+            wkr->poll();
 
             const auto end_ms = now_ms();
             const auto cost_ms = end_ms > beg_ms ? end_ms - beg_ms : 0;
             sleep_ms(cost_ms < min_interval_ms ? min_interval_ms - cost_ms : 1);
         }
 
-        while (queue->pop(wk))
+        while (q->pop(wk))
             ::closesocket(wk.rs);
     }
 }

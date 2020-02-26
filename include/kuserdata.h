@@ -38,5 +38,11 @@ namespace knet
         {
             data.i64 = static_cast<int64_t>(v);
         }
+
+        template <typename T>
+        T* as_ptr() const
+        {
+            return pointer == type ? static_cast<T*>(ptr) : nullptr;
+        }
     };
 }

@@ -33,8 +33,7 @@ int main(int argc, char** argv)
 
     auto mgr = std::make_shared <echo_conn_mgr>();
     auto create_connector = [&addr, &wkr, &mgr]() {
-        return std::make_shared<connector>(
-            addr, wkr.get(), mgr.get(), true, 1000, mgr.get());
+        return std::make_shared<connector>(addr, wkr.get(), mgr.get());
     };
 
     auto cnctor = create_connector();
@@ -53,7 +52,7 @@ int main(int argc, char** argv)
         if (nullptr != cnctor && !cnctor->update(static_cast<size_t>(delta_ms)))
             cnctor = nullptr;
 
-        wkr->update();
+        wkr->poll();
 
         const auto conn_num = mgr->get_conn_num();
         const auto loop = !mgr->get_disconnect_all();

@@ -4,14 +4,9 @@
 
 namespace knet
 {
-    connector::connector(const address& addr, workable* wkr, connection_factory* cf)
-        : connector(addr, wkr, cf, false, 0, nullptr)
-    {
-    }
-
     connector::connector(const address& addr, workable* wkr, connection_factory* cf, 
-        bool reconn, size_t interval_ms, listener* listener)
-        : _addr(addr), _wkr(wkr), _cf(cf), _reconn(reconn), _interval_ms(interval_ms), _listener(listener)
+        bool reconn, size_t interval_ms)
+        : _addr(addr), _wkr(wkr), _cf(cf), _reconn(reconn), _interval_ms(interval_ms)
     {
         kassert(nullptr != _wkr);
         kassert(nullptr != _cf);
@@ -39,8 +34,8 @@ namespace knet
             {
                 _last_interval_ms -= _interval_ms;
                 _rs = ::socket(_addr.get_family(), SOCK_STREAM, 0);
-                if (INVALID_RAWSOCKET != _rs && nullptr != _listener)
-                    _listener->on_reconn(_addr);
+                if (INVALID_RAWSOCKET != _rs)
+                    on_reconn();
             }
         }
 
@@ -59,8 +54,8 @@ namespace knet
                 ::closesocket(_rs);
                 _rs = INVALID_RAWSOCKET;
 
-                if (!_reconn && nullptr != _listener)
-                    _listener->on_reconn_failed(_addr);
+                if (!_reconn)
+                    on_reconn_failed();
             }
         }
         return true;

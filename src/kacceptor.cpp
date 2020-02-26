@@ -99,11 +99,10 @@ namespace knet
 #endif
 
 
-    acceptor::acceptor(workable* wkr, connection_factory* cf)
-        : _wkr(wkr), _cf(cf)
+    acceptor::acceptor(workable* wkr)
+        : _wkr(wkr)
     {
         kassert(nullptr != _wkr);
-        kassert(nullptr != _cf);
     }
 
     acceptor::~acceptor()
@@ -176,11 +175,9 @@ namespace knet
 #ifdef KNET_USE_IOCP
     bool acceptor::poll()
     {
-        if (!poller::poll())
-            return false;
-
+        const auto ret = poller::poll();
         post_accept();
-        return true;
+        return ret;
     }
 #endif
 
@@ -192,7 +189,7 @@ namespace knet
 
         if (INVALID_RAWSOCKET != io->rs)
         {
-            _wkr->add_work(_cf, io->rs);
+            _wkr->add_work(io->rs);
             io->rs = INVALID_RAWSOCKET;
         }
 

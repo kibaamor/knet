@@ -6,12 +6,10 @@
 namespace knet
 {
     class workable;
-    class connection_factory;
-
     class acceptor : public poller
     {
     public:
-        acceptor(workable* wkr, connection_factory* cf);
+        acceptor(workable* wkr);
         ~acceptor() override;
 
         bool start(const address& addr);
@@ -26,7 +24,6 @@ namespace knet
 
     private:
         workable* const _wkr;
-        connection_factory* _cf;
 
         sa_family_t _family;
         rawsocket_t _rs = INVALID_RAWSOCKET;

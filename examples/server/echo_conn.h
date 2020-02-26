@@ -1,67 +1,34 @@
 #pragma once
-#include <kconnection.h>
+#include <ktconnection.h>
 #include <kaddress.h>
-#include <atomic>
+#include "../echo_mgr.h"
 
 
-class echo_conn_mgr;
-
-class echo_conn : public knet::connection
+class secho_conn : public knet::tconnection
 {
 public:
+    secho_conn(knet::connid_t id, knet::tconnection_factory* cf);
+
     void on_connected() override;
     size_t on_recv_data(char* data, size_t size) override;
-    void on_disconnect() override;
-
-    void set_conn_mgr(echo_conn_mgr* mgr) { _mgr = mgr; }
+    void on_timer(int64_t absms, const knet::userdata& ud) override;
 
 protected:
     virtual void on_attach_socket(knet::rawsocket_t rs) override;
-
-private:
-    knet::address _sockaddr;
-    knet::address _peeraddr;
-    echo_conn_mgr* _mgr = nullptr;
 };
 
-//-------------------------------------------------------------------------
+class secho_conn_factory : public knet::tconnection_factory
+{
+protected:
+    knet::tconnection* create_connection_impl() override;
+    void destroy_connection_impl(knet::tconnection* tconn) override;
+};
 
-class echo_conn_mgr : public knet::connection_factory
+class secho_conn_factory_builder : public knet::connection_factory_builder
 {
 public:
-    knet::connection* create_connection() override;
-
-    void destroy_connection(knet::connection* conn) override;
-
-    int64_t get_conn_num() const
+    knet::connection_factory* build_factory() override
     {
-        return _conn_num.load(std::memory_order_acquire);
+        return new secho_conn_factory();
     }
-
-    int64_t get_total_send() const
-    {
-        return _total_send.load(std::memory_order_acquire);
-    }
-
-    void add_send(int64_t num)
-    {
-        _total_send.fetch_add(num, std::memory_order_release);
-    }
-
-    void clear_total_send()
-    {
-        _total_send.store(0, std::memory_order_release);
-    }
-
-    void set_disconnect_all() { _disconnect_all = true; }
-    bool get_disconnect_all() const { return _disconnect_all; }
-
-private:
-    std::atomic<int64_t> _conn_num = { 0 };
-    std::atomic<int64_t> _total_send = { 0 };
-    bool _disconnect_all = false;
 };
-
-//-------------------------------------------------------------------------
-
-void check_input(echo_conn_mgr* mgr);

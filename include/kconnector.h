@@ -5,26 +5,23 @@
 namespace knet
 {
     class workable;
-    class connection_factory;
-
-    class connector final : noncopyable
+    class connector : noncopyable
     {
     public:
-        connector(const address& addr, workable* wkr, connection_factory* cf, 
+        connector(const address& addr, workable* wkr,
             bool reconn = true, size_t interval_ms = 1000);
-        ~connector();
+        virtual ~connector();
 
         bool update(size_t ms);
 
-        virtual void on_reconn() {}
-        virtual void on_reconn_failed() {}
+        virtual void on_reconnect() {}
+        virtual void on_reconnect_failed() {}
 
         const address& get_address() const { return _addr; }
 
     private:
         const address _addr;
         workable* const _wkr = nullptr;
-        connection_factory* const _cf = nullptr;
 
         const bool _reconn = false;
         const size_t _interval_ms = 0;

@@ -1,4 +1,5 @@
 #include "echo_conn.h"
+#include <kconnector.h>
 #include <kworker.h>
 #include <iostream>
 
@@ -7,21 +8,23 @@ int main(int argc, char** argv)
 {
     using namespace knet;
 
+    // initialize knet
     global_init();
-    std::ios::sync_with_stdio(false);
-    std::cin.tie(nullptr);
 
+    // parse command line
     const char* ip = argc > 1 ? argv[0] : "127.0.0.1";
     const in_port_t port = in_port_t(argc > 2 ? std::atoi(argv[1]) : 8888);
     const auto client_num = argc > 3 ? std::atoi(argv[3]) : 1000;
     const auto thread_num = argc > 4 ? std::atoi(argv[4]) : 8;
 
+    // log parameter info
     std::cout << "Hi, KNet(Async Client)" << std::endl
         << "ip:" << ip << std::endl
         << "port: " << port << std::endl
         << "client_num: " << client_num << std::endl
         << "thread_num: " << thread_num << std::endl;
 
+    // parse ip address
     address addr;
     if (!addr.pton(AF_INET, ip, port))
     {
@@ -29,25 +32,26 @@ int main(int argc, char** argv)
         return -1;
     }
 
-    auto wkr = std::make_shared<async_worker>();
+    // create worker
+    auto cfb = std::make_shared<cecho_conn_factory_builder>();
+    auto wkr = std::make_shared<async_worker>(cfb.get());
     if (!wkr->start(thread_num))
     {
-        std::cerr << "async_worker::start failed" << std::endl;
+        std::cerr << "async_echo_conn_mgr::start failed" << std::endl;
         return -1;
     }
 
-    auto mgr = std::make_shared <echo_conn_mgr>();
-    auto create_connector = [&addr, &wkr, &mgr]() {
-        return std::make_shared<connector>(addr, wkr.get(), mgr.get());
+    // create connector
+    auto connector_builder = [&addr, &wkr]() {
+        return std::make_shared<cecho_connector>(addr, wkr.get(), wkr.get());
     };
+    auto cnctor = connector_builder();
 
-    auto cnctor = create_connector();
+    // check console input
+    auto& mgr = echo_mgr::get_intance();
+    mgr.check_console_input();
 
-    constexpr int64_t min_interval_ms = 50;
     auto last_ms = now_ms();
-    int64_t total_delta_ms = 0;
-    
-    check_input(mgr.get());
     while (true)
     {
         const auto beg_ms = now_ms();
@@ -57,37 +61,22 @@ int main(int argc, char** argv)
         if (nullptr != cnctor && !cnctor->update(static_cast<size_t>(delta_ms)))
             cnctor = nullptr;
 
-        const auto conn_num = mgr->get_conn_num();
-        const auto loop = !mgr->get_disconnect_all();
-        if (loop)
-        {
-            if (nullptr == cnctor && conn_num < client_num)
-                cnctor = create_connector();
-        }
-        else
+        const auto conn_num = mgr.get_conn_num();
+        if (mgr.get_disconnect_all())
         {
             if (0 == conn_num)
                 break;
         }
-
-        total_delta_ms += delta_ms;
-        if (total_delta_ms > 1000)
+        else if (nullptr == cnctor && conn_num < client_num)
         {
-            const auto total_delta_s = total_delta_ms / 1000;
-            total_delta_ms %= 1000;
-
-            const auto total_send_mb = mgr->get_total_send() / 1024 / 1024;
-            mgr->clear_total_send();
-
-            const auto speed = (1 == total_delta_s
-                ? total_send_mb
-                : total_send_mb * 1.0 / total_delta_s);
-            std::cout << "connection num: " << conn_num
-                << ", c2s send speed: " << speed << " MB/Second" << std::endl;
+            cnctor = connector_builder();
         }
+
+        mgr.update(delta_ms);
 
         const auto end_ms = now_ms();
         const auto cost_ms = end_ms > beg_ms ? end_ms - beg_ms : 0;
+        constexpr int64_t min_interval_ms = 50;
         sleep_ms(cost_ms < min_interval_ms ? min_interval_ms - cost_ms : 1);
     }
 

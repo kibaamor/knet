@@ -8,17 +8,19 @@ int main(int argc, char** argv)
 {
     using namespace knet;
 
+    // initialize knet
     global_init();
-    std::ios::sync_with_stdio(false);
-    std::cin.tie(nullptr);
 
+    // parse command line
     const in_port_t port = in_port_t(argc > 2 ? std::atoi(argv[1]) : 8888);
     const auto thread_num = argc > 3 ? std::atoi(argv[2]) : 8;
 
+    // log parameter info
     std::cout << "Hi, KNet(Async Server)" << std::endl
         << "port: " << port << std::endl
         << "thread_num: " << thread_num << std::endl;
 
+    // parse ip address
     address addr;
     if (!addr.pton(AF_INET, "0.0.0.0", port))
     {
@@ -26,15 +28,17 @@ int main(int argc, char** argv)
         return -1;
     }
 
-    auto wkr = std::make_shared<async_worker>();
+    // create worker
+    auto cfb = std::make_shared<secho_conn_factory_builder>();
+    auto wkr = std::make_shared<async_worker>(cfb.get());
     if (!wkr->start(thread_num))
     {
         std::cerr << "async_worker::start failed" << std::endl;
         return -1;
     }
 
-    auto mgr = std::make_shared <echo_conn_mgr>();
-    auto acc = std::make_shared<acceptor>(wkr.get(), mgr.get());
+    // create acceptor
+    auto acc = std::make_shared<acceptor>(wkr.get());
     if (!acc->start(addr))
     {
         std::cerr << "acceptor::start failed" << std::endl;
@@ -42,11 +46,11 @@ int main(int argc, char** argv)
         return -1;
     }
 
-    check_input(mgr.get());
+    // check console input
+    auto& mgr = echo_mgr::get_intance();
+    mgr.check_console_input();
 
-    constexpr int64_t min_interval_ms = 50;
     auto last_ms = now_ms();
-    int64_t total_delta_ms = 0;
     while (true)
     {
         const auto beg_ms = now_ms();
@@ -55,32 +59,18 @@ int main(int argc, char** argv)
 
         acc->poll();
 
-        const auto conn_num = mgr->get_conn_num();
-        const auto loop = !mgr->get_disconnect_all();
-        if (!loop)
+        const auto conn_num = mgr.get_conn_num();
+        if (mgr.get_disconnect_all())
         {
             if (0 == conn_num)
                 break;
         }
 
-        total_delta_ms += delta_ms;
-        if (total_delta_ms > 1000)
-        {
-            const auto total_delta_s = total_delta_ms / 1000;
-            total_delta_ms %= 1000;
-
-            const auto total_send_mb = mgr->get_total_send() / 1024 / 1024;
-            mgr->clear_total_send();
-
-            const auto speed = (1 == total_delta_s 
-                ? total_send_mb
-                : total_send_mb * 1.0 / total_delta_s);
-            std::cout << "connection num: " << conn_num
-                << ", s2c send speed: " << speed << " MB/Second" << std::endl;
-        }
+        mgr.update(delta_ms);
 
         const auto end_ms = now_ms();
         const auto cost_ms = end_ms > beg_ms ? end_ms - beg_ms : 0;
+        constexpr int64_t min_interval_ms = 50;
         sleep_ms(cost_ms < min_interval_ms ? min_interval_ms - cost_ms : 1);
     }
 

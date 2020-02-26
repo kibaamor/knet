@@ -44,4 +44,15 @@ namespace knet
         virtual connection* create_connection() { return new connection(); }
         virtual void destroy_connection(connection* conn) { delete conn; }
     };
+
+    class connection_factory_builder
+    {
+    public:
+        virtual ~connection_factory_builder() = default;
+
+        virtual connection_factory* build_factory()
+        {
+            return new connection_factory();
+        }
+    };
 }

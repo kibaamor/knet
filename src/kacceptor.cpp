@@ -203,7 +203,7 @@ namespace knet
         rawsocket_t s = accept4(_rs, sa, &addrLen, SOCK_NONBLOCK);
         while (INVALID_RAWSOCKET != s)
         {
-            _wkr->add_work(_cf, s);
+            _wkr->add_work(s);
 
             addrLen = sizeof(addr);
             s = accept4(_rs, sa, &addrLen, SOCK_NONBLOCK);

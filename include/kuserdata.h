@@ -42,7 +42,7 @@ namespace knet
         template <typename T>
         T* as_ptr() const
         {
-            return pointer == type ? static_cast<T*>(ptr) : nullptr;
+            return pointer == type ? static_cast<T*>(data.ptr) : nullptr;
         }
     };
 }

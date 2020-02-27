@@ -9,6 +9,7 @@ os:
 branches:
   only:
   - master
+  - coverity_scan
 
 before_script:
   - printenv

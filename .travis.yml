@@ -11,12 +11,12 @@ branches:
 
 before_script:
   - printenv
-  - cd $TRAVIS_BUILD_DIR && cmake . -B build_debug
-  - cd $TRAVIS_BUILD_DIR && cmake . -B build_release
+  - mkdir -p $TRAVIS_BUILD_DIR/build_debug && cd $TRAVIS_BUILD_DIR/build_debug && cmake ..
+  - mkdir -p $TRAVIS_BUILD_DIR/build_release && cd $TRAVIS_BUILD_DIR/build_release && cmake ..
 
 script:
-  - cd $TRAVIS_BUILD_DIR/build_debug && cmake --build . --parallel 2 --config Debug && ctest .
-  - cd $TRAVIS_BUILD_DIR/build_release && cmake --build . --parallel 2 --config Release && ctest .
+  - cd $TRAVIS_BUILD_DIR/build_debug && cmake --build . --parallel 2 --clean-first --config Debug && ctest .
+  - cd $TRAVIS_BUILD_DIR/build_release && cmake --build . --parallel 2 --clean-first --config Release && ctest .
 
 notifications:
   email: false
@@ -34,6 +34,6 @@ addons:
       name: "KibaAmor/knet"
       description: "A cross platform lock-free and timer-supported(hearbeat etc.) C++11 network library."
     notification_email: kibaamor@gmail.com
-    build_command_prepend: "cd $TRAVIS_BUILD_DIR && cmake . -B coverity_scan"
+    build_command_prepend: "mkdir -p $TRAVIS_BUILD_DIR/coverity_scan && cd $TRAVIS_BUILD_DIR/coverity_scan && cmake .."
     build_command: "cd $TRAVIS_BUILD_DIR/coverity_scan && cmake --build . --parallel 2 --config Release"
     branch_pattern: coverity_scan

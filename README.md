@@ -28,6 +28,7 @@ A cross platform lock-free and timer-supported(hearbeat etc.) C++11 network libr
 Windows和Linux下都可以使用下面的命令
 
 ### 编译
+
 ```bash
 # 进入源码根目录
 cd knet
@@ -65,6 +66,7 @@ echo服务器将接收到的数据原封不动的发回给客户端。
 同时还设置了定时器检查是否在指定的时间内收到了客户端的消息，如果未在指定时间收到客户端消息，将关闭与客户端的连接。
 
 服务器提供了两种：
+
 * 同步方式的echo服务端[examples/server/sync_server.cpp](./examples/server/sync_server.cpp)
 * 异步异步的echo服务端[examples/server/async_server.cpp](./examples/server/async_server.cpp)
 

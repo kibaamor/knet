@@ -11,11 +11,30 @@ branches:
 
 before_script:
   - printenv
-  - mkdir -p $TRAVIS_BUILD_DIR/build && cd $TRAVIS_BUILD_DIR/build && cmake ..
+  - cd $TRAVIS_BUILD_DIR
+  - cmake . -B build_debug
+  - cmake . -B build_release
 
 script:
-  - cd $TRAVIS_BUILD_DIR/build && cmake --build . --parallel 2 --clean-first --config Debug && ctest .
-  - cd $TRAVIS_BUILD_DIR/build && cmake --build . --parallel 2 --clean-first --config Release && ctest .
+  - cd $TRAVIS_BUILD_DIR/build_debug && cmake --build . --parallel 2 --config Debug && ctest .
+  - cd $TRAVIS_BUILD_DIR/build_release && cmake --build . --parallel 2 --config Release && ctest .
 
 notifications:
   email: false
+
+env:
+  global:
+   - secure: "azt+qVR9WgHkZGOKHY6Tv9kqiDQEyn0ZrqZhMJlwuyo6pR3+5Qq78YjTMVFG2sLYBJARdIY3eUZO+DCGyElxp8uL6B6dBlj5pvT6C4vjJHCMlAbALrYMQMAr3MSJVPz3LaijuWH+/cdUacCHNng5Ky0UyHQDVPYH2Zxi9UW4C5+hKXO0bmD8G4HT4bnxy0hHxRgqt0mr5zqXB34pjQCtpsXRJxGUhpoVZZllPdyNhdSVJhHEXhvBcWeYy66qxJEXyVw59SOMwC7OLV5gSOtmq9leH6zVxRVnWswkYUWuArPMPxYErgdic34T29N9FWEAajD9zoOI+Fkpn1bCXNDAiOJ2JHfwpsKpwtfjVIHBbok+ANQhmE9GxURwKmfsCEtbM+BReSDpxQU79hTSKyFstHs8inBaOOrIFFj+3SA2dL1VdqwSqXgumR2hhwtkAKd82RFAPj3fX+VXk/fmCkwSy0wTtJA59klyJsqHY03uvW/4TOJwMRpGJIAPha6A3REE4ZAojkM7kT0lKxb9Zun5w01hNDgcTog5oyJlsEtWyr7PlksTdT5Bhf4vjd3wLcwXQAfC7wxBHfVHw33ky1kutGiRe9gKdtOR3eTsUzrwhAiGHbt3KpkPyAjoLcylmNXiKCX5d5xPmInyppkHn9C31I5sgd6f2lNHI+106j1pR6E="
+
+before_install:
+  - echo -n | openssl s_client -connect https://scan.coverity.com:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' | sudo tee -a /etc/ssl/certs/ca-
+
+addons:
+  coverity_scan:
+    project:
+      name: "KibaAmor/knet"
+      description: "A cross platform lock-free and timer-supported(hearbeat etc.) C++11 network library."
+    notification_email: kibaamor@gmail.com
+    build_command_prepend: "cd $TRAVIS_BUILD_DIR && cmake . -B coverity_scan"
+    build_command: "cd $TRAVIS_BUILD_DIR/coverity_scan && cmake --build . --parallel 2 --config Release"
+    branch_pattern: coverity_scan

@@ -19,7 +19,7 @@ addons:
       description: "A cross platform lock-free and timer-supported(hearbeat etc.) C++11 network library."
     notification_email: kibaamor@gmail.com
     build_command_prepend: "mkdir -p $TRAVIS_BUILD_DIR/coverity_scan && cd $TRAVIS_BUILD_DIR/coverity_scan && cmake .."
-    build_command: "cd $TRAVIS_BUILD_DIR/coverity_scan && cmake --build . --parallel 2 --config Release"
+    build_command: "make -C $TRAVIS_BUILD_DIR/coverity_scan --jobs 2"
     branch_pattern: coverity_scan
 
 before_script:

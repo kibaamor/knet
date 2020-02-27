@@ -29,8 +29,6 @@ env:
    - secure: "azt+qVR9WgHkZGOKHY6Tv9kqiDQEyn0ZrqZhMJlwuyo6pR3+5Qq78YjTMVFG2sLYBJARdIY3eUZO+DCGyElxp8uL6B6dBlj5pvT6C4vjJHCMlAbALrYMQMAr3MSJVPz3LaijuWH+/cdUacCHNng5Ky0UyHQDVPYH2Zxi9UW4C5+hKXO0bmD8G4HT4bnxy0hHxRgqt0mr5zqXB34pjQCtpsXRJxGUhpoVZZllPdyNhdSVJhHEXhvBcWeYy66qxJEXyVw59SOMwC7OLV5gSOtmq9leH6zVxRVnWswkYUWuArPMPxYErgdic34T29N9FWEAajD9zoOI+Fkpn1bCXNDAiOJ2JHfwpsKpwtfjVIHBbok+ANQhmE9GxURwKmfsCEtbM+BReSDpxQU79hTSKyFstHs8inBaOOrIFFj+3SA2dL1VdqwSqXgumR2hhwtkAKd82RFAPj3fX+VXk/fmCkwSy0wTtJA59klyJsqHY03uvW/4TOJwMRpGJIAPha6A3REE4ZAojkM7kT0lKxb9Zun5w01hNDgcTog5oyJlsEtWyr7PlksTdT5Bhf4vjd3wLcwXQAfC7wxBHfVHw33ky1kutGiRe9gKdtOR3eTsUzrwhAiGHbt3KpkPyAjoLcylmNXiKCX5d5xPmInyppkHn9C31I5sgd6f2lNHI+106j1pR6E="
 
 before_install:
-  - sudo apt update
-  - sudo apt dist-upgrade
   - echo -n | openssl s_client -connect scan.coverity.com:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' | sudo tee -a /etc/ssl/certs/ca-certificates.crt
 
 addons:

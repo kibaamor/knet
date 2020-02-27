@@ -27,6 +27,9 @@ namespace knet
 
         bool poll() override;
 
+        template <typename T>
+        T* get_cf() const { return static_cast<T*>(_cf); }
+
     protected:
         void on_poll(void* key, const rawpollevent_t& evt) override;
 

@@ -14,6 +14,7 @@ void secho_conn::on_connected()
     auto& mgr = echo_mgr::get_intance();
     if (mgr.get_disconnect_all())
         disconnect();
+    set_idle_timer();
 }
 
 size_t secho_conn::on_recv_data(char* data, size_t size)
@@ -24,6 +25,8 @@ size_t secho_conn::on_recv_data(char* data, size_t size)
         disconnect();
         return 0;
     }
+
+    _last_recv_ms = knet::now_ms();
 
     knet::buffer buf(data, size);
     if (!send_data(&buf, 1))
@@ -40,12 +43,26 @@ size_t secho_conn::on_recv_data(char* data, size_t size)
 
 void secho_conn::on_timer(int64_t absms, const knet::userdata& ud)
 {
-    std::cout << get_connid() << " on timer: " << absms << std::endl;
+    //std::cout << get_connid() << " on timer: " << absms << std::endl;
+    const auto nowms = knet::now_ms();
+    auto& mgr = echo_mgr::get_intance();
+    if (nowms > _last_recv_ms + mgr.get_max_idle_ms())
+        disconnect();
+    else
+        set_idle_timer();
 }
 
 void secho_conn::on_attach_socket(knet::rawsocket_t rs)
 {
     knet::set_rawsocket_sndrcvbufsize(rs, 256 * 1204);
+}
+
+void secho_conn::set_idle_timer()
+{
+    auto& mgr = echo_mgr::get_intance();
+    const auto max_idle_ms = mgr.get_max_idle_ms();
+    if (max_idle_ms > 0)
+        add_timer(knet::now_ms() + max_idle_ms, 0);
 }
 
 knet::tconnection* secho_conn_factory::create_connection_impl()

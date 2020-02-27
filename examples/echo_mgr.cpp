@@ -1,4 +1,5 @@
 #include "echo_mgr.h"
+#include <knetfwd.h>
 #include <string>
 #include <iostream>
 
@@ -36,6 +37,13 @@ void echo_mgr::update(int64_t delta_ms)
         std::cout << "connection num: " << get_conn_num()
             << ", send speed: " << speed << " MB/S" << std::endl;
     }
+}
+
+int64_t echo_mgr::get_delay_ms() const
+{
+    if (_max_delay_ms > 0)
+        return knet::u32rand_between(0, static_cast<uint32_t>(_max_delay_ms));
+    return 0;
 }
 
 void echo_mgr::check_console_input()

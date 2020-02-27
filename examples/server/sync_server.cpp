@@ -12,11 +12,13 @@ int main(int argc, char** argv)
     global_init();
 
     // parse command line
-    const in_port_t port = in_port_t(argc > 2 ? std::atoi(argv[1]) : 8888);
+    const in_port_t port = in_port_t(argc > 1 ? std::atoi(argv[1]) : 8888);
+    const auto max_idle_ms = argc > 2 ? std::atoi(argv[2]) : 1000;
 
     // log parameter info
     std::cout << "Hi, KNet(Sync Server)" << std::endl
-        << "port: " << port << std::endl;
+        << "port: " << port << std::endl
+        << "max_idle_ms: " << max_idle_ms << std::endl;
 
     // parse ip address
     address addr;
@@ -28,7 +30,7 @@ int main(int argc, char** argv)
 
     // create worker
     auto cf = std::make_shared<secho_conn_factory>();
-    auto wkr = std::make_shared<worker>(cf.get());
+    auto wkr = std::make_shared<secho_worker>(cf.get());
 
     // create acceptor
     auto acc = std::make_shared<acceptor>(wkr.get());
@@ -41,6 +43,7 @@ int main(int argc, char** argv)
     // check console input
     auto& mgr = echo_mgr::get_intance();
     mgr.check_console_input();
+    mgr.set_max_idle_ms(max_idle_ms);
 
     auto last_ms = now_ms();
     while (true)

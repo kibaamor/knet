@@ -13,12 +13,12 @@ public:
     size_t on_recv_data(char* data, size_t size) override;
     void on_timer(int64_t absms, const knet::userdata& ud) override;
 
+protected:
+    virtual void on_attach_socket(knet::rawsocket_t rs) override;
+
 private:
     void send_package();
     int32_t check_package(char* data, size_t size);
-
-protected:
-    virtual void on_attach_socket(knet::rawsocket_t rs) override;
 };
 
 class cecho_conn_factory : public knet::tconnection_factory
@@ -34,6 +34,31 @@ public:
     knet::connection_factory* build_factory() override
     {
         return new cecho_conn_factory();
+    }
+};
+
+class cecho_worker : public knet::worker
+{
+public:
+    cecho_worker(cecho_conn_factory* cf) : worker(cf) {}
+
+    bool poll() override
+    {
+        const auto ret = worker::poll();
+        get_cf<cecho_conn_factory>()->update();
+        return ret;
+    }
+};
+
+class cecho_async_worker : public knet::async_worker
+{
+public:
+    cecho_async_worker(cecho_conn_factory_builder* cfb) : async_worker(cfb) {}
+
+protected:
+    knet::worker* create_worker(knet::connection_factory* cf) override
+    {
+        return new cecho_worker(static_cast<cecho_conn_factory*>(cf));
     }
 };
 

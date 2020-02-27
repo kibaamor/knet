@@ -12,15 +12,17 @@ int main(int argc, char** argv)
     global_init();
 
     // parse command line
-    const char* ip = argc > 1 ? argv[0] : "127.0.0.1";
-    const in_port_t port = in_port_t(argc > 2 ? std::atoi(argv[1]) : 8888);
+    const char* ip = argc > 1 ? argv[1] : "127.0.0.1";
+    const in_port_t port = in_port_t(argc > 2 ? std::atoi(argv[2]) : 8888);
     const auto client_num = argc > 3 ? std::atoi(argv[3]) : 1000;
+    const auto max_delay_ms = argc > 4 ? std::atoi(argv[4]) : 1100;
 
     // log parameter info
     std::cout << "Hi, KNet(Sync Client)" << std::endl
         << "ip:" << ip << std::endl
         << "port: " << port << std::endl
-        << "client_num: " << client_num << std::endl;
+        << "client_num: " << client_num << std::endl
+        << "max_delay_ms: " << max_delay_ms << std::endl;
 
     // parse ip address
     address addr;
@@ -32,7 +34,7 @@ int main(int argc, char** argv)
 
     // create worker
     auto cf = std::make_shared<cecho_conn_factory>();
-    auto wkr = std::make_shared<worker>(cf.get());
+    auto wkr = std::make_shared<cecho_worker>(cf.get());
 
     // create connector
     auto connector_builder = [&addr, &wkr]() {
@@ -43,6 +45,7 @@ int main(int argc, char** argv)
     // check console input
     auto& mgr = echo_mgr::get_intance();
     mgr.check_console_input();
+    mgr.set_max_delay_ms(max_delay_ms);
 
     auto last_ms = now_ms();
     while (true)

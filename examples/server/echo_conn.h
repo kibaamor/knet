@@ -15,6 +15,10 @@ public:
 
 protected:
     virtual void on_attach_socket(knet::rawsocket_t rs) override;
+
+private:
+    void set_idle_timer();
+    int64_t _last_recv_ms = 0;
 };
 
 class secho_conn_factory : public knet::tconnection_factory
@@ -30,5 +34,30 @@ public:
     knet::connection_factory* build_factory() override
     {
         return new secho_conn_factory();
+    }
+};
+
+class secho_worker : public knet::worker
+{
+public:
+    secho_worker(secho_conn_factory* cf) : worker(cf) {}
+
+    bool poll() override
+    {
+        const auto ret = worker::poll();
+        get_cf<secho_conn_factory>()->update();
+        return ret;
+    }
+};
+
+class secho_async_worker : public knet::async_worker
+{
+public:
+    secho_async_worker(secho_conn_factory_builder* cfb) : async_worker(cfb) {}
+
+protected:
+    knet::worker* create_worker(knet::connection_factory* cf) override
+    {
+        return new secho_worker(static_cast<secho_conn_factory*>(cf));
     }
 };

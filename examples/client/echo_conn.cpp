@@ -39,14 +39,23 @@ size_t cecho_conn::on_recv_data(char* data, size_t size)
 
     mgr.add_total_send(len);
 
-    send_package();
+    if (mgr.get_max_delay_ms() > 0)
+        add_timer(knet::now_ms() + mgr.get_delay_ms(), 0);
+    else
+        send_package();
 
     return len;
 }
 
 void cecho_conn::on_timer(int64_t absms, const knet::userdata& ud)
 {
-    std::cout << get_connid() << " on timer: " << absms << std::endl;
+    //std::cout << get_connid() << " on timer: " << absms << std::endl;
+    send_package();
+}
+
+void cecho_conn::on_attach_socket(knet::rawsocket_t rs)
+{
+    knet::set_rawsocket_sndrcvbufsize(rs, 256 * 1204);
 }
 
 void cecho_conn::send_package()
@@ -81,11 +90,6 @@ int32_t cecho_conn::check_package(char* data, size_t size)
         return -1;
 
     return len;
-}
-
-void cecho_conn::on_attach_socket(knet::rawsocket_t rs)
-{
-    knet::set_rawsocket_sndrcvbufsize(rs, 256 * 1204);
 }
 
 knet::tconnection* cecho_conn_factory::create_connection_impl()

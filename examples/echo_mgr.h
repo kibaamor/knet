@@ -12,6 +12,13 @@ public:
 public:
     void update(int64_t delta_ms);
 
+    int64_t get_delay_ms() const;
+    int64_t get_max_delay_ms() const { return _max_delay_ms; }
+    void set_max_delay_ms(int64_t ms) { _max_delay_ms = ms; }
+
+    int64_t get_max_idle_ms() const { return _max_idle_ms; }
+    void set_max_idle_ms(int64_t ms) { _max_idle_ms = ms; }
+
     int64_t get_conn_num() const { return _conn_num.load(); }
     void inc_conn_num() { _conn_num.fetch_add(1); }
     void dec_conn_num() { _conn_num.fetch_sub(1); }
@@ -31,6 +38,9 @@ private:
 
 private:
     int64_t _total_ms = 0;
+
+    int64_t _max_delay_ms = 0;
+    int64_t _max_idle_ms = 0;
 
     std::atomic<int64_t> _conn_num = { 0 };
     std::atomic<int64_t> _total_send = { 0 };

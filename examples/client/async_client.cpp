@@ -12,16 +12,18 @@ int main(int argc, char** argv)
     global_init();
 
     // parse command line
-    const char* ip = argc > 1 ? argv[0] : "127.0.0.1";
-    const in_port_t port = in_port_t(argc > 2 ? std::atoi(argv[1]) : 8888);
+    const char* ip = argc > 1 ? argv[1] : "127.0.0.1";
+    const in_port_t port = in_port_t(argc > 2 ? std::atoi(argv[2]) : 8888);
     const auto client_num = argc > 3 ? std::atoi(argv[3]) : 1000;
-    const auto thread_num = argc > 4 ? std::atoi(argv[4]) : 8;
+    const auto max_delay_ms = argc > 4 ? std::atoi(argv[4]) : 1100;
+    const auto thread_num = argc > 5 ? std::atoi(argv[5]) : 8;
 
     // log parameter info
     std::cout << "Hi, KNet(Async Client)" << std::endl
         << "ip:" << ip << std::endl
         << "port: " << port << std::endl
         << "client_num: " << client_num << std::endl
+        << "max_delay_ms: " << max_delay_ms << std::endl
         << "thread_num: " << thread_num << std::endl;
 
     // parse ip address
@@ -34,7 +36,7 @@ int main(int argc, char** argv)
 
     // create worker
     auto cfb = std::make_shared<cecho_conn_factory_builder>();
-    auto wkr = std::make_shared<async_worker>(cfb.get());
+    auto wkr = std::make_shared<cecho_async_worker>(cfb.get());
     if (!wkr->start(thread_num))
     {
         std::cerr << "async_echo_conn_mgr::start failed" << std::endl;
@@ -50,6 +52,7 @@ int main(int argc, char** argv)
     // check console input
     auto& mgr = echo_mgr::get_intance();
     mgr.check_console_input();
+    mgr.set_max_delay_ms(max_delay_ms);
 
     auto last_ms = now_ms();
     while (true)

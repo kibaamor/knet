@@ -1,7 +1,7 @@
 # knet
 
-[![Linux Build Status](https://img.shields.io/travis/kibaamor/knet?label=Linux%20Build%20Status&logo=knet&style=flat-square)](https://img.shields.io/travis/kibaamor/knet?label=Linux%20Build%20Status&style=flat-square)
-![AppVeyor](https://img.shields.io/appveyor/build/kibaamor/knet?label=Windows%20Build%20Status&style=flat-square)
+[![Travis (.org)](https://img.shields.io/travis/kibaamor/knet?label=Linux%20Build%20Status&style=flat-square)](https://travis-ci.org/KibaAmor/knet)
+[![AppVeyor](https://img.shields.io/appveyor/build/kibaamor/knet?label=Windows%20Build%20Status&style=flat-square)](https://ci.appveyor.com/project/KibaAmor/knet)
 
 A cross platform lock-free and timer-supported(hearbeat etc.) C++11 network library.
 

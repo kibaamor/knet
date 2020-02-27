@@ -1,5 +1,4 @@
 dist: xenial
-sudo: required
 language: cpp
 compiler: gcc
 
@@ -16,11 +15,11 @@ before_install:
 addons:
   coverity_scan:
     project:
-      name: KibaAmor/knet
-      description: A cross platform lock-free and timer-supported(hearbeat etc.) C++11 network library.
+      name: "$TRAVIS_REPO_SLUG"
+      description: "A cross platform lock-free and timer-supported(hearbeat etc.) C++11 network library."
     notification_email: kibaamor@gmail.com
-    build_command_prepend: mkdir -p $TRAVIS_BUILD_DIR/coverity_scan && cd $TRAVIS_BUILD_DIR/coverity_scan && cmake ..
-    build_command: cd $TRAVIS_BUILD_DIR/coverity_scan && cmake --build . --parallel 2 --config Release
+    build_command_prepend: "mkdir -p $TRAVIS_BUILD_DIR/coverity_scan && cd $TRAVIS_BUILD_DIR/coverity_scan && cmake .."
+    build_command: "cd $TRAVIS_BUILD_DIR/coverity_scan && cmake --build . --parallel 2 --config Release"
     branch_pattern: coverity_scan
 
 before_script:

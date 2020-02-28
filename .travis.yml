@@ -30,7 +30,6 @@ before_script:
 script:
   - cd $TRAVIS_BUILD_DIR/build_debug && cmake --build . --parallel 2 --clean-first --config Debug && ctest .
   - cd $TRAVIS_BUILD_DIR/build_release && cmake --build . --parallel 2 --clean-first --config Release && ctest .
-  - test -e $TRAVIS_BUILD_DIR/coverity_scan/cov-int/scm_log.txt && cat $TRAVIS_BUILD_DIR/coverity_scan/cov-int/scm_log.txt
 
 notifications:
   slack:

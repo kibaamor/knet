@@ -32,4 +32,6 @@ script:
   - cd $TRAVIS_BUILD_DIR/build_release && cmake --build . --parallel 2 --clean-first --config Release && ctest .
 
 notifications:
-  email: false
+  slack:
+    rooms:
+      secure: cKpsO84xSlLMDB/PELTUasVGzRlGtipNSEaTHIQbH66XZKgSlmYl1HhqWtSVU2W3rGfja0/a22ytAh75bg0Z0DcjbOI3+Hbrw27J12iHWvQ6jvBgFvOMagYzTvMfhkV2MRiTmCfzT73VDMSbjpRN3TmYhm8/GPtKV+eE6Y9CRMFippLYyJrePleFFMcsXVLshY27sDE8ZikvDmy7Juud1E6GtBTg8M7TP/h0254dJgXR8ZmMRdSLByxG4P1jmjWYCeuKcopS5yKqST4E1MWWI6vyARTtnB0luAyUoR0lm+7YCnN/N5w5/+a0iRTXrj3f5AdH/X3VHvUAJ8IEeRTzaHKipf/NTl6BG4NrYMh5TqIiIfLr8JhdKCLdHDNmXYNHizXgmULFO//TVshOWt0NPEQj7rsQoyuPZiBmTuM15bukOBDObje55Ln7mL6TZVhFcb7UrPFz3o5DFO5tZQDYNAy+IsEBmSidDzlGN6owwwP0emZjVVHrPTk75AxZwUYsqvGVb07yi0WsawLJz3MnvN3RRsyYvrjhQ3E1yniTqDYJhPLcprx2UW7iyTbUgF+ZfKUUt+GQ0AXElXZnmkzbOpOgusT4iqcopUlTQAiSa40FW9jhnEU2vJpd96RO7QozZrIVcXO3bCQb6zIW1mNJ6qCun8EuJdr0O/OmVOlVj+k=

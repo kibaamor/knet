@@ -25,7 +25,7 @@ namespace knet
     private:
         workable* const _wkr;
 
-        sa_family_t _family;
+        sa_family_t _family = AF_UNSPEC;
         rawsocket_t _rs = INVALID_RAWSOCKET;
 
 #ifdef KNET_USE_IOCP

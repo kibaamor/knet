@@ -18,7 +18,7 @@ addons:
       name: "$TRAVIS_REPO_SLUG"
       description: "A cross platform lock-free and timer-supported(hearbeat etc.) C++11 network library."
     notification_email: kibaamor@gmail.com
-    build_command_prepend: "mkdir -p $TRAVIS_BUILD_DIR/coverity_scan && cd $TRAVIS_BUILD_DIR/coverity_scan && cmake .."
+    build_command_prepend: "mkdir -p $TRAVIS_BUILD_DIR/coverity_scan && cd $TRAVIS_BUILD_DIR/coverity_scan && cmake .. -DCMAKE_BUILD_TYPE=RELWITHDEBINFO"
     build_command: "make -C $TRAVIS_BUILD_DIR/coverity_scan --jobs 2"
     branch_pattern: coverity_scan
 

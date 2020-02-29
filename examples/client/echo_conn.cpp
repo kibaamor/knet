@@ -1,7 +1,19 @@
 #include "echo_conn.h"
 #include <iostream>
 #include <thread>
+#include <algorithm>
 
+
+namespace
+{
+    constexpr int64_t TIMER_ID_SEND_PACKAGE = 1;
+
+    constexpr uint32_t get_min_pkg_size()
+    {
+        // + sizeof(uint32_t) for package integrity check
+        return echo_package::get_hdr_size() + sizeof(uint32_t);
+    }
+}
 
 cecho_conn::cecho_conn(knet::connid_t id, knet::tconnection_factory* cf)
     : tconnection(id, cf)
@@ -10,16 +22,17 @@ cecho_conn::cecho_conn(knet::connid_t id, knet::tconnection_factory* cf)
 
 void cecho_conn::on_connected()
 {
-    auto& mgr = echo_mgr::get_intance();
+    auto& mgr = echo_mgr::get_instance();
     if (mgr.get_disconnect_all())
         disconnect();
-    else
-        send_package();
+    
+    generate_packages();
+    add_timer(knet::now_ms() + mgr.get_delay_ms(), TIMER_ID_SEND_PACKAGE);
 }
 
 size_t cecho_conn::on_recv_data(char* data, size_t size)
 {
-    auto& mgr = echo_mgr::get_intance();
+    auto& mgr = echo_mgr::get_instance();
     if (mgr.get_disconnect_all())
     {
         disconnect();
@@ -34,23 +47,16 @@ size_t cecho_conn::on_recv_data(char* data, size_t size)
         return 0;
     }
 
-    if (len == 0)
-        return 0;
-
-    mgr.add_total_send(len);
-
-    if (mgr.get_max_delay_ms() > 0)
-        add_timer(knet::now_ms() + mgr.get_delay_ms(), 0);
-    else
-        send_package();
-
-    return len;
+    return static_cast<size_t>(len);
 }
 
 void cecho_conn::on_timer(int64_t absms, const knet::userdata& ud)
 {
     //std::cout << get_connid() << " on timer: " << absms << std::endl;
     send_package();
+
+    auto& mgr = echo_mgr::get_instance();
+    add_timer(knet::now_ms() + mgr.get_delay_ms(), TIMER_ID_SEND_PACKAGE);
 }
 
 void cecho_conn::on_attach_socket(knet::rawsocket_t rs)
@@ -58,49 +64,97 @@ void cecho_conn::on_attach_socket(knet::rawsocket_t rs)
     knet::set_rawsocket_sndrcvbufsize(rs, 256 * 1204);
 }
 
+void cecho_conn::generate_packages()
+{
+    kassert(_send_buf_size == _used_buf_size);
+
+    _send_buf_size = 0;
+
+    constexpr uint32_t min_pkg_size = get_min_pkg_size();
+    constexpr uint32_t max_pkg_size = 0xffff;
+    constexpr uint32_t max_buf_size = sizeof(_buf);
+
+    _used_buf_size = 0;
+    while (_used_buf_size + min_pkg_size < max_buf_size)
+    {
+        const auto unused_buf_size = max_buf_size - _used_buf_size;
+
+        const auto max_size = (std::min)(max_pkg_size, unused_buf_size);
+        auto pkg_size = knet::u32rand_between(min_pkg_size, max_size);
+
+        auto pkg = reinterpret_cast<echo_package*>(_buf + _used_buf_size);
+        pkg->size = pkg_size;
+        pkg->id = _next_send_pkg_id++;
+        pkg->last_u32() = pkg->id;
+
+        _used_buf_size += pkg_size;
+    }
+}
+
 void cecho_conn::send_package()
 {
-    using namespace knet;
-    static thread_local char data[SOCKET_RWBUF_SIZE] = {};
+    if (_send_buf_size == _used_buf_size)
+        return;
 
-    const auto len = u32rand_between(8, sizeof(data));
-    auto p = (char*)data;
-    *(int32_t*)p = len;
-    *(int32_t*)(p + len - sizeof(int32_t)) = len;
+    kassert(_send_buf_size < _used_buf_size);
 
-    buffer buf(data, len);
+    auto send_size = knet::u32rand_between(1, _used_buf_size - _send_buf_size);
+
+    knet::buffer buf(_buf + _send_buf_size, send_size);
     if (!send_data(&buf, 1))
     {
-        std::cerr << "send_package failed!" << std::endl;
+        std::cerr << "send_package failed! size:" << buf.size << std::endl;
         disconnect();
+        return;
     }
+
+    _send_buf_size += send_size;
+
+    auto& mgr = echo_mgr::get_instance();
+    mgr.add_total_send(send_size);
+
+    if (_send_buf_size == _used_buf_size)
+        generate_packages();
 }
 
 int32_t cecho_conn::check_package(char* data, size_t size)
 {
-    if (size < sizeof(int32_t) * 2)
-        return 0;
+    constexpr uint32_t min_pkg_size = get_min_pkg_size();
+    auto pkg = reinterpret_cast<echo_package*>(data);
 
-    const auto len = *(int32_t*)data;
-    if (static_cast<int32_t>(size) < len)
-        return 0;
+    if (size < min_pkg_size || pkg->size > size)
+            return 0;
 
-    const auto flag = *(int32_t*)(data + len - sizeof(int32_t));
-    if (len != flag)
+    if (pkg->id != pkg->last_u32())
+    {
+        std::cerr << "package integrity check failed! id:"
+            << pkg->id << ", last_u32:" << pkg->last_u32() << std::endl;
         return -1;
+    }
 
-    return len;
+    if (pkg->id != _next_recv_pkg_id)
+    {
+        std::cerr << "package id mismatch next receive package id! id:"
+            << pkg->id << ", next_recv_pkg_id:" << _next_recv_pkg_id << std::endl;
+        return -1;
+    }
+
+    _next_recv_pkg_id++;
+    auto& mgr = echo_mgr::get_instance();
+    mgr.inc_total_recv_pkg_num();
+        
+    return pkg->size;
 }
 
 knet::tconnection* cecho_conn_factory::create_connection_impl()
 {
-    echo_mgr::get_intance().inc_conn_num();
+    echo_mgr::get_instance().inc_conn_num();
     return new cecho_conn(get_next_connid(), this);
 }
 
 void cecho_conn_factory::destroy_connection_impl(knet::tconnection* tconn)
 {
-    echo_mgr::get_intance().dec_conn_num();
+    echo_mgr::get_instance().dec_conn_num();
     knet::tconnection_factory::destroy_connection_impl(tconn);
 }
 

@@ -17,8 +17,17 @@ protected:
     virtual void on_attach_socket(knet::rawsocket_t rs) override;
 
 private:
+    void generate_packages();
     void send_package();
     int32_t check_package(char* data, size_t size);
+
+private:
+    char _buf[knet::SOCKET_RWBUF_SIZE] = {};
+    uint32_t _used_buf_size = 0;
+    uint32_t _send_buf_size = 0;
+
+    uint32_t _next_send_pkg_id = 0;
+    uint32_t _next_recv_pkg_id = 0;
 };
 
 class cecho_conn_factory : public knet::tconnection_factory

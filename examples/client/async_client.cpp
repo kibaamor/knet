@@ -15,7 +15,7 @@ int main(int argc, char** argv)
     const char* ip = argc > 1 ? argv[1] : "127.0.0.1";
     const in_port_t port = in_port_t(argc > 2 ? std::atoi(argv[2]) : 8888);
     const auto client_num = argc > 3 ? std::atoi(argv[3]) : 1000;
-    const auto max_delay_ms = argc > 4 ? std::atoi(argv[4]) : 1100;
+    const auto max_delay_ms = argc > 4 ? std::atoi(argv[4]) : 1000;
     const auto thread_num = argc > 5 ? std::atoi(argv[5]) : 8;
 
     // log parameter info
@@ -50,7 +50,7 @@ int main(int argc, char** argv)
     auto cnctor = connector_builder();
 
     // check console input
-    auto& mgr = echo_mgr::get_intance();
+    auto& mgr = echo_mgr::get_instance();
     mgr.check_console_input();
     mgr.set_max_delay_ms(max_delay_ms);
 

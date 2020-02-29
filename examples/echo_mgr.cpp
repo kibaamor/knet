@@ -4,7 +4,7 @@
 #include <iostream>
 
 
-echo_mgr& echo_mgr::get_intance()
+echo_mgr& echo_mgr::get_instance()
 {
     static echo_mgr mgr;
     return mgr;
@@ -30,20 +30,39 @@ void echo_mgr::update(int64_t delta_ms)
 
         const auto total_send_mb = get_total_send() / 1024 / 1024;
         zero_total_send();
+        const auto total_recv_pkg_num = get_total_recv_pkg_num();
+        zero_total_recv_pkg_num();
 
-        const auto speed = (1 == total_delta_s
-            ? total_send_mb
-            : total_send_mb * 1.0 / total_delta_s);
-        std::cout << "connection num: " << get_conn_num()
-            << ", send speed: " << speed << " MB/S" << std::endl;
+        auto send_mb = total_send_mb;
+        auto recv_pkg_num = total_recv_pkg_num;
+
+        if (total_delta_s > 1)
+        {
+            send_mb /= total_delta_s;
+            recv_pkg_num /= total_delta_s;
+        }
+
+        if (_is_server)
+        {
+            std::cout << "connection: " << get_conn_num()
+                << ", send: " << send_mb << " MB/S"
+                << std::endl;
+        }
+        else
+        {
+            std::cout << "connection: " << get_conn_num()
+                << ", send: " << send_mb << " MB/S"
+                << ", recv package: " << recv_pkg_num << " Pkg/S"
+                << std::endl;
+        }
     }
 }
 
 int64_t echo_mgr::get_delay_ms() const
 {
-    if (_max_delay_ms > 0)
+    if (_max_delay_ms > 1)
         return knet::u32rand_between(0, static_cast<uint32_t>(_max_delay_ms));
-    return 0;
+    return 1;
 }
 
 void echo_mgr::check_console_input()

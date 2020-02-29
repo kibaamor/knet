@@ -13,7 +13,7 @@ int main(int argc, char** argv)
 
     // parse command line
     const in_port_t port = in_port_t(argc > 1 ? std::atoi(argv[1]) : 8888);
-    const auto max_idle_ms = argc > 2 ? std::atoi(argv[2]) : 1000;
+    const auto max_idle_ms = argc > 2 ? std::atoi(argv[2]) : 996;
     const auto thread_num = argc > 3 ? std::atoi(argv[3]) : 8;
 
     // log parameter info
@@ -49,7 +49,7 @@ int main(int argc, char** argv)
     }
 
     // check console input
-    auto& mgr = echo_mgr::get_intance();
+    auto& mgr = echo_mgr::get_instance();
     mgr.check_console_input();
     mgr.set_max_idle_ms(max_idle_ms);
 

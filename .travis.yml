@@ -15,7 +15,7 @@ before_install:
 addons:
   coverity_scan:
     project:
-      name: "$TRAVIS_REPO_SLUG"
+      name: "KibaAmor/knet"
       description: "A cross platform lock-free and timer-supported(hearbeat etc.) C++11 network library."
     notification_email: kibaamor@gmail.com
     build_command_prepend: "mkdir -p $TRAVIS_BUILD_DIR/coverity_scan && cd $TRAVIS_BUILD_DIR/coverity_scan && cmake .. -DCMAKE_BUILD_TYPE=RELWITHDEBINFO"

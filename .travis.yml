@@ -10,7 +10,7 @@ env:
     secure: K6FY3528v2+BOYibxYjANo/Wf31BXtcrR+bxkqsCPcZAletdt0VdgZTQ+ri58dVtK+1I9N0/64Wo2Sn6krvGrCwVjRRFFNFdGRSF1iS8mRKfwXQPDujOJQn/YtqcKLtxmVRF0CFMpxkLbrGFPo95D68MDUi8RLkG4Ao/sVmqvKviqltybpfDGbCxy8iGDkQfN3wqy37WM4GdCqlUAW7XyHWATFRP6JxgCo0zvvcHbRnEAW2+AkympTVpTuLcjK4tz2jeios6dw84DrvgdfL/g9jznE+cP7hGq1nSSTuyBdk928RTb4IAJGFhGX2Ewnm99RuXXtNRFuQGDRuN4Pp31uuk+TQs6evYakBkZt4t7ugVlpRPMYi03yBobi0yajPRvj4OUjs7WipHwQueQFHRJpFiBbcRXDv7+65g2L86Y2O0j9NAGK2R0GPhyOeMxiH+wLD9m/spchpT9vcqpReERGZz2oFlVFzn5oXHB0yjDNHJh6Yn+F8xyWan6SoK7qXbAtqpCC2g1MTmzwXraX67p1hR1jqNDom69ToURre98xp7vlIvbnpOA2S4PhrDmuOlCbQffyMIo5WjASieIe3eq31sWaz9FuuLiVSvAqMXc1LjEO7n+y7bkRFEbhxzgZBVv/B8wI8AaSdEZe3pMotSB9CwU2PMYPrU2YVbGvKxtos=
 
 before_install:
-  - echo -n | openssl s_client -connect scan.coverity.com:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' | sudo tee -a /etc/ssl/certs/ca-
+  - echo -n | openssl s_client -connect scan.coverity.com:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' | sudo tee -a /etc/ssl/certs/ca-certificates.crt
 
 addons:
   coverity_scan:
@@ -18,7 +18,7 @@ addons:
       name: "KibaAmor/knet"
       description: "A cross platform lock-free and timer-supported(hearbeat etc.) C++11 network library."
     notification_email: kibaamor@gmail.com
-    build_command_prepend: "mkdir -p $TRAVIS_BUILD_DIR/coverity_scan && cd $TRAVIS_BUILD_DIR/coverity_scan && cmake .. -DCMAKE_BUILD_TYPE=RELWITHDEBINFO"
+    build_command_prepend: "mkdir -p $TRAVIS_BUILD_DIR/coverity_scan && cd $TRAVIS_BUILD_DIR/coverity_scan && cmake .. -DCMAKE_BUILD_TYPE=RELEASE"
     build_command: "make -C $TRAVIS_BUILD_DIR/coverity_scan --jobs 2"
     branch_pattern: coverity_scan
 

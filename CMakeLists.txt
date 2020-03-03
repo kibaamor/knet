@@ -52,6 +52,10 @@ if (WIN32)
     target_link_libraries(${PROJECT_NAME}
         ws2_32
         )
+else()
+    target_link_libraries(${PROJECT_NAME}
+        pthread
+        )
 endif()
 
 

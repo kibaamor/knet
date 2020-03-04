@@ -195,74 +195,45 @@ namespace knet
                 unmark_flag(_flag, FlagRead);
             else
                 unmark_flag(_flag, FlagWrite);
-
             close();
             return;
         }
-
+        
         const auto size = static_cast<size_t>(evt.dwNumberOfBytesTransferred);
         if (&_rbuf->ol == evt.lpOverlapped)
         {
             _rbuf->used_size += size;
-            if (!handle_read() || is_flag_marked(_flag, FlagClose))
+            if (!handle_read())
                 close();
         }
         else
         {
             handle_write(size);
-            if ((_wbuf->used_size > 0 && !try_write()) || is_flag_marked(_flag, FlagClose))
+            if (_wbuf->used_size > 0 && !try_write())
                 close();
         }
-#else // KNET_USE_IOCP
-        if (0 != (evt.events & (EPOLLERR | EPOLLHUP)))
+#elif defined(KNET_USE_EPOLL)
+        if ((0 != (evt.events & (EPOLLERR | EPOLLHUP)))
+            || (0 != (evt.events & EPOLLIN) && !handle_can_read())
+            || (0 != (evt.events & EPOLLOUT) && !hande_can_write()))
         {
             close();
             return;
         }
-
-        if (0 != (evt.events & EPOLLIN))
+#else
+        if (EVFILT_READ == evt.filter)
         {
-            size_t count = 0;
-            while (_rbuf->unused_size() > 0)
-            {
-                const auto ret = recv(_rs, _rbuf->wptr(), _rbuf->unused_size(), MSG_DONTWAIT);
-                if (RAWSOCKET_ERROR == ret)
-                {
-                    if (EAGAIN != errno && EWOULDBLOCK != errno)
-                        count = 0;
-                    break;
-                }
-                else if (0 == ret)
-                {
-                    break;
-                }
-                else
-                {
-                    _rbuf->used_size += ret;
-                    ++count;
-                }
-
-                if (0 == _rbuf->unused_size() &&!handle_read())
-                {
-                    count = 0;
-                    break;
-                }
-            }
-
-            if (0 == count || (_rbuf->used_size > 0 && !handle_read()))
-            {
+            if (!handle_can_read())
                 close();
-                return;
-            }
         }
-        if (0 != (evt.events & EPOLLOUT) && !is_flag_marked(_flag, FlagWrite))
+        else if (EVFILT_WRITE == evt.filter)
         {
-            mark_flag(_flag, FlagWrite);
-            if (_wbuf->used_size > 0 && !try_write())
-            {
+            if (!handle_can_write())
                 close();
-                return;
-            }
+        }
+        else
+        {
+            close();
         }
 #endif // KNET_USE_IOCP
     }
@@ -297,6 +268,51 @@ namespace knet
             memmove(_wbuf->chunk, _wbuf->chunk + wrote, _wbuf->used_size);
         unmark_flag(_flag, FlagWrite);
     }
+#else
+    bool socket::handle_can_read()
+    {
+        size_t count = 0;
+        while (_rbuf->unused_size() > 0)
+        {
+            const auto ret = ::recv(_rs, _rbuf->wptr(), _rbuf->unused_size(), 0);
+            if (RAWSOCKET_ERROR == ret)
+            {
+                if (EAGAIN != errno && EWOULDBLOCK != errno)
+                    count = 0;
+                break;
+            }
+            else if (0 == ret)
+            {
+                break;
+            }
+            else
+            {
+                _rbuf->used_size += ret;
+                ++count;
+            }
+
+            if (0 == _rbuf->unused_size() && !handle_read())
+            {
+                count = 0;
+                break;
+            }
+        }
+
+        if (0 == count || (_rbuf->used_size > 0 && !handle_read()))
+            return false;
+        return true;
+    }
+
+    bool socket::handle_can_write()
+    {
+        if (!is_flag_marked(_flag, FlagWrite))
+        {
+            mark_flag(_flag, FlagWrite);
+            if (_wbuf->used_size > 0 && !try_write())
+                close();
+        }
+        return true;
+    }
 #endif // KNET_USE_IOCP
 
     bool socket::handle_read()
@@ -310,7 +326,7 @@ namespace knet
         {
             const size_t cost = _conn->on_recv_data(
                 _rbuf->chunk + ret, _rbuf->used_size - ret);
-            if (0 == cost)
+            if (0 == cost || is_flag_marked(_flag, FlagClose))
                 break;
 
             ret += cost;
@@ -354,7 +370,10 @@ namespace knet
         size_t wrote = 0;
         while (wrote < _wbuf->used_size)
         {
-            const auto ret = send(_rs, _wbuf->chunk + wrote, 
+#ifndef MSG_NOSIGNAL
+#define MSG_NOSIGNAL 0
+#endif
+            const auto ret = ::send(_rs, _wbuf->chunk + wrote, 
                 _wbuf->used_size - wrote, MSG_NOSIGNAL | MSG_DONTWAIT);
             if (RAWSOCKET_ERROR == ret && (EAGAIN == errno || EWOULDBLOCK == errno))
                 break;

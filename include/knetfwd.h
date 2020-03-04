@@ -36,9 +36,17 @@ namespace knet
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
-#include <sys/epoll.h>
+#include <sys/errno.h>
 
-//#define KNET_USE_EPOLL
+#ifdef __linux__
+# include <sys/epoll.h>
+# define KNET_USE_EPOLL
+#else
+# include <sys/types.h>
+# include <sys/event.h>
+# include <sys/time.h>
+# define KNET_USE_KQUEUE
+#endif
 
 #define closesocket(s) close(s)
 
@@ -46,8 +54,11 @@ namespace knet
 {
     using rawsocket_t = int;
     using rawpoller_t = int;
-    using rawpollevent_t = epoll_event;
-
+#ifdef __APPLE__
+    using rawpollevent_t = struct kevent;
+#else
+    using rawpollevent_t = struct epoll_event;
+#endif
     constexpr rawpoller_t INVALID_RAWPOLLER = -1;
     constexpr rawsocket_t INVALID_RAWSOCKET = -1;
     constexpr int RAWSOCKET_ERROR = -1;

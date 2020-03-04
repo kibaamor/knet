@@ -7,6 +7,9 @@
 # endif
 #endif
 
+#ifdef KNET_USE_KQUEUE
+# include <fcntl.h>
+#endif
 
 namespace
 {
@@ -21,18 +24,37 @@ namespace
         }
     }
 
+#ifdef KNET_USE_KQUEUE
+    bool set_rawsocket_nonblock(rawsocket_t rs)
+    {
+        auto flags = fcntl(rs, F_GETFL, 0);
+        if (flags < 0)
+            return false;
+        flags = fcntl(rs, F_SETFL, flags | O_NONBLOCK);
+        return flags >= 0;
+    }
+#endif
+
     rawsocket_t create_rawsocket(int domain, int type, bool nonblock)
     {
-#ifdef _WIN32
+#if defined(_WIN32)
         auto flag = WSA_FLAG_NO_HANDLE_INHERIT;
         if (nonblock)
             flag |= WSA_FLAG_OVERLAPPED;
         return WSASocketW(domain, type, 0, nullptr, 0, flag);
-#else
+#elif defined(KNET_USE_EPOLL)
         auto flag = type | SOCK_CLOEXEC;
         if (nonblock)
             flag |= SOCK_NONBLOCK;
         return ::socket(domain, flag, 0);
+#else
+        auto rs = ::socket(domain, type, 0);
+        if (nonblock && !set_rawsocket_nonblock(rs))
+        {
+            closesocket(rs);
+            rs = INVALID_RAWSOCKET;
+        }
+        return rs;
 #endif
     }
 
@@ -196,7 +218,7 @@ namespace knet
         io->rs = INVALID_SOCKET;
         io->next = _free_ios;
         _free_ios = io;
-#else // KNET_USE_IOCP
+#elif defined(KNET_USE_EPOLL)
         sockaddr_storage addr{};
         socklen_t addrLen = sizeof(addr);
         auto sa = reinterpret_cast<sockaddr*>(&addr);
@@ -207,6 +229,21 @@ namespace knet
 
             addrLen = sizeof(addr);
             s = accept4(_rs, sa, &addrLen, SOCK_NONBLOCK);
+        }
+#else
+        sockaddr_storage addr{};
+        socklen_t addrLen = sizeof(addr);
+        auto sa = reinterpret_cast<sockaddr*>(&addr);
+        rawsocket_t s = accept(_rs, sa, &addrLen);
+        while (INVALID_RAWSOCKET != s)
+        {
+            if (!set_rawsocket_nonblock(s))
+                closesocket(s);
+            else
+                _wkr->add_work(s);
+
+            addrLen = sizeof(addr);
+            s = accept(_rs, sa, &addrLen);
         }
 #endif // KNET_USE_IOCP
     }

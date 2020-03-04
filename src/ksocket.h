@@ -28,6 +28,9 @@ namespace knet
 #ifdef KNET_USE_IOCP
         bool try_read();
         void handle_write(size_t wrote);
+#else
+        bool handle_can_read();
+        bool handle_can_write();
 #endif
         bool handle_read();
         bool try_write();

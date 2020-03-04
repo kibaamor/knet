@@ -1,81 +1,120 @@
-# knet
+# **knet** [中文版](./README_zh.md)
 
-[![Linux](https://img.shields.io/travis/kibaamor/knet?label=Linux&style=flat-square)](https://travis-ci.org/KibaAmor/knet)
-[![Windows](https://img.shields.io/appveyor/build/kibaamor/knet?label=Windows&style=flat-square)](https://ci.appveyor.com/project/KibaAmor/knet)
-[![Coverity](https://img.shields.io/coverity/scan/20462?label=Coverity&style=flat-square)](https://scan.coverity.com/projects/kibaamor-knet)
+|Linux Build Status|Windows Build Status|Coverity Scan Build Status|License|
+|:--:|:--:|:--:|:--:|
+[![Linux Build Status](https://img.shields.io/travis/kibaamor/knet?label=Linux%20build&style=flat-square)](https://travis-ci.org/KibaAmor/knet)|[![Windows Build Status](https://img.shields.io/appveyor/build/kibaamor/knet?label=Windows%20build&style=flat-square)](https://ci.appveyor.com/project/KibaAmor/knet)|[![Coverity Scan Build Status](https://img.shields.io/coverity/scan/20462?label=Coverity%20build&style=flat-square)](https://scan.coverity.com/projects/kibaamor-knet)|[![License](https://img.shields.io/github/license/kibaamor/knet?label=License&style=flat-square)](./LICENSE)
 
 A cross platform lock-free and timer-supported(hearbeat etc.) C++11 network library.
 
-一个跨平台的无锁且支持定时器（如：心跳）的C++11网络库。
+Table of Contents
+=================
 
-## 特点
+   * [Highlights](#highlights)
+   * [Environment](#environment)
+   * [How To Use](#how-to-use)
+      * [Compile](#compile)
+      * [Test](#test)
+   * [Core Concept](#core-concept)
+   * [Examples](#examples)
+      * [Echo Server and Client](#echo-server-and-client)
+         * [Protocol](#protocol)
+         * [Echo Server](#echo-server)
+      * [Echo Client](#echo-client)
 
-* 支持Window和Linux
-* 同时支持同步、异步两种使用方式
-* 易于扩展，支持网络粘包
-* 代码少，无第三方库依赖
-* 无锁设计，每个连接的创建销毁逻辑都在同一个固定的线程中处理
-* 支持定时器，如心跳发送与检测
+## Highlights
 
-## 编译环境
+* Support Windows and Linux
+* Support Synchronous and Asynchronous processing connections
+* Support network package defragment
+* Less code and no third party dependency
+* Lockfree, connection work on same fixed thread
+* Timer support, such as: hearbeat check etc.
 
-* CMake 3.1及以上
-* Visual Studio 2015及以上(Windows)
-* Gcc 4.9及以上(Linux)
+## Environment
 
-## 如何使用
+* CMake 3.1 or higher
+* Visual Studio 2015 or higher(Windows)
+* Gcc 4.9 or higher(Linux)
 
-Windows和Linux下都可以使用下面的命令
+## How To Use
 
-### 编译
+below command working on Windows and Linux
+
+### Compile
 
 ```bash
-# 进入源码根目录
+# enter source code root directory
 cd knet
 
-# 生成工程
+# generate project
 cmake . -B build
 
-# 编译Relase
+# build RELASE
 cmake --build build --config Release
 ```
 
-### 测试
+### Test
 
 ```bash
-# 进入源码根目录下的build目录
+# enter build directory(under source code root directory)
 cd build
 
-# 运行测试
+# test
 ctest -C Release
 ```
 
-## 示例程序
+## Core Concept
 
-### echo服务器和客户端
+the core concept of knet is: `produce socket-consume socket`.
 
-[example目录](./examples/)下提供了使用knet实现的[echo服务器](./examples/server)和[echo客户端](./examples/client).
+In fact, both *connecting to server* and *accepting connection from client* are creating readable and writable socket. After the socket is created, both the client and the server do the same to send and accept messages. This process can then be seen as a process of generating sockets and consuming sockets. Here's the diagram:
 
-#### 通信协议
+```text
+   producer                       consumer
+┌───────────┐                  ┌──────────────┐   
+│ connector │    ——————————>   │    worker    │            
+│           │      socket      │              │   
+│ acceptor  │    ——————————>   │ async_worker │       
+└───────────┘                  └──────────────┘
+```
 
-网络包前4个字节为整个网络包(包头+数据)的大小，紧跟在后面的为网络包数据。
+* [connector](./src/kconnector.cpp) connect to server
+* [acceptor](./src/kacceptor.cpp) accept connection from client
+* [worker](./src/kworker.cpp) synchronous processing connections
+* [async_worker](./src/kworker.cpp) asynchronous processing connections
 
-#### echo服务器
+## Examples
 
-echo服务器将接收到的数据原封不动的发回给客户端。
-同时还设置了定时器检查是否在指定的时间内收到了客户端的消息，如果未在指定时间收到客户端消息，将关闭与客户端的连接。
+### Echo Server and Client
 
-服务器提供了两种：
+[example](./examples/) provides [echo server](./examples/server)和[echo client](./examples/client).
 
-* 同步方式的echo服务端[examples/server/sync_server.cpp](./examples/server/sync_server.cpp)
-* 异步异步的echo服务端[examples/server/async_server.cpp](./examples/server/async_server.cpp)
+#### Protocol
 
-### echo客户端
+```txt
+┌─────────────────────────────┬──────┐ 
+│ total package size(4 bytes) │ data │ 
+└─────────────────────────────┴──────┘ 
+```
 
-客户端启动后主动连接服务器（如果连接不上服务器，则会自动重连服务器），连接成功后，会主动给服务器发送`不完整的`网络包。
-在收到服务器返回的网络包时，会对数据封包进行校验，失败时会断开连接。
+4 bytes package header and data follow.
 
-客户端也提供了两种：
+#### Echo Server
 
-* 同步方式的echo客户端[examples/client/sync_client.cpp](./examples/client/sync_client.cpp)
-* 异步异步的echo客户端[examples/client/async_client.cpp](./examples/client/async_client.cpp)
+The echo server sends the received data back to the client intact.
+A timer is also set to check whether a client message is received within the specified time, and the connection to the client is closed if the client message is not received within the specified time.
+
+The server provides two types:
+
+* Synchronous Echo Server[examples/server/sync_server.cpp](./examples/server/sync_server.cpp)
+* Asynchronous Echo Server[examples/server/async_server.cpp](./examples/server/async_server.cpp)
+
+### Echo Client
+
+The client actively connects to the server after starting (and automatically reconnects the server if the connection is not available), and when the connection is successful, it actively sends an `incomplete` network package to the server.
+When the network package returned by the server is received, the data envelope is verified and disconnected if it fails.
+
+The client provides two types:
+
+* Synchronous Echo Client[examples/client/sync_client.cpp](./examples/client/sync_client.cpp)
+* Asynchronous Echo Client[examples/client/async_client.cpp](./examples/client/async_client.cpp)

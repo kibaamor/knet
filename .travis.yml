@@ -22,6 +22,9 @@ addons:
     build_command: "make -C $TRAVIS_BUILD_DIR/coverity_scan --jobs 2"
     branch_pattern: coverity_scan
 
+script:
+  - cat $TRAVIS_BUILD_DIR/coverity_scan/cov-int/scm_log.txt
+
 notifications:
   slack:
     rooms:

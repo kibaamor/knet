@@ -48,7 +48,7 @@ void secho_conn::on_timer(int64_t absms, const knet::userdata& ud)
     //std::cout << get_connid() << " on timer: " << absms << std::endl;
     const auto nowms = knet::now_ms();
     auto& mgr = echo_mgr::get_instance();
-    if (nowms > _last_recv_ms + mgr.get_max_idle_ms())
+    if (_last_recv_ms > 0 && nowms > _last_recv_ms + mgr.get_max_idle_ms())
     {
         std::cerr << "!!!!!!!!!!!!!!!!!! "
             << "kick client for idle too long! last_recv_ms: "

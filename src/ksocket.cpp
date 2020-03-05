@@ -215,7 +215,7 @@ namespace knet
 #elif defined(KNET_USE_EPOLL)
         if ((0 != (evt.events & (EPOLLERR | EPOLLHUP)))
             || (0 != (evt.events & EPOLLIN) && !handle_can_read())
-            || (0 != (evt.events & EPOLLOUT) && !hande_can_write()))
+            || (0 != (evt.events & EPOLLOUT) && !handle_can_write()))
         {
             close();
             return;

@@ -102,7 +102,7 @@ namespace knet
 
     void global_init();
 
-    void set_rawsocket_sndrcvbufsize(rawsocket_t rs, int size);
+    bool set_rawsocket_bufsize(rawsocket_t rs, int size);
 
     uint32_t u32rand();
     float f32rand();

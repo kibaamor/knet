@@ -94,7 +94,8 @@ namespace knet
         std::string ar;
         in_port_t port;
         is >> family >> ar >> port;
-        (void)addr.pton(family, ar, port);
+        const auto ret = addr.pton(family, ar, port);
+        (void)ret; // dont care
         return is;
     }
 }

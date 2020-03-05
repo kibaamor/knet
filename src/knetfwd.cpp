@@ -26,11 +26,13 @@ namespace knet
         get_random_engine().seed(static_cast<uint32_t>(time(nullptr)));
     }
 
-    void set_rawsocket_sndrcvbufsize(rawsocket_t rs, int size)
+    bool set_rawsocket_bufsize(rawsocket_t rs, int size)
     {
         auto optval = reinterpret_cast<const char*>(&size);
-        setsockopt(rs, SOL_SOCKET, SO_RCVBUF, optval, sizeof(size));
-        setsockopt(rs, SOL_SOCKET, SO_SNDBUF, optval, sizeof(size));
+        return RAWSOCKET_ERROR != setsockopt(
+                rs, SOL_SOCKET, SO_RCVBUF, optval, sizeof(size))
+            && RAWSOCKET_ERROR != setsockopt(
+                rs, SOL_SOCKET, SO_SNDBUF, optval, sizeof(size));
     }
 
     uint32_t u32rand()

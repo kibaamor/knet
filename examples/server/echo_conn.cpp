@@ -63,7 +63,7 @@ void secho_conn::on_timer(int64_t absms, const knet::userdata& ud)
 
 void secho_conn::on_attach_socket(knet::rawsocket_t rs)
 {
-    knet::set_rawsocket_sndrcvbufsize(rs, 256 * 1024);
+    knet::set_rawsocket_bufsize(rs, 256 * 1024);
 }
 
 void secho_conn::set_idle_timer()

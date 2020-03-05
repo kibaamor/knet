@@ -12,12 +12,10 @@ namespace knet
         acceptor(workable* wkr);
         ~acceptor() override;
 
+        bool poll() override;
+
         bool start(const address& addr);
         void stop();
-
-#ifdef KNET_USE_IOCP
-        bool poll() override;
-#endif
 
     protected:
         void on_poll(void* key, const rawpollevent_t& evt) override;

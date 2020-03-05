@@ -1,88 +1,7 @@
 #include "../include/kacceptor.h"
 #include "../include/kworker.h"
+#include "kinternal.h"
 
-#ifdef _WIN32
-# ifndef WSA_FLAG_NO_HANDLE_INHERIT
-#  define WSA_FLAG_NO_HANDLE_INHERIT 0x80
-# endif
-#endif
-
-#ifdef KNET_USE_KQUEUE
-# include <fcntl.h>
-#endif
-
-namespace
-{
-    using namespace knet;
-
-    void close_rawsocket(rawsocket_t& rs)
-    {
-        if (INVALID_RAWSOCKET != rs)
-        {
-            ::closesocket(rs);
-            rs = INVALID_RAWSOCKET;
-        }
-    }
-
-#ifdef KNET_USE_KQUEUE
-    bool set_rawsocket_nonblock(rawsocket_t rs)
-    {
-        auto flags = fcntl(rs, F_GETFL, 0);
-        if (flags < 0)
-            return false;
-        flags = fcntl(rs, F_SETFL, flags | O_NONBLOCK);
-        return flags >= 0;
-    }
-#endif
-
-    rawsocket_t create_rawsocket(int domain, int type, bool nonblock)
-    {
-#if defined(_WIN32)
-        auto flag = WSA_FLAG_NO_HANDLE_INHERIT;
-        if (nonblock)
-            flag |= WSA_FLAG_OVERLAPPED;
-        return WSASocketW(domain, type, 0, nullptr, 0, flag);
-#elif defined(KNET_USE_EPOLL)
-        auto flag = type | SOCK_CLOEXEC;
-        if (nonblock)
-            flag |= SOCK_NONBLOCK;
-        return ::socket(domain, flag, 0);
-#else
-        auto rs = ::socket(domain, type, 0);
-        if (nonblock && !set_rawsocket_nonblock(rs))
-        {
-            closesocket(rs);
-            rs = INVALID_RAWSOCKET;
-        }
-        return rs;
-#endif
-    }
-
-#ifdef _WIN32
-    LPFN_ACCEPTEX get_accept_ex(rawsocket_t rs)
-    {
-        static thread_local LPFN_ACCEPTEX _accept_ex = nullptr;
-        if (nullptr == _accept_ex)
-        {
-            GUID guid = WSAID_ACCEPTEX;
-            DWORD dw = 0;
-            WSAIoctl(rs, SIO_GET_EXTENSION_FUNCTION_POINTER, 
-                &guid, sizeof(guid), &_accept_ex, sizeof(_accept_ex), 
-                &dw, nullptr, nullptr);
-        }
-        return _accept_ex;
-    }
-#endif
-
-#ifdef KNET_REUSE_ADDR
-    bool set_rawsocket_reuse_addr(rawsocket_t rs)
-    {
-        int reuse = 1;
-        auto optval = reinterpret_cast<const char*>(&reuse);
-        return -1 != setsockopt(rs, SOL_SOCKET, SO_REUSEADDR, optval, sizeof(reuse));
-    }
-#endif
-}
 
 namespace knet
 {
@@ -96,7 +15,7 @@ namespace knet
 
         bool post_accept(rawsocket_t srv_rs, sa_family_t family)
         {
-            rs = create_rawsocket(family, SOCK_STREAM, true);
+            rs = create_rawsocket(family, SOCK_STREAM);
             if (INVALID_SOCKET == rs)
                 return false;
 
@@ -120,7 +39,6 @@ namespace knet
     };
 #endif
 
-
     acceptor::acceptor(workable* wkr)
         : _wkr(wkr)
     {
@@ -136,13 +54,22 @@ namespace knet
 #endif
     }
 
+    bool acceptor::poll()
+    {
+        const auto ret = poller::poll();
+#ifdef KNET_USE_IOCP
+        post_accept();
+#endif
+        return ret;
+    }
+
     bool acceptor::start(const address& addr)
     {
         if (INVALID_RAWSOCKET != _rs)
             return false;
 
         _family = addr.get_family();
-        _rs = create_rawsocket(_family, SOCK_STREAM, true);
+        _rs = create_rawsocket(_family, SOCK_STREAM);
         if (INVALID_RAWSOCKET == _rs)
             return false;
 
@@ -194,19 +121,11 @@ namespace knet
         close_rawsocket(_rs);
     }
 
-#ifdef KNET_USE_IOCP
-    bool acceptor::poll()
-    {
-        const auto ret = poller::poll();
-        post_accept();
-        return ret;
-    }
-#endif
-
     void acceptor::on_poll(void* key, const rawpollevent_t& evt)
     {
         (void)key;
-#ifdef KNET_USE_IOCP
+
+#if defined(KNET_USE_IOCP)
         accept_io* io = CONTAINING_RECORD(evt.lpOverlapped, accept_io, ol);
 
         if (INVALID_RAWSOCKET != io->rs)
@@ -219,31 +138,33 @@ namespace knet
         io->next = _free_ios;
         _free_ios = io;
 #elif defined(KNET_USE_EPOLL)
-        sockaddr_storage addr{};
-        socklen_t addrLen = sizeof(addr);
-        auto sa = reinterpret_cast<sockaddr*>(&addr);
-        rawsocket_t s = accept4(_rs, sa, &addrLen, SOCK_NONBLOCK);
-        while (INVALID_RAWSOCKET != s)
+        while (true)
         {
-            _wkr->add_work(s);
+            auto s = accept4(_rs, nullptr, 0, SOCK_NONBLOCK | SOCK_CLOEXEC);
+            if (INVALID_RAWSOCKET != s)
+            {
+                _wkr->add_work(s);
+                continue;
+            }
 
-            addrLen = sizeof(addr);
-            s = accept4(_rs, sa, &addrLen, SOCK_NONBLOCK);
+            if (EINTR != errno)
+                break;
         }
 #else
-        sockaddr_storage addr{};
-        socklen_t addrLen = sizeof(addr);
-        auto sa = reinterpret_cast<sockaddr*>(&addr);
-        rawsocket_t s = accept(_rs, sa, &addrLen);
-        while (INVALID_RAWSOCKET != s)
+        while (true)
         {
-            if (!set_rawsocket_nonblock(s))
+            auto s = accept(_rs, nullptr, 0);
+            if (INVALID_RAWSOCKET == s)
+            {
+                if (EINTR == errno)
+                    continue;
+                break;
+            }
+
+            if (!set_rawsocket_nonblock(s) || !set_rawsocket_cloexec(s))
                 closesocket(s);
             else
                 _wkr->add_work(s);
-
-            addrLen = sizeof(addr);
-            s = accept(_rs, sa, &addrLen);
         }
 #endif // KNET_USE_IOCP
     }

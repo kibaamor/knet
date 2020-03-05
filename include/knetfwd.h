@@ -59,6 +59,7 @@ namespace knet
 #else
     using rawpollevent_t = struct epoll_event;
 #endif
+
     constexpr rawpoller_t INVALID_RAWPOLLER = -1;
     constexpr rawsocket_t INVALID_RAWSOCKET = -1;
     constexpr int RAWSOCKET_ERROR = -1;
@@ -123,4 +124,3 @@ namespace knet
 }
 
 // config
-#define KNET_REUSE_ADDR

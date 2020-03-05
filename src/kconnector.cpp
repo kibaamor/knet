@@ -1,5 +1,6 @@
 #include "../include/kconnector.h"
 #include "../include/kworker.h"
+#include "kinternal.h"
 
 
 namespace knet
@@ -9,16 +10,12 @@ namespace knet
         : _addr(addr), _wkr(wkr), _reconn(reconn), _interval_ms(interval_ms)
     {
         kassert(nullptr != _wkr);
-        _rs = ::socket(_addr.get_family(), SOCK_STREAM, 0);
+        _rs = ::socket(_addr.get_family(), SOCK_STREAM, IPPROTO_TCP);
     }
 
     connector::~connector()
     {
-        if (INVALID_RAWSOCKET != _rs)
-        {
-            ::closesocket(_rs);
-            _rs = INVALID_RAWSOCKET;
-        }
+        close_rawsocket(_rs);
     }
 
     bool connector::update(size_t ms)
@@ -41,7 +38,9 @@ namespace knet
         if (INVALID_RAWSOCKET != _rs)
         {
             auto sa = reinterpret_cast<const sockaddr*>(&_addr.get_sockaddr());
-            if (RAWSOCKET_ERROR != connect(_rs, sa, sizeof(sockaddr_storage)))
+            if (RAWSOCKET_ERROR != connect(_rs, sa, sizeof(sockaddr_storage))
+                && set_rawsocket_nonblock(_rs)
+                && set_rawsocket_cloexec(_rs))
             {
                 _wkr->add_work(_rs);
                 _succ = true;
@@ -50,9 +49,7 @@ namespace knet
             }
             else
             {
-                ::closesocket(_rs);
-                _rs = INVALID_RAWSOCKET;
-
+                close_rawsocket(_rs);
                 if (!_reconn)
                     on_reconnect_failed();
             }

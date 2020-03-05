@@ -1,6 +1,7 @@
 #include "ksocket.h"
 #include "../include/kworker.h"
 #include "../include/kpoller.h"
+#include "kinternal.h"
 #include <cstring>
 
 
@@ -75,11 +76,7 @@ namespace knet
             _wbuf = nullptr;
         }
         _cf->destroy_connection(_conn);
-        if (INVALID_RAWSOCKET != _rs)
-        {
-            ::closesocket(_rs);
-            _rs = INVALID_RAWSOCKET;
-        }
+        close_rawsocket(_rs);
     }
 
     bool socket::attach_poller(poller* poller)
@@ -271,35 +268,27 @@ namespace knet
 #else
     bool socket::handle_can_read()
     {
-        size_t count = 0;
+        ssize_t ret = 0;
         while (_rbuf->unused_size() > 0)
         {
-            const auto ret = ::recv(_rs, _rbuf->wptr(), _rbuf->unused_size(), 0);
+            do
+                ret = ::read(_rs, _rbuf->wptr(), _rbuf->unused_size());
+            while (RAWSOCKET_ERROR == ret && EINTR == errno);
+
             if (RAWSOCKET_ERROR == ret)
             {
-                if (EAGAIN != errno && EWOULDBLOCK != errno)
-                    count = 0;
-                break;
-            }
-            else if (0 == ret)
-            {
-                break;
-            }
-            else
-            {
-                _rbuf->used_size += ret;
-                ++count;
+                if (EAGAIN == errno || EWOULDBLOCK == errno)
+                    break;
+                return false;
             }
 
-            if (0 == _rbuf->unused_size() && !handle_read())
-            {
-                count = 0;
-                break;
-            }
+            if (0 == ret)
+                return false;
+
+            _rbuf->used_size += ret;
+            if (_rbuf->used_size > 0 && !handle_read())
+                return false;
         }
-
-        if (0 == count || (_rbuf->used_size > 0 && !handle_read()))
-            return false;
         return true;
     }
 
@@ -356,6 +345,7 @@ namespace knet
     bool socket::try_write()
     {
 #ifdef KNET_USE_IOCP
+
         _wbuf->buf = _wbuf->chunk;
         _wbuf->len = static_cast<decltype(_wbuf->len)>(_wbuf->used_size);
         memset(&_wbuf->ol, 0, sizeof(_wbuf->ol));
@@ -366,27 +356,40 @@ namespace knet
             return false;
         }
         mark_flag(_flag, FlagWrite);
+
 #else // KNET_USE_IOCP
+
+        kassert(_wbuf->used_size > 0);
+
         size_t wrote = 0;
+        ssize_t ret = 0;
         while (wrote < _wbuf->used_size)
         {
-#ifndef MSG_NOSIGNAL
-#define MSG_NOSIGNAL 0
-#endif
-            const auto ret = ::send(_rs, _wbuf->chunk + wrote, 
-                _wbuf->used_size - wrote, MSG_NOSIGNAL | MSG_DONTWAIT);
-            if (RAWSOCKET_ERROR == ret && (EAGAIN == errno || EWOULDBLOCK == errno))
-                break;
-            else if (RAWSOCKET_ERROR == ret || 0 == ret)
+            do
+                ret = ::write(_rs, _wbuf->chunk + wrote, _wbuf->used_size - wrote);
+            while (RAWSOCKET_ERROR == ret && EINTR == errno);
+
+            if (RAWSOCKET_ERROR == ret)
+            {
+                if (EAGAIN == errno || EWOULDBLOCK == errno)
+                    break;
                 return false;
-            else
-                wrote += ret;
+            }
+
+            if (0 == ret)
+                return false;
+            
+            wrote += ret;
         }
-        _wbuf->used_size -= wrote;
-        if (_wbuf->used_size > 0)
+
+        if (wrote > 0)
         {
-            memmove(_wbuf->chunk, _wbuf->chunk + wrote, _wbuf->used_size);
-            unmark_flag(_flag, FlagWrite);
+            _wbuf->used_size -= wrote;
+            if (_wbuf->used_size > 0)
+            {
+                memmove(_wbuf->chunk, _wbuf->chunk + wrote, _wbuf->used_size);
+                unmark_flag(_flag, FlagWrite);
+            }
         }
 #endif // KNET_USE_IOCP
         return true;

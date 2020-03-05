@@ -79,8 +79,9 @@ namespace knet
             return false;
         }
 
-        auto sa = reinterpret_cast<const sockaddr*>(&addr.get_sockaddr());
-        if (RAWSOCKET_ERROR == bind(_rs, sa, sizeof(sockaddr_storage))
+        const auto sa = addr.get_sockaddr();
+        const auto salen = addr.get_socklen();
+        if (RAWSOCKET_ERROR == bind(_rs, sa, salen)
             || RAWSOCKET_ERROR == listen(_rs, SOMAXCONN)
             || !add(_rs, this))
         {

@@ -22,6 +22,7 @@ namespace knet
 {
     using sa_family_t = ADDRESS_FAMILY;
     using in_port_t = USHORT;
+    using socklen_t = int;
     using rawsocket_t = SOCKET;
     using rawpoller_t = HANDLE;
     using rawpollevent_t = OVERLAPPED_ENTRY;
@@ -35,16 +36,18 @@ namespace knet
 
 #include <unistd.h>
 #include <arpa/inet.h>
+#include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/errno.h>
+#include <sys/time.h>
+#include <arpa/inet.h>
+#include <netinet/in.h>
 
 #ifdef __linux__
 # include <sys/epoll.h>
 # define KNET_USE_EPOLL
 #else
-# include <sys/types.h>
 # include <sys/event.h>
-# include <sys/time.h>
 # define KNET_USE_KQUEUE
 #endif
 
@@ -54,10 +57,10 @@ namespace knet
 {
     using rawsocket_t = int;
     using rawpoller_t = int;
-#ifdef __APPLE__
-    using rawpollevent_t = struct kevent;
-#else
+#ifdef __linux__
     using rawpollevent_t = struct epoll_event;
+#else
+    using rawpollevent_t = struct kevent;
 #endif
 
     constexpr rawpoller_t INVALID_RAWPOLLER = -1;

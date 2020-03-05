@@ -37,8 +37,9 @@ namespace knet
 
         if (INVALID_RAWSOCKET != _rs)
         {
-            auto sa = reinterpret_cast<const sockaddr*>(&_addr.get_sockaddr());
-            if (RAWSOCKET_ERROR != connect(_rs, sa, sizeof(sockaddr_storage))
+            const auto sa = _addr.get_sockaddr();
+            const auto salen = _addr.get_socklen();
+            if (RAWSOCKET_ERROR != connect(_rs, sa, salen)
 #ifndef KNET_USE_IOCP
                 && set_rawsocket_nonblock(_rs)
 #endif

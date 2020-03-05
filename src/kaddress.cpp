@@ -82,6 +82,21 @@ namespace knet
         return addr + ":" + std::to_string(port);
     }
 
+    const sockaddr* address::get_sockaddr() const
+    {
+        return reinterpret_cast<const sockaddr*>(&_addr);
+    }
+
+    socklen_t address::get_socklen() const
+    {
+        if (AF_INET == get_family())
+            return sizeof(sockaddr_in);
+        else if (AF_INET6 == get_family())
+            return sizeof(sockaddr_in6);
+        else
+            return -1;
+    }
+
     std::ostream& operator<<(std::ostream& os, const address& addr)
     {
         os << addr.to_string();
@@ -95,7 +110,7 @@ namespace knet
         in_port_t port;
         is >> family >> ar >> port;
         const auto ret = addr.pton(family, ar, port);
-        (void)ret; // dont care
+        (void)ret; // do not care
         return is;
     }
 }

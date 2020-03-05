@@ -16,11 +16,13 @@ namespace knet
 
         bool attach_poller(poller* poller);
 
-        void close();
-
         bool write(buffer* buf, size_t num);
 
+        void close();
+        bool is_closing() const;
+
         void on_rawpollevent(const rawpollevent_t& evt);
+
 
     private:
         bool start();

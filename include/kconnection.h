@@ -27,6 +27,7 @@ namespace knet
 
         bool send_data(buffer* buf, size_t num);
         void disconnect();
+        bool is_disconnecting() const;
 
     protected:
         virtual void on_attach_socket(rawsocket_t rs) {}

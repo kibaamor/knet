@@ -89,6 +89,8 @@ namespace knet
 
     timerid_t tconnection::add_timer(int64_t absms, const userdata& ud)
     {
+        if (!is_disconnecting())
+            return 0;
         return _cf->add_timer(_id, absms, ud);
     }
 

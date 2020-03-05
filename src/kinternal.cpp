@@ -11,8 +11,8 @@ namespace knet
     {
 #ifdef KNET_USE_IOCP
 
-        auto flag = nonblock ? WSA_FLAG_OVERLAPPED : 0;
-        auto rs = WSASocketW(domain, type, 0, nullptr, 0, flag);
+        (void)nonblock;
+        auto rs = WSASocketW(domain, type, 0, nullptr, 0, WSA_FLAG_OVERLAPPED);
 
         if (INVALID_RAWSOCKET != rs)
         {

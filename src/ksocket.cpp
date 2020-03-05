@@ -18,7 +18,7 @@ namespace
     // FlagClose means socket will be closed
     constexpr uint8_t FlagClose = 1u << 3u;
 
-    inline bool is_flag_marked(uint8_t& flag, uint8_t test)
+    inline bool is_flag_marked(uint8_t flag, uint8_t test)
     {
         return (0 != (flag & test));
     }
@@ -125,6 +125,35 @@ namespace knet
         return true;
     }
 
+    bool socket::write(buffer* buf, size_t num)
+    {
+        if (is_flag_marked(_flag, FlagClose))
+            return false;
+
+        size_t size = 0;
+        for (size_t i = 0; i < num; ++i)
+            size += buf[i].size;
+        if (size > _wbuf->unused_size())
+            return false;
+
+        for (size_t i = 0; i < num; ++i)
+        {
+            if (buf[i].size > 0 && nullptr != buf[i].data)
+            {
+                memcpy(_wbuf->wptr(), buf[i].data, buf[i].size);
+                _wbuf->used_size += buf[i].size;
+            }
+        }
+
+#ifdef KNET_USE_IOCP
+        if (!is_flag_marked(_flag, FlagWrite))
+#else
+        if (is_flag_marked(_flag, FlagWrite))
+#endif
+            return try_write();
+        return true;
+    }
+
     void socket::close()
     {
         if (is_flag_marked(_flag, FlagCall
@@ -154,33 +183,9 @@ namespace knet
         delete this;
     }
 
-    bool socket::write(buffer* buf, size_t num)
+    bool socket::is_closing() const
     {
-        if (is_flag_marked(_flag, FlagClose))
-            return false;
-
-        size_t size = 0;
-        for (size_t i = 0; i < num; ++i)
-            size += buf[i].size;
-        if (size > _wbuf->unused_size())
-            return false;
-
-        for (size_t i = 0; i < num; ++i)
-        {
-            if (buf[i].size > 0 && nullptr != buf[i].data)
-            {
-                memcpy(_wbuf->wptr(), buf[i].data, buf[i].size);
-                _wbuf->used_size += buf[i].size;
-            }
-        }
-
-#ifdef KNET_USE_IOCP
-        if (!is_flag_marked(_flag, FlagWrite))
-#else
-        if (is_flag_marked(_flag, FlagWrite))
-#endif
-            return try_write();
-        return true;
+        return is_flag_marked(_flag, FlagClose);
     }
 
     void socket::on_rawpollevent(const rawpollevent_t& evt)

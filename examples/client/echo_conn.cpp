@@ -61,7 +61,7 @@ void cecho_conn::on_timer(int64_t absms, const knet::userdata& ud)
 
 void cecho_conn::on_attach_socket(knet::rawsocket_t rs)
 {
-    knet::set_rawsocket_sndrcvbufsize(rs, 256 * 1204);
+    knet::set_rawsocket_sndrcvbufsize(rs, 256 * 1024);
 }
 
 void cecho_conn::generate_packages()

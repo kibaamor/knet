@@ -13,4 +13,9 @@ namespace knet
         if (nullptr != _socket)
             _socket->close();
     }
+
+    bool connection::is_disconnecting() const
+    {
+        return nullptr == _socket || _socket->is_closing();
+    }
 }

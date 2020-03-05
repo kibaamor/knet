@@ -39,7 +39,10 @@ namespace knet
         {
             auto sa = reinterpret_cast<const sockaddr*>(&_addr.get_sockaddr());
             if (RAWSOCKET_ERROR != connect(_rs, sa, sizeof(sockaddr_storage))
-                && set_rawsocket_nonblock(_rs))
+#ifndef KNET_USE_IOCP
+                && set_rawsocket_nonblock(_rs)
+#endif
+                )
             {
                 _wkr->add_work(_rs);
                 _succ = true;

@@ -15,7 +15,7 @@ namespace knet
 
         bool post_accept(rawsocket_t srv_rs, sa_family_t family)
         {
-            rs = create_rawsocket(family, SOCK_STREAM);
+            rs = create_rawsocket(family, SOCK_STREAM, true);
             if (INVALID_SOCKET == rs)
                 return false;
 
@@ -69,17 +69,15 @@ namespace knet
             return false;
 
         _family = addr.get_family();
-        _rs = create_rawsocket(_family, SOCK_STREAM);
+        _rs = create_rawsocket(_family, SOCK_STREAM, true);
         if (INVALID_RAWSOCKET == _rs)
             return false;
 
-#ifdef KNET_REUSE_ADDR
         if (!set_rawsocket_reuse_addr(_rs))
         {
             close_rawsocket(_rs);
             return false;
         }
-#endif
 
         auto sa = reinterpret_cast<const sockaddr*>(&addr.get_sockaddr());
         if (RAWSOCKET_ERROR == bind(_rs, sa, sizeof(sockaddr_storage))

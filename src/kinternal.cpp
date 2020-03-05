@@ -7,11 +7,12 @@
 
 namespace knet
 {
-    rawsocket_t create_rawsocket(int domain, int type)
+    rawsocket_t create_rawsocket(int domain, int type, bool nonblock)
     {
 #ifdef KNET_USE_IOCP
 
-        auto rs = WSASocketW(domain, type, 0, nullptr, 0, WSA_FLAG_OVERLAPPED);
+        auto flag = nonblock ? WSA_FLAG_OVERLAPPED : 0;
+        auto rs = WSASocketW(domain, type, 0, nullptr, 0, flag);
 
         if (INVALID_RAWSOCKET != rs)
         {
@@ -27,7 +28,11 @@ namespace knet
         rawsocket_t rs = INVALID_RAWSOCKET;
 
 #if defined(SOCK_NONBLOCK) && defined(SOCK_CLOEXEC)
-        rs = ::socket(domain, type | SOCK_NONBLOCK | SOCK_CLOEXEC, 0);
+        auto flag = type | SOCK_CLOEXEC;
+        if (nonblock)
+            flag |= SOCK_NONBLOCK;
+
+        rs = ::socket(domain, flag, 0);
 
         if (INVALID_RAWSOCKET != rs)
             return rs;
@@ -40,7 +45,7 @@ namespace knet
         if (INVALID_RAWSOCKET == rs)
             return rs;
 
-        if (!set_rawsocket_nonblock(rs) || !set_rawsocket_cloexec(rs))
+        if (!set_rawsocket_cloexec(rs) || (nonblock && !set_rawsocket_nonblock(rs)))
             closesocket(rs);
 
 #ifdef SO_NOSIGPIPE

@@ -10,7 +10,7 @@ namespace knet
         : _addr(addr), _wkr(wkr), _reconn(reconn), _interval_ms(interval_ms)
     {
         kassert(nullptr != _wkr);
-        _rs = ::socket(_addr.get_family(), SOCK_STREAM, IPPROTO_TCP);
+        _rs = create_rawsocket(_addr.get_family(), SOCK_STREAM, false);
     }
 
     connector::~connector()
@@ -29,7 +29,7 @@ namespace knet
             if (_last_interval_ms >= _interval_ms)
             {
                 _last_interval_ms -= _interval_ms;
-                _rs = ::socket(_addr.get_family(), SOCK_STREAM, 0);
+                _rs = create_rawsocket(_addr.get_family(), SOCK_STREAM, false);
                 if (INVALID_RAWSOCKET != _rs)
                     on_reconnect();
             }
@@ -39,8 +39,7 @@ namespace knet
         {
             auto sa = reinterpret_cast<const sockaddr*>(&_addr.get_sockaddr());
             if (RAWSOCKET_ERROR != connect(_rs, sa, sizeof(sockaddr_storage))
-                && set_rawsocket_nonblock(_rs)
-                && set_rawsocket_cloexec(_rs))
+                && set_rawsocket_nonblock(_rs))
             {
                 _wkr->add_work(_rs);
                 _succ = true;

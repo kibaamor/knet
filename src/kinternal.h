@@ -3,7 +3,7 @@
 
 namespace knet
 {
-    rawsocket_t create_rawsocket(int domain, int type);
+    rawsocket_t create_rawsocket(int domain, int type, bool nonblock);
     void close_rawsocket(rawsocket_t& rs);
 
     bool set_rawsocket_reuse_addr(rawsocket_t rs);

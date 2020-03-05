@@ -1,8 +1,6 @@
 dist: xenial
 language: cpp
-compiler:
-  - gcc
-  - clang
+compiler: clang
 
 os:
   - linux
@@ -23,15 +21,6 @@ addons:
     build_command_prepend: "mkdir -p $TRAVIS_BUILD_DIR/coverity_scan && cd $TRAVIS_BUILD_DIR/coverity_scan && cmake .. -DCMAKE_BUILD_TYPE=RELEASE"
     build_command: "make -C $TRAVIS_BUILD_DIR/coverity_scan --jobs 2"
     branch_pattern: coverity_scan
-
-before_script:
-  - printenv
-  - mkdir -p $TRAVIS_BUILD_DIR/build_debug && cd $TRAVIS_BUILD_DIR/build_debug && cmake ..
-  - mkdir -p $TRAVIS_BUILD_DIR/build_release && cd $TRAVIS_BUILD_DIR/build_release && cmake ..
-
-script:
-  - cd $TRAVIS_BUILD_DIR/build_debug && cmake --build . --parallel 2 --clean-first --config Debug && ctest .
-  - cd $TRAVIS_BUILD_DIR/build_release && cmake --build . --parallel 2 --clean-first --config Release && ctest .
 
 notifications:
   slack:

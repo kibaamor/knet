@@ -9,6 +9,8 @@ namespace knet
 {
     using connid_t = uint32_t;
     using timerid_t = int64_t;
+    
+    constexpr timerid_t INVALID_TIMERID = 0;
 
     class tconnection_factory;
     class tconnection : public connection

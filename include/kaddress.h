@@ -13,8 +13,8 @@ namespace knet
         std::string to_string() const;
 
         sa_family_t get_family() const { return _addr.ss_family; }
-        sockaddr_storage& get_sockaddr() { return _addr; }
-        const sockaddr_storage& get_sockaddr() const { return _addr; }
+        const sockaddr* get_sockaddr() const;
+        socklen_t get_socklen() const;
 
     private:
         sockaddr_storage _addr = {};

@@ -59,7 +59,7 @@ public:
     knet::connid_t get_next_connid() { return _next_cid.fetch_add(1); }
 
 private:
-    std::atomic<knet::connid_t> _next_cid = 0;
+    std::atomic<knet::connid_t> _next_cid = { 0 };
 };
 
 class cecho_worker : public knet::worker

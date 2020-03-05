@@ -2,7 +2,7 @@
 
 |Linux Build Status|Windows Build Status|Coverity Scan Build Status|License|
 |:--:|:--:|:--:|:--:|
-[![Linux Build Status](https://img.shields.io/travis/kibaamor/knet?label=Linux%20build&style=flat-square)](https://travis-ci.org/KibaAmor/knet)|[![Windows Build Status](https://img.shields.io/appveyor/build/kibaamor/knet?label=Windows%20build&style=flat-square)](https://ci.appveyor.com/project/KibaAmor/knet)|[![Coverity Scan Build Status](https://img.shields.io/coverity/scan/20462?label=Coverity%20build&style=flat-square)](https://scan.coverity.com/projects/kibaamor-knet)|[![License](https://img.shields.io/github/license/kibaamor/knet?label=License&style=flat-square)](./LICENSE)
+[![Linux Build Status](https://img.shields.io/travis/kibaamor/knet/master?label=Linux%20build&style=flat-square)](https://travis-ci.org/KibaAmor/knet)|[![Windows Build Status](https://img.shields.io/appveyor/build/kibaamor/knet/master?label=Windows%20build&style=flat-square)](https://ci.appveyor.com/project/KibaAmor/knet)|[![Coverity Scan Build Status](https://img.shields.io/coverity/scan/20462?label=Coverity%20build&style=flat-square)](https://scan.coverity.com/projects/kibaamor-knet)|[![License](https://img.shields.io/github/license/kibaamor/knet?label=License&style=flat-square)](./LICENSE)
 
 A cross platform lock-free and timer-supported(hearbeat etc.) C++11 network library.
 

@@ -21,11 +21,21 @@ private:
     int64_t _last_recv_ms = 0;
 };
 
+class secho_conn_factory_builder;
 class secho_conn_factory : public knet::tconnection_factory
 {
+public:
+    secho_conn_factory(secho_conn_factory_builder* cfb = nullptr);
+
 protected:
     knet::tconnection* create_connection_impl() override;
     void destroy_connection_impl(knet::tconnection* tconn) override;
+
+    knet::connid_t get_next_connid();
+
+private:
+    secho_conn_factory_builder* _cfb = nullptr;
+    knet::connid_t _next_cid = 0;
 };
 
 class secho_conn_factory_builder : public knet::connection_factory_builder
@@ -33,8 +43,13 @@ class secho_conn_factory_builder : public knet::connection_factory_builder
 public:
     knet::connection_factory* build_factory() override
     {
-        return new secho_conn_factory();
+        return new secho_conn_factory(this);
     }
+
+    knet::connid_t get_next_connid() { return _next_cid.fetch_add(1); }
+
+private:
+    std::atomic<knet::connid_t> _next_cid = 0;
 };
 
 class secho_worker : public knet::worker

@@ -1,6 +1,7 @@
 #pragma once
 #include <kconnector.h>
 #include <ktconnection.h>
+#include <atomic>
 #include "../echo_mgr.h"
 
 
@@ -30,11 +31,21 @@ private:
     uint32_t _next_recv_pkg_id = 0;
 };
 
+class cecho_conn_factory_builder;
 class cecho_conn_factory : public knet::tconnection_factory
 {
+public:
+    cecho_conn_factory(cecho_conn_factory_builder* cfb = nullptr);
+
 protected:
     knet::tconnection* create_connection_impl() override;
     void destroy_connection_impl(knet::tconnection* tconn) override;
+
+    knet::connid_t get_next_connid();
+
+private:
+    cecho_conn_factory_builder* _cfb = nullptr;
+    knet::connid_t _next_cid = 0;
 };
 
 class cecho_conn_factory_builder : public knet::connection_factory_builder
@@ -42,8 +53,13 @@ class cecho_conn_factory_builder : public knet::connection_factory_builder
 public:
     knet::connection_factory* build_factory() override
     {
-        return new cecho_conn_factory();
+        return new cecho_conn_factory(this);
     }
+
+    knet::connid_t get_next_connid() { return _next_cid.fetch_add(1); }
+
+private:
+    std::atomic<knet::connid_t> _next_cid = 0;
 };
 
 class cecho_worker : public knet::worker

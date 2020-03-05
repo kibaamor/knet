@@ -7,7 +7,7 @@
 
 namespace knet
 {
-    using connid_t = int32_t;
+    using connid_t = uint32_t;
     using timerid_t = int64_t;
 
     class tconnection_factory;
@@ -44,8 +44,6 @@ namespace knet
         void del_timer(connid_t cid, int64_t absms);
 
     protected:
-        connid_t get_next_connid() { return _next_cid++; }
-
         virtual tconnection* create_connection_impl() = 0;
         virtual void destroy_connection_impl(tconnection* tconn) { delete tconn; }
 
@@ -54,7 +52,6 @@ namespace knet
         void destroy_connection(connection* conn) override;
 
     private:
-        connid_t _next_cid = 0;
         std::unordered_map<connid_t, tconnection*> _tconns;
 
         void on_timer(connid_t cid, int64_t absms, const userdata& ud);

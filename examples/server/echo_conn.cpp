@@ -74,6 +74,12 @@ void secho_conn::set_idle_timer()
         add_timer(knet::now_ms() + max_idle_ms, 0);
 }
 
+
+secho_conn_factory::secho_conn_factory(secho_conn_factory_builder* cfb)
+    : _cfb(cfb)
+{
+}
+
 knet::tconnection* secho_conn_factory::create_connection_impl()
 {
     echo_mgr::get_instance().inc_conn_num();
@@ -84,4 +90,9 @@ void secho_conn_factory::destroy_connection_impl(knet::tconnection* tconn)
 {
     echo_mgr::get_instance().dec_conn_num();
     knet::tconnection_factory::destroy_connection_impl(tconn);
+}
+
+knet::connid_t secho_conn_factory::get_next_connid()
+{
+    return nullptr != _cfb ? _cfb->get_next_connid() : _next_cid++;
 }

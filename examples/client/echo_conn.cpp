@@ -146,6 +146,12 @@ int32_t cecho_conn::check_package(char* data, size_t size)
     return pkg->size;
 }
 
+
+cecho_conn_factory::cecho_conn_factory(cecho_conn_factory_builder* cfb)
+    : _cfb(cfb)
+{
+}
+
 knet::tconnection* cecho_conn_factory::create_connection_impl()
 {
     echo_mgr::get_instance().inc_conn_num();
@@ -157,6 +163,12 @@ void cecho_conn_factory::destroy_connection_impl(knet::tconnection* tconn)
     echo_mgr::get_instance().dec_conn_num();
     knet::tconnection_factory::destroy_connection_impl(tconn);
 }
+
+knet::connid_t cecho_conn_factory::get_next_connid()
+{
+    return nullptr != _cfb ? _cfb->get_next_connid() : _next_cid++;
+}
+
 
 cecho_connector::cecho_connector(const knet::address& addr, 
     knet::workable* wkr, bool reconn, size_t interval_ms)

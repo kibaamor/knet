@@ -51,7 +51,8 @@ namespace knet
 #ifdef SO_NOSIGPIPE
         int on = 1;
         auto optval = reinterpret_cast<const char*>(&on);
-        setsockopt(sockfd, SOL_SOCKET, SO_NOSIGPIPE, optval, sizeof(on));
+        if (RAWSOCKET_ERROR == setsockopt(rs, SOL_SOCKET, SO_NOSIGPIPE, optval, sizeof(on)))
+            close_rawsocket(rs);
 #endif
 
         return rs;

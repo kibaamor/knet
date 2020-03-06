@@ -27,32 +27,42 @@ namespace knet
 
         rawsocket_t rs = INVALID_RAWSOCKET;
 
+        do
+        {
 #if defined(SOCK_NONBLOCK) && defined(SOCK_CLOEXEC)
-        auto flag = type | SOCK_CLOEXEC;
-        if (nonblock)
-            flag |= SOCK_NONBLOCK;
 
-        rs = ::socket(domain, flag, 0);
+            auto flag = type | SOCK_CLOEXEC;
+            if (nonblock)
+                flag |= SOCK_NONBLOCK;
 
-        if (INVALID_RAWSOCKET != rs)
-            return rs;
+            rs = ::socket(domain, flag, 0);
+            if (INVALID_RAWSOCKET != rs)
+                break;
 
-        if (EINVAL != errno)
-            return rs;
+            if (EINVAL != errno)
+                return rs;
+
 #endif
 
-        rs = ::socket(domain, type, 0);
-        if (INVALID_RAWSOCKET == rs)
-            return rs;
+            rs = ::socket(domain, type, 0);
+            if (INVALID_RAWSOCKET == rs)
+                break;
 
-        if (!set_rawsocket_cloexec(rs) || (nonblock && !set_rawsocket_nonblock(rs)))
-            closesocket(rs);
+            if (!set_rawsocket_cloexec(rs)
+                || (nonblock && !set_rawsocket_nonblock(rs)))
+            {
+                close_rawsocket(rs);
+                break;
+            }
+        } while (false);
 
 #ifdef SO_NOSIGPIPE
-        int on = 1;
-        auto optval = reinterpret_cast<const char*>(&on);
-        if (RAWSOCKET_ERROR == setsockopt(rs, SOL_SOCKET, SO_NOSIGPIPE, optval, sizeof(on)))
-            close_rawsocket(rs);
+        if (INVALID_RAWSOCKET != rs)
+        {
+            int on = 1;
+            if (!set_rawsocket_opt(rs, SOL_SOCKET, SO_NOSIGPIPE, &on, sizeof(on)))
+                close_rawsocket(rs);
+        }
 #endif
 
         return rs;
@@ -68,12 +78,10 @@ namespace knet
         rs = INVALID_RAWSOCKET;
     }
 
-    bool set_rawsocket_reuse_addr(rawsocket_t rs)
+    bool set_rawsocket_opt(rawsocket_t rs, int level, int optname, 
+        const void* optval, socklen_t optlen)
     {
-        int reuse = 1;
-        auto optval = reinterpret_cast<const char*>(&reuse);
-        return RAWSOCKET_ERROR != setsockopt(rs, SOL_SOCKET, SO_REUSEADDR, 
-            optval, sizeof(reuse));
+        return RAWSOCKET_ERROR != setsockopt(rs, level, optname, optval, optlen);
     }
 
 #ifndef KNET_USE_IOCP

@@ -23,7 +23,7 @@ Table of Contents
 
 ## Highlights
 
-* Support Windows and Linux
+* Support Windows, Linux, MacOS, FreeBSD, OpenBSD
 * Support Synchronous and Asynchronous processing connections
 * Support network package defragment
 * Less code and no third party dependency

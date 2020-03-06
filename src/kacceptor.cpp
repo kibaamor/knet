@@ -73,7 +73,8 @@ namespace knet
         if (INVALID_RAWSOCKET == _rs)
             return false;
 
-        if (!set_rawsocket_reuse_addr(_rs))
+        int on = 1;
+        if (!set_rawsocket_opt(_rs, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on)))
         {
             close_rawsocket(_rs);
             return false;

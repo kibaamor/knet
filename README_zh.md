@@ -23,7 +23,7 @@
 
 ## 特点
 
-* 支持Window和Linux
+* 支持Window、Linux、MacOS、FreeBSD和OpenBSD
 * 同时支持同步、异步两种使用方式
 * 易于扩展，支持网络粘包
 * 代码少，无第三方库依赖

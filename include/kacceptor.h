@@ -12,7 +12,7 @@ namespace knet
         acceptor(workable* wkr);
         ~acceptor() override;
 
-        bool poll() override;
+        void poll() override;
 
         bool start(const address& addr);
         void stop();

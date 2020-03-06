@@ -21,9 +21,9 @@ namespace knet
         std::vector<socket*>().swap(_adds);
     }
 
-    bool worker::poll()
+    void worker::poll()
     {
-        const auto ret = poller::poll();
+        poller::poll();
 
         if (!_adds.empty())
         {
@@ -34,8 +34,6 @@ namespace knet
             }
             _adds.clear();
         }
-
-        return ret;
     }
 
     void worker::add_work(rawsocket_t rs)

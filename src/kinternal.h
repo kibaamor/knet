@@ -3,6 +3,8 @@
 
 namespace knet
 {
+    void on_fatal_error(int err, const char* apiname);
+
     rawsocket_t create_rawsocket(int domain, int type, bool nonblock);
     void close_rawsocket(rawsocket_t& rs);
 

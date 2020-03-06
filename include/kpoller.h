@@ -11,7 +11,7 @@ namespace knet
         virtual ~poller();
 
         virtual bool add(rawsocket_t rs, void* key);
-        virtual bool poll();
+        virtual void poll();
 
     protected:
         virtual void on_poll(void* key, const rawpollevent_t& evt) = 0;

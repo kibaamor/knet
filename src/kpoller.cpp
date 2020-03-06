@@ -1,4 +1,5 @@
 #include "../include/kpoller.h"
+#include "kinternal.h"
 
 
 namespace knet
@@ -7,6 +8,11 @@ namespace knet
     {
 #if defined(KNET_USE_IOCP)
         _rp = CreateIoCompletionPort(INVALID_HANDLE_VALUE, nullptr, 0, 1);
+        if (!SetHandleInformation(_rp, HANDLE_FLAG_INHERIT, 0))
+        {
+            CloseHandle(_rp);
+            _rp = INVALID_RAWPOLLER;
+        }
 #elif defined(KNET_USE_EPOLL)
         _rp = epoll_create(1);
 #else
@@ -43,12 +49,17 @@ namespace knet
 #endif
     }
 
-    bool poller::poll()
+    void poller::poll()
     {
 #if defined(KNET_USE_IOCP)
+
         ULONG num = 0;
         if (!GetQueuedCompletionStatusEx(_rp, _evts, POLL_EVENT_NUM, &num, 0, FALSE))
-            return WAIT_TIMEOUT == GetLastError();
+        {
+            if (WAIT_TIMEOUT != WSAGetLastError())
+                on_fatal_error(WSAGetLastError(), "GetQueuedCompletionStatusEx");
+            return;
+        }
 
         if (num > 0)
         {
@@ -58,9 +69,17 @@ namespace knet
                 on_poll(key, _evts[i]);
             }
         }
-        return true;
+
 #elif defined(KNET_USE_EPOLL)
-        const int num = epoll_wait(_rp, _evts, POLL_EVENT_NUM, 0);
+
+        int num = 0;
+        do
+            num = epoll_wait(_rp, _evts, POLL_EVENT_NUM, 0);
+        while (RAWSOCKET_ERROR == num && EINTR == errno);
+
+        if (RAWSOCKET_ERROR == num)
+            on_fatal_error(errno, "epoll_wait");
+
         if (num > 0)
         {
             for (int i = 0; i < num; ++i)
@@ -68,13 +87,21 @@ namespace knet
                 auto key = _evts[i].data.ptr;
                 on_poll(key, _evts[i]);
             }
-            return true;
         }
-        return (0 == num || (-1 == num && errno == EINTR));
+
 #else
+
         struct timespec ts;
         memset(&ts, 0, sizeof(ts));
-        const int num = kevent(_rp, nullptr, 0, _evts, POLL_EVENT_NUM, &ts);
+
+        int num = 0;
+        do
+            num = kevent(_rp, nullptr, 0, _evts, POLL_EVENT_NUM, &ts);
+        while (RAWSOCKET_ERROR == num && EINTR == errno);
+
+        if (RAWSOCKET_ERROR == num)
+            on_fatal_error(errno, "kevent");
+
         if (num > 0)
         {
             for (int i = 0; i < num; ++i)
@@ -83,7 +110,7 @@ namespace knet
                 on_poll(key, _evts[i]);
             }
         }
-        return (0 == num || (-1 == num && errno == EINTR));
+
 #endif
     }
 }

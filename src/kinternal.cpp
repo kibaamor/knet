@@ -1,4 +1,7 @@
 #include "kinternal.h"
+#include <cstdio>
+#include <exception>
+#include <iostream>
 
 #ifndef KNET_USE_IOCP
 # include <sys/ioctl.h>
@@ -7,6 +10,34 @@
 
 namespace knet
 {
+    void on_fatal_error(int err, const char* apiname)
+    {
+        char buf[10240] = {};
+
+#ifdef _WIN32
+
+        LPSTR msg = nullptr;
+        FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM |
+            FORMAT_MESSAGE_IGNORE_INSERTS, nullptr, err,
+            MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&msg, 0, nullptr);
+
+        snprintf(buf, sizeof(buf), "%s: (%d) %s", apiname, err,
+            (nullptr != msg ? msg : "Unknown error"));
+
+        if (nullptr != msg)
+            LocalFree(msg);
+
+#else
+
+        snprintf(buf, sizeof(buf), "%s: (%d) %s", apiname, err, strerror(err));
+
+#endif
+
+        std::cerr << buf << std::endl;
+        std::cerr.flush();
+        throw new std::runtime_error(std::string(buf));
+    }
+
     rawsocket_t create_rawsocket(int domain, int type, bool nonblock)
     {
 #ifdef KNET_USE_IOCP
@@ -94,7 +125,7 @@ namespace knet
 
         do
             ret = ioctl(rs, FIONBIO, &set);
-        while (ret == RAWSOCKET_ERROR && EINTR == errno);
+        while (RAWSOCKET_ERROR == ret && EINTR == errno);
 
         return 0 == ret;
     }
@@ -105,7 +136,7 @@ namespace knet
 
         do
             ret = ioctl(rs, FIOCLEX);
-        while (ret == RAWSOCKET_ERROR && EINTR == errno);
+        while (RAWSOCKET_ERROR == ret && EINTR == errno);
 
         return 0 == ret;
     }

@@ -54,13 +54,12 @@ namespace knet
 #endif
     }
 
-    bool acceptor::poll()
+    void acceptor::poll()
     {
-        const auto ret = poller::poll();
+        poller::poll();
 #ifdef KNET_USE_IOCP
         post_accept();
 #endif
-        return ret;
     }
 
     bool acceptor::start(const address& addr)

@@ -57,11 +57,10 @@ class secho_worker : public knet::worker
 public:
     secho_worker(secho_conn_factory* cf) : worker(cf) {}
 
-    bool poll() override
+    void poll() override
     {
-        const auto ret = worker::poll();
+        worker::poll();
         get_cf<secho_conn_factory>()->update();
-        return ret;
     }
 };
 

@@ -6,6 +6,7 @@ compiler:
 
 os:
   - linux
+  - osx
 
 env:
   global:

@@ -81,7 +81,8 @@ namespace knet
     bool set_rawsocket_opt(rawsocket_t rs, int level, int optname, 
         const void* optval, socklen_t optlen)
     {
-        return RAWSOCKET_ERROR != setsockopt(rs, level, optname, optval, optlen);
+        auto val = static_cast<const char*>(optval);
+        return RAWSOCKET_ERROR != setsockopt(rs, level, optname, val, optlen);
     }
 
 #ifndef KNET_USE_IOCP

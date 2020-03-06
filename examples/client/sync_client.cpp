@@ -66,6 +66,9 @@ int main(int argc, char** argv)
         {
             if (0 == conn_num)
                 break;
+
+            if (nullptr != cnctor)
+                cnctor = nullptr;
         }
         else if (nullptr == cnctor && conn_num < client_num)
         {

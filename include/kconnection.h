@@ -27,10 +27,7 @@ namespace knet
 
         bool send_data(buffer* buf, size_t num);
 
-        // DO NOT operate connection after disconnect
-        // connection may be immediately deleted
         void disconnect();
-
         bool is_disconnecting() const;
 
     protected:

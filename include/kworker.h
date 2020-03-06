@@ -36,6 +36,7 @@ namespace knet
     private:
         connection_factory* const _cf;
         std::vector<socket*> _adds;
+        std::vector<socket*> _dels;
     };
 
     class async_worker

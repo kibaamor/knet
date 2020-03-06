@@ -43,8 +43,8 @@ namespace knet
         return 0 == epoll_ctl(_rp, EPOLL_CTL_ADD, rs, &ev);
 #else
         struct kevent ev[2];
-        EV_SET(&ev[0], rs, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, key);
-        EV_SET(&ev[1], rs, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, key);
+        EV_SET(&ev[0], rs, EVFILT_READ, EV_ADD | EV_ENABLE | EV_CLEAR, 0, 0, key);
+        EV_SET(&ev[1], rs, EVFILT_WRITE, EV_ADD | EV_ENABLE | EV_CLEAR, 0, 0, key);
         return 0 == kevent(_rp, ev, 2, nullptr, 0, nullptr);
 #endif
     }

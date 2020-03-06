@@ -8,15 +8,17 @@
 namespace
 {
     // when using IOCP, FlagRead means socket has pending WSARecv
-    // when using epoll, FlagRead means socket can read
+    // when using epoll/kqueue, FlagRead means socket can read
     constexpr uint8_t FlagRead = 1u << 0u;
     // when using IOCP, FlagRead means socket has pending WSASend
-    // when using epoll, FlagRead means socket can write
+    // when using epoll/kqueue, FlagRead means socket can write
     constexpr uint8_t FlagWrite = 1u << 1u;
     // FlagCall means socket processing user callback
     constexpr uint8_t FlagCall = 1u << 2u;
     // FlagClose means socket will be closed
     constexpr uint8_t FlagClose = 1u << 3u;
+    // FlagDelete means class socket can be deleted
+    constexpr uint8_t FlagDeletable = 1u << 4u;
 
     inline bool is_flag_marked(uint8_t flag, uint8_t test)
     {
@@ -63,7 +65,10 @@ namespace knet
 
     socket::~socket()
     {
-        kassert(FlagClose == _flag || 0 == _flag);
+        kassert(0 == _flag          // poller->add failed
+            || FlagClose == _flag   // socket::start failed
+            || (FlagClose | FlagDeletable) == _flag
+        );
 
         if (nullptr != _rbuf)
         {
@@ -158,6 +163,10 @@ namespace knet
 
     void socket::close()
     {
+        kassert(!is_flag_marked(_flag, FlagDeletable));
+        if (is_flag_marked(_flag, FlagDeletable))
+            return;
+
         if (is_flag_marked(_flag, FlagCall
 #ifdef KNET_USE_IOCP
             | FlagRead | FlagWrite
@@ -182,12 +191,18 @@ namespace knet
 #define SHUT_RDWR SD_BOTH
 #endif
         shutdown(_rs, SHUT_RDWR);
-        delete this;
+
+        _flag |= FlagClose | FlagDeletable;
     }
 
     bool socket::is_closing() const
     {
         return is_flag_marked(_flag, FlagClose);
+    }
+
+    bool socket::is_deletable() const
+    {
+        return is_flag_marked(_flag, FlagDeletable);
     }
 
     void socket::on_rawpollevent(const rawpollevent_t& evt)
@@ -333,7 +348,7 @@ namespace knet
             ret = _rbuf->used_size;
         _rbuf->used_size -= ret;
 
-        if (0 == _rbuf->unused_size())
+        if (0 == _rbuf->unused_size() && !is_flag_marked(_flag, FlagClose))
             mark_flag(_flag, FlagClose);
 
         if (is_flag_marked(_flag, FlagClose))

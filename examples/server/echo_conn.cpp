@@ -56,7 +56,8 @@ void secho_conn::on_timer(int64_t absms, const knet::userdata& ud)
     {
         std::cerr << "kick client: " << get_connid() 
             << ", last_recv_ms: " << _last_recv_ms 
-            << ", now_ms: " << nowms << std::endl;
+            << ", now_ms: " << nowms 
+            << ", delta_ms: " << nowms - _last_recv_ms << std::endl;
         disconnect();
         return;
     }

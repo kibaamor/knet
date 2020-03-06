@@ -373,8 +373,13 @@ namespace knet
         while (wrote < _wbuf->used_size)
         {
             do
-                //ret = ::write(_rs, _wbuf->chunk + wrote, _wbuf->used_size - wrote);
+            {
+#ifdef SO_NOSIGPIPE
+                ret = ::write(_rs, _wbuf->chunk + wrote, _wbuf->used_size - wrote);
+#else
                 ret = ::send(_rs, _wbuf->chunk + wrote, _wbuf->used_size - wrote, MSG_NOSIGNAL);
+#endif
+            }
             while (RAWSOCKET_ERROR == ret && EINTR == errno);
 
             if (RAWSOCKET_ERROR == ret)

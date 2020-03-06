@@ -24,7 +24,10 @@ void cecho_conn::on_connected()
 {
     auto& mgr = echo_mgr::get_instance();
     if (mgr.get_disconnect_all())
+    {
         disconnect();
+        return;
+    }
     
     generate_packages();
     add_timer(knet::now_ms() + mgr.get_delay_ms(), TIMER_ID_SEND_PACKAGE);
@@ -53,7 +56,11 @@ size_t cecho_conn::on_recv_data(char* data, size_t size)
 void cecho_conn::on_timer(int64_t absms, const knet::userdata& ud)
 {
     //std::cout << get_connid() << " on timer: " << absms << std::endl;
-    send_package();
+    if (!send_package())
+    {
+        disconnect();
+        return;
+    }
 
     auto& mgr = echo_mgr::get_instance();
     add_timer(knet::now_ms() + mgr.get_delay_ms(), TIMER_ID_SEND_PACKAGE);
@@ -91,10 +98,10 @@ void cecho_conn::generate_packages()
     }
 }
 
-void cecho_conn::send_package()
+bool cecho_conn::send_package()
 {
     if (_send_buf_size == _used_buf_size)
-        return;
+        return true;
 
     kassert(_send_buf_size < _used_buf_size);
 
@@ -104,8 +111,7 @@ void cecho_conn::send_package()
     if (!send_data(&buf, 1))
     {
         std::cerr << "send_package failed! size:" << buf.size << std::endl;
-        disconnect();
-        return;
+        return false;
     }
 
     _send_buf_size += send_size;
@@ -115,6 +121,8 @@ void cecho_conn::send_package()
 
     if (_send_buf_size == _used_buf_size)
         generate_packages();
+
+    return true;
 }
 
 int32_t cecho_conn::check_package(char* data, size_t size)

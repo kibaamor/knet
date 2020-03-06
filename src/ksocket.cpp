@@ -75,6 +75,8 @@ namespace knet
             delete _wbuf;
             _wbuf = nullptr;
         }
+
+        _conn->_socket = nullptr;
         _cf->destroy_connection(_conn);
         close_rawsocket(_rs);
     }
@@ -371,7 +373,8 @@ namespace knet
         while (wrote < _wbuf->used_size)
         {
             do
-                ret = ::write(_rs, _wbuf->chunk + wrote, _wbuf->used_size - wrote);
+                //ret = ::write(_rs, _wbuf->chunk + wrote, _wbuf->used_size - wrote);
+                ret = ::send(_rs, _wbuf->chunk + wrote, _wbuf->used_size - wrote, MSG_NOSIGNAL);
             while (RAWSOCKET_ERROR == ret && EINTR == errno);
 
             if (RAWSOCKET_ERROR == ret)

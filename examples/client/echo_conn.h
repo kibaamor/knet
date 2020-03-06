@@ -19,7 +19,7 @@ protected:
 
 private:
     void generate_packages();
-    void send_package();
+    bool send_package();
     int32_t check_package(char* data, size_t size);
 
 private:

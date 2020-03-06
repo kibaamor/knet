@@ -13,7 +13,11 @@ void secho_conn::on_connected()
 {
     auto& mgr = echo_mgr::get_instance();
     if (mgr.get_disconnect_all())
+    {
         disconnect();
+        return;
+    }
+
     set_idle_timer();
 }
 
@@ -50,15 +54,14 @@ void secho_conn::on_timer(int64_t absms, const knet::userdata& ud)
     auto& mgr = echo_mgr::get_instance();
     if (_last_recv_ms > 0 && nowms > _last_recv_ms + mgr.get_max_idle_ms())
     {
-        std::cerr << "!!!!!!!!!!!!!!!!!! "
-            << "kick client for idle too long! last_recv_ms: "
-            << _last_recv_ms << ", now_ms: " << nowms << std::endl;
+        std::cerr << "kick client: " << get_connid() 
+            << ", last_recv_ms: " << _last_recv_ms 
+            << ", now_ms: " << nowms << std::endl;
         disconnect();
+        return;
     }
-    else
-    {
-        set_idle_timer();
-    }
+    
+    set_idle_timer();
 }
 
 void secho_conn::on_attach_socket(knet::rawsocket_t rs)

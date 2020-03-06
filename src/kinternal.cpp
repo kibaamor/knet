@@ -1,6 +1,7 @@
 #include "kinternal.h"
 #include <cstdio>
-#include <exception>
+#include <cstring>
+#include <stdexcept>
 #include <iostream>
 
 #ifndef KNET_USE_IOCP

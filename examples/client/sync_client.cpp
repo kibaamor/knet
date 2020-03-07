@@ -48,6 +48,7 @@ int main(int argc, char** argv)
     auto& mgr = echo_mgr::get_instance();
     mgr.check_console_input();
     mgr.set_max_delay_ms(max_delay_ms);
+    mgr.set_enable_log(true);
 
     auto last_ms = now_ms();
     while (true)

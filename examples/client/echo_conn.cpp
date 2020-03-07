@@ -23,6 +23,10 @@ cecho_conn::cecho_conn(knet::connid_t id, knet::tconnection_factory* cf)
 void cecho_conn::on_connected()
 {
     auto& mgr = echo_mgr::get_instance();
+
+    if (mgr.get_enable_log())
+        std::cout << get_connid() << " on_connected" << std::endl;
+
     if (mgr.get_disconnect_all())
     {
         disconnect();
@@ -36,6 +40,10 @@ void cecho_conn::on_connected()
 size_t cecho_conn::on_recv_data(char* data, size_t size)
 {
     auto& mgr = echo_mgr::get_instance();
+
+    if (mgr.get_enable_log())
+        std::cout << get_connid() << " on_recv_data, size: " << size << std::endl;
+
     if (mgr.get_disconnect_all())
     {
         disconnect();
@@ -55,14 +63,17 @@ size_t cecho_conn::on_recv_data(char* data, size_t size)
 
 void cecho_conn::on_timer(int64_t absms, const knet::userdata& ud)
 {
-    //std::cout << get_connid() << " on timer: " << absms << std::endl;
+    auto& mgr = echo_mgr::get_instance();
+
+    if (mgr.get_enable_log())
+        std::cout << get_connid() << " on timer: " << absms << std::endl;
+
     if (!send_package())
     {
         disconnect();
         return;
     }
 
-    auto& mgr = echo_mgr::get_instance();
     add_timer(knet::now_ms() + mgr.get_delay_ms(), TIMER_ID_SEND_PACKAGE);
 }
 

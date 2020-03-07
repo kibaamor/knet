@@ -39,6 +39,9 @@ public:
     void set_is_server(bool b) { _is_server = b; }
     bool get_is_server() const { return _is_server; }
 
+    void set_enable_log(bool b) { _enable_log = b; }
+    bool get_enable_log() const { return _enable_log; }
+
     int64_t get_delay_ms() const;
     int64_t get_max_delay_ms() const { return _max_delay_ms; }
     void set_max_delay_ms(int64_t ms) { _max_delay_ms = ms; }
@@ -71,6 +74,7 @@ private:
     int64_t _total_ms = 0;
 
     bool _is_server = true;
+    bool _enable_log = false;
 
     int64_t _max_delay_ms = 0;
     int64_t _max_idle_ms = 0;

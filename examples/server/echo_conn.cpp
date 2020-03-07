@@ -12,6 +12,10 @@ secho_conn::secho_conn(knet::connid_t id, knet::tconnection_factory* cf)
 void secho_conn::on_connected()
 {
     auto& mgr = echo_mgr::get_instance();
+
+    if (mgr.get_enable_log())
+        std::cout << get_connid() << " on_connected" << std::endl;
+
     if (mgr.get_disconnect_all())
     {
         disconnect();
@@ -24,6 +28,10 @@ void secho_conn::on_connected()
 size_t secho_conn::on_recv_data(char* data, size_t size)
 {
     auto& mgr = echo_mgr::get_instance();
+
+    if (mgr.get_enable_log())
+        std::cout << get_connid() << " on_recv_data, size: " << size << std::endl;
+
     if (mgr.get_disconnect_all())
     {
         disconnect();
@@ -31,8 +39,6 @@ size_t secho_conn::on_recv_data(char* data, size_t size)
     }
 
     _last_recv_ms = knet::now_ms();
-//     std::cout << "recv_data from " << get_connid() 
-//         << " at " << _last_recv_ms << std::endl;
 
     knet::buffer buf(data, size);
     if (!send_data(&buf, 1))
@@ -49,9 +55,12 @@ size_t secho_conn::on_recv_data(char* data, size_t size)
 
 void secho_conn::on_timer(int64_t absms, const knet::userdata& ud)
 {
-    //std::cout << get_connid() << " on timer: " << absms << std::endl;
-    const auto nowms = knet::now_ms();
     auto& mgr = echo_mgr::get_instance();
+
+    if (mgr.get_enable_log())
+        std::cout << get_connid() << " on timer: " << absms << std::endl;
+
+    const auto nowms = knet::now_ms();
     if (_last_recv_ms > 0 && nowms > _last_recv_ms + mgr.get_max_idle_ms())
     {
         std::cerr << "kick client: " << get_connid() 

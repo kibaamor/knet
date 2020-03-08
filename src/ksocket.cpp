@@ -63,14 +63,11 @@ namespace knet
 
     socket::~socket()
     {
-        kassert(
-            0 == _flag 
-            || FlagClose == _flag
-#ifndef KNET_USE_IOCP
-            || (FlagWrite | FlagClose) == _flag
+#ifdef KNET_USE_IOCP
+        kassert(0 == _flag || FlagClose == _flag);
+#else
+        kassert(0 == _flag || FlagClose == _flag || (FlagWrite | FlagClose) == _flag);
 #endif
-        );
-
         if (nullptr != _rbuf)
         {
             delete _rbuf;

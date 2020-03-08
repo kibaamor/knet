@@ -14,7 +14,7 @@ namespace knet
         virtual void poll();
 
     protected:
-        virtual void on_poll(void* key, const rawpollevent_t& evt) = 0;
+        virtual bool on_poll(void* key, const rawpollevent_t& evt) = 0;
 
     private:
         rawpoller_t _rp = INVALID_RAWPOLLER;

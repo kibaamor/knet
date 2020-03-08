@@ -18,7 +18,7 @@ namespace knet
         void stop();
 
     protected:
-        void on_poll(void* key, const rawpollevent_t& evt) override;
+        bool on_poll(void* key, const rawpollevent_t& evt) override;
 
     private:
         workable* const _wkr;

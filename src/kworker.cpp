@@ -19,10 +19,6 @@ namespace knet
         for (auto sock : _adds)
             delete sock;
         std::vector<socket*>().swap(_adds);
-
-        for (auto sock : _dels)
-            delete sock;
-        std::vector<socket*>().swap(_dels);
     }
 
     void worker::poll()
@@ -38,12 +34,6 @@ namespace knet
             }
             _adds.clear();
         }
-        if (!_dels.empty())
-        {
-            for (auto sock : _dels)
-                delete sock;
-            _dels.clear();
-        }
     }
 
     void worker::add_work(rawsocket_t rs)
@@ -52,20 +42,11 @@ namespace knet
         _adds.push_back(sock);
     }
 
-    void worker::on_poll(void* key, const rawpollevent_t& evt)
+    bool worker::on_poll(void* key, const rawpollevent_t& evt)
     {
         auto sock = static_cast<socket*>(key);
         kassert(nullptr != sock);
-
-        if (sock->is_deletable())
-        {
-            _dels.push_back(sock);
-            return;
-        }
-
-        sock->on_rawpollevent(evt);
-        if (sock->is_deletable())
-            _dels.push_back(sock);
+        return sock->on_rawpollevent(evt);
     }
 
     async_worker::async_worker(connection_factory_builder* cfb)

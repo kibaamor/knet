@@ -20,9 +20,8 @@ namespace knet
 
         void close();
         bool is_closing() const;
-        bool is_deletable() const;
 
-        void on_rawpollevent(const rawpollevent_t& evt);
+        bool on_rawpollevent(const rawpollevent_t& evt);
 
     private:
         bool start();

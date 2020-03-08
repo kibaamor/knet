@@ -1,5 +1,6 @@
 #include "../include/kpoller.h"
 #include "kinternal.h"
+#include <set>
 
 
 namespace knet
@@ -106,10 +107,15 @@ namespace knet
 
         if (num > 0)
         {
+            std::set<void*> ignores;
             for (int i = 0; i < num; ++i)
             {
                 auto key = _evts[i].udata;
-                on_poll(key, _evts[i]);
+                if (ignores.find(key) == ignores.end())
+                {
+                    if (!on_poll(key, _evts[i]))
+                        ignores.insert(key);
+                }
             }
         }
 

@@ -17,8 +17,6 @@ namespace
     constexpr uint8_t FlagCall = 1u << 2u;
     // FlagClose means socket will be closed
     constexpr uint8_t FlagClose = 1u << 3u;
-    // FlagDelete means class socket can be deleted
-    constexpr uint8_t FlagDeletable = 1u << 4u;
 
     inline bool is_flag_marked(uint8_t flag, uint8_t test)
     {
@@ -65,9 +63,12 @@ namespace knet
 
     socket::~socket()
     {
-        kassert(0 == _flag          // poller->add failed
-            || FlagClose == _flag   // socket::start failed
-            || (FlagClose | FlagDeletable) == _flag
+        kassert(
+            0 == _flag 
+            || FlagClose == _flag
+#ifndef KNET_USE_IOCP
+            || (FlagWrite | FlagClose) == _flag
+#endif
         );
 
         if (nullptr != _rbuf)
@@ -167,10 +168,6 @@ namespace knet
 
     void socket::close()
     {
-        kassert(!is_flag_marked(_flag, FlagDeletable));
-        if (is_flag_marked(_flag, FlagDeletable))
-            return;
-
         if (is_flag_marked(_flag, FlagCall
 #ifdef KNET_USE_IOCP
             | FlagRead | FlagWrite
@@ -197,7 +194,7 @@ namespace knet
         shutdown(_rs, SHUT_RDWR);
         close_rawsocket(_rs);
 
-        _flag |= FlagClose | FlagDeletable;
+        delete this;
     }
 
     bool socket::is_closing() const
@@ -205,12 +202,7 @@ namespace knet
         return is_flag_marked(_flag, FlagClose);
     }
 
-    bool socket::is_deletable() const
-    {
-        return is_flag_marked(_flag, FlagDeletable);
-    }
-
-    void socket::on_rawpollevent(const rawpollevent_t& evt)
+    bool socket::on_rawpollevent(const rawpollevent_t& evt)
     {
 #ifdef KNET_USE_IOCP
         if (0 == evt.dwNumberOfBytesTransferred)
@@ -220,7 +212,7 @@ namespace knet
             else
                 unmark_flag(_flag, FlagWrite);
             close();
-            return;
+            return false;
         }
         
         const auto size = static_cast<size_t>(evt.dwNumberOfBytesTransferred);
@@ -228,31 +220,42 @@ namespace knet
         {
             _rbuf->used_size += size;
             if (!handle_read())
+            {
                 close();
+                return false;
+            }
         }
         else
         {
             handle_write(size);
             if (_wbuf->used_size > 0 && !try_write())
+            {
                 close();
+                return false;
+            }
         }
 #elif defined(KNET_USE_EPOLL)
+
         if ((0 != (evt.events & (EPOLLERR | EPOLLHUP)))
             || (0 != (evt.events & EPOLLIN) && !handle_can_read())
             || (0 != (evt.events & EPOLLOUT) && !handle_can_write()))
         {
             close();
-            return;
+            return false;
         }
+
 #else
+
         if ((0 != (evt.flags & EV_EOF))
             || (EVFILT_READ == evt.filter && !handle_can_read())
             || (EVFILT_WRITE == evt.filter && !handle_can_write()))
         {
             close();
-            return;
+            return false;
         }
+
 #endif // KNET_USE_IOCP
+        return true;
     }
 
 #ifdef KNET_USE_IOCP
@@ -318,7 +321,7 @@ namespace knet
         {
             mark_flag(_flag, FlagWrite);
             if (_wbuf->used_size > 0 && !try_write())
-                close();
+                return false;
         }
         return true;
     }

@@ -120,7 +120,7 @@ namespace knet
         close_rawsocket(_rs);
     }
 
-    void acceptor::on_poll(void* key, const rawpollevent_t& evt)
+    bool acceptor::on_poll(void* key, const rawpollevent_t& evt)
     {
         (void)key;
 
@@ -166,6 +166,7 @@ namespace knet
                 _wkr->add_work(s);
         }
 #endif // KNET_USE_IOCP
+        return true;
     }
 
 #ifdef KNET_USE_IOCP

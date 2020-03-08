@@ -4,6 +4,7 @@
 #include <thread>
 
 
+#pragma pack(push)
 #pragma pack(1)
 struct echo_package
 {
@@ -26,7 +27,7 @@ struct echo_package
         return *reinterpret_cast<uint32_t*>(end - sizeof(uint32_t));
     }
 };
-#pragma pack()
+#pragma pack(pop)
 
 class echo_mgr
 {

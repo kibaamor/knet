@@ -57,15 +57,15 @@ namespace knet
         auto sock = static_cast<socket*>(key);
         kassert(nullptr != sock);
 
-#ifdef KNET_USE_KQUEUE
-        // only kqueue need this test, it has split read write event
-        if (!sock->is_deletable())
-#endif
+        if (sock->is_deletable())
         {
-            sock->on_rawpollevent(evt);
-            if (sock->is_deletable())
-                _dels.push_back(sock);
+            _dels.push_back(sock);
+            return;
         }
+
+        sock->on_rawpollevent(evt);
+        if (sock->is_deletable())
+            _dels.push_back(sock);
     }
 
     async_worker::async_worker(connection_factory_builder* cfb)

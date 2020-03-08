@@ -45,7 +45,9 @@ namespace knet
         struct kevent ev[2];
         EV_SET(&ev[0], rs, EVFILT_READ, EV_ADD | EV_ENABLE | EV_CLEAR, 0, 0, key);
         EV_SET(&ev[1], rs, EVFILT_WRITE, EV_ADD | EV_ENABLE | EV_CLEAR, 0, 0, key);
-        return 0 == kevent(_rp, ev, 2, nullptr, 0, nullptr);
+        return 0 == kevent(_rp, ev, 2, nullptr, 0, nullptr)
+            && 0 == (ev[0].flags & EV_ERROR)
+            && 0 == (ev[1].flags & EV_ERROR);
 #endif
     }
 

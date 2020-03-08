@@ -24,7 +24,6 @@ namespace knet
 
         void on_rawpollevent(const rawpollevent_t& evt);
 
-
     private:
         bool start();
 

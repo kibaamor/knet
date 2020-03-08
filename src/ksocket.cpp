@@ -81,8 +81,12 @@ namespace knet
             _wbuf = nullptr;
         }
 
-        _conn->_socket = nullptr;
-        _cf->destroy_connection(_conn);
+        if (nullptr != _conn)
+        {
+            _conn->_socket = nullptr;
+            _cf->destroy_connection(_conn);
+            _conn = nullptr;
+        }
         close_rawsocket(_rs);
     }
 
@@ -191,6 +195,7 @@ namespace knet
 #define SHUT_RDWR SD_BOTH
 #endif
         shutdown(_rs, SHUT_RDWR);
+        close_rawsocket(_rs);
 
         _flag |= FlagClose | FlagDeletable;
     }
@@ -240,19 +245,12 @@ namespace knet
             return;
         }
 #else
-        if (EVFILT_READ == evt.filter)
-        {
-            if (!handle_can_read())
-                close();
-        }
-        else if (EVFILT_WRITE == evt.filter)
-        {
-            if (!handle_can_write())
-                close();
-        }
-        else
+        if ((0 != (evt.flags & EV_EOF))
+            || (EVFILT_READ == evt.filter && !handle_can_read())
+            || (EVFILT_WRITE == evt.filter && !handle_can_write()))
         {
             close();
+            return;
         }
 #endif // KNET_USE_IOCP
     }

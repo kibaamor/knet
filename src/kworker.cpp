@@ -21,9 +21,9 @@ namespace knet
         std::vector<socket*>().swap(_adds);
     }
 
-    bool worker::poll()
+    void worker::poll()
     {
-        const auto ret = poller::poll();
+        poller::poll();
 
         if (!_adds.empty())
         {
@@ -34,8 +34,6 @@ namespace knet
             }
             _adds.clear();
         }
-
-        return ret;
     }
 
     void worker::add_work(rawsocket_t rs)
@@ -44,11 +42,11 @@ namespace knet
         _adds.push_back(sock);
     }
 
-    void worker::on_poll(void* key, const rawpollevent_t& evt)
+    bool worker::on_poll(void* key, const rawpollevent_t& evt)
     {
         auto sock = static_cast<socket*>(key);
         kassert(nullptr != sock);
-        sock->on_rawpollevent(evt);
+        return sock->on_rawpollevent(evt);
     }
 
     async_worker::async_worker(connection_factory_builder* cfb)

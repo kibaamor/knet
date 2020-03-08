@@ -10,7 +10,7 @@ namespace knet
 
     void connection::disconnect()
     {
-        if (nullptr != _socket)
+        if (!is_disconnecting())
             _socket->close();
     }
 

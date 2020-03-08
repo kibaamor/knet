@@ -10,6 +10,8 @@ int main(int argc, char** argv)
 
     // initialize knet
     global_init();
+    std::ios::sync_with_stdio(false);
+    std::cin.tie(nullptr);
 
     // parse command line
     const in_port_t port = in_port_t(argc > 1 ? std::atoi(argv[1]) : 8888);
@@ -44,6 +46,7 @@ int main(int argc, char** argv)
     auto& mgr = echo_mgr::get_instance();
     mgr.check_console_input();
     mgr.set_max_idle_ms(max_idle_ms);
+    mgr.set_enable_log(true);
 
     auto last_ms = now_ms();
     while (true)

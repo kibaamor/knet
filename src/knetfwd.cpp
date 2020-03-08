@@ -1,4 +1,5 @@
 #include "../include/knetfwd.h"
+#include "kinternal.h"
 #include <random>
 #include <ctime>
 #ifndef _WIN32
@@ -28,11 +29,8 @@ namespace knet
 
     bool set_rawsocket_bufsize(rawsocket_t rs, int size)
     {
-        auto optval = reinterpret_cast<const char*>(&size);
-        return RAWSOCKET_ERROR != setsockopt(
-                rs, SOL_SOCKET, SO_RCVBUF, optval, sizeof(size))
-            && RAWSOCKET_ERROR != setsockopt(
-                rs, SOL_SOCKET, SO_SNDBUF, optval, sizeof(size));
+        return set_rawsocket_opt(rs, SOL_SOCKET, SO_RCVBUF, &size, sizeof(size))
+            && set_rawsocket_opt(rs, SOL_SOCKET, SO_SNDBUF, &size, sizeof(size));
     }
 
     uint32_t u32rand()

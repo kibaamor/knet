@@ -25,13 +25,13 @@ namespace knet
 
         void add_work(rawsocket_t rs) override;
 
-        bool poll() override;
+        void poll() override;
 
         template <typename T>
         T* get_cf() const { return static_cast<T*>(_cf); }
 
     protected:
-        void on_poll(void* key, const rawpollevent_t& evt) override;
+        bool on_poll(void* key, const rawpollevent_t& evt) override;
 
     private:
         connection_factory* const _cf;

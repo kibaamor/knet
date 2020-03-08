@@ -19,7 +19,7 @@ protected:
 
 private:
     void generate_packages();
-    void send_package();
+    bool send_package();
     int32_t check_package(char* data, size_t size);
 
 private:
@@ -67,11 +67,10 @@ class cecho_worker : public knet::worker
 public:
     cecho_worker(cecho_conn_factory* cf) : worker(cf) {}
 
-    bool poll() override
+    void poll() override
     {
-        const auto ret = worker::poll();
+        worker::poll();
         get_cf<cecho_conn_factory>()->update();
-        return ret;
     }
 };
 

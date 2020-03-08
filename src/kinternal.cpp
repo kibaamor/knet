@@ -1,4 +1,8 @@
 #include "kinternal.h"
+#include <cstdio>
+#include <cstring>
+#include <stdexcept>
+#include <iostream>
 
 #ifndef KNET_USE_IOCP
 # include <sys/ioctl.h>
@@ -7,6 +11,34 @@
 
 namespace knet
 {
+    void on_fatal_error(int err, const char* apiname)
+    {
+        char buf[10240] = {};
+
+#ifdef _WIN32
+
+        LPSTR msg = nullptr;
+        FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM |
+            FORMAT_MESSAGE_IGNORE_INSERTS, nullptr, err,
+            MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&msg, 0, nullptr);
+
+        snprintf(buf, sizeof(buf), "%s: (%d) %s", apiname, err,
+            (nullptr != msg ? msg : "Unknown error"));
+
+        if (nullptr != msg)
+            LocalFree(msg);
+
+#else
+
+        snprintf(buf, sizeof(buf), "%s: (%d) %s", apiname, err, strerror(err));
+
+#endif
+
+        std::cerr << buf << std::endl;
+        std::cerr.flush();
+        throw new std::runtime_error(std::string(buf));
+    }
+
     rawsocket_t create_rawsocket(int domain, int type, bool nonblock)
     {
 #ifdef KNET_USE_IOCP
@@ -27,32 +59,42 @@ namespace knet
 
         rawsocket_t rs = INVALID_RAWSOCKET;
 
+        do
+        {
 #if defined(SOCK_NONBLOCK) && defined(SOCK_CLOEXEC)
-        auto flag = type | SOCK_CLOEXEC;
-        if (nonblock)
-            flag |= SOCK_NONBLOCK;
 
-        rs = ::socket(domain, flag, 0);
+            auto flag = type | SOCK_CLOEXEC;
+            if (nonblock)
+                flag |= SOCK_NONBLOCK;
 
-        if (INVALID_RAWSOCKET != rs)
-            return rs;
+            rs = ::socket(domain, flag, 0);
+            if (INVALID_RAWSOCKET != rs)
+                break;
 
-        if (EINVAL != errno)
-            return rs;
+            if (EINVAL != errno)
+                return rs;
+
 #endif
 
-        rs = ::socket(domain, type, 0);
-        if (INVALID_RAWSOCKET == rs)
-            return rs;
+            rs = ::socket(domain, type, 0);
+            if (INVALID_RAWSOCKET == rs)
+                break;
 
-        if (!set_rawsocket_cloexec(rs) || (nonblock && !set_rawsocket_nonblock(rs)))
-            closesocket(rs);
+            if (!set_rawsocket_cloexec(rs)
+                || (nonblock && !set_rawsocket_nonblock(rs)))
+            {
+                close_rawsocket(rs);
+                break;
+            }
+        } while (false);
 
 #ifdef SO_NOSIGPIPE
-        int on = 1;
-        auto optval = reinterpret_cast<const char*>(&on);
-        if (RAWSOCKET_ERROR == setsockopt(rs, SOL_SOCKET, SO_NOSIGPIPE, optval, sizeof(on)))
-            close_rawsocket(rs);
+        if (INVALID_RAWSOCKET != rs)
+        {
+            int on = 1;
+            if (!set_rawsocket_opt(rs, SOL_SOCKET, SO_NOSIGPIPE, &on, sizeof(on)))
+                close_rawsocket(rs);
+        }
 #endif
 
         return rs;
@@ -68,12 +110,11 @@ namespace knet
         rs = INVALID_RAWSOCKET;
     }
 
-    bool set_rawsocket_reuse_addr(rawsocket_t rs)
+    bool set_rawsocket_opt(rawsocket_t rs, int level, int optname, 
+        const void* optval, socklen_t optlen)
     {
-        int reuse = 1;
-        auto optval = reinterpret_cast<const char*>(&reuse);
-        return RAWSOCKET_ERROR != setsockopt(rs, SOL_SOCKET, SO_REUSEADDR, 
-            optval, sizeof(reuse));
+        auto val = static_cast<const char*>(optval);
+        return RAWSOCKET_ERROR != setsockopt(rs, level, optname, val, optlen);
     }
 
 #ifndef KNET_USE_IOCP
@@ -85,7 +126,7 @@ namespace knet
 
         do
             ret = ioctl(rs, FIONBIO, &set);
-        while (ret == RAWSOCKET_ERROR && EINTR == errno);
+        while (RAWSOCKET_ERROR == ret && EINTR == errno);
 
         return 0 == ret;
     }
@@ -96,7 +137,7 @@ namespace knet
 
         do
             ret = ioctl(rs, FIOCLEX);
-        while (ret == RAWSOCKET_ERROR && EINTR == errno);
+        while (RAWSOCKET_ERROR == ret && EINTR == errno);
 
         return 0 == ret;
     }

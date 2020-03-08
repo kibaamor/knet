@@ -10,6 +10,8 @@ int main(int argc, char** argv)
 
     // initialize knet
     global_init();
+    std::ios::sync_with_stdio(false);
+    std::cin.tie(nullptr);
 
     // parse command line
     const char* ip = argc > 1 ? argv[1] : "127.0.0.1";
@@ -53,6 +55,7 @@ int main(int argc, char** argv)
     auto& mgr = echo_mgr::get_instance();
     mgr.check_console_input();
     mgr.set_max_delay_ms(max_delay_ms);
+    mgr.set_enable_log(false);
 
     auto last_ms = now_ms();
     while (true)
@@ -69,6 +72,9 @@ int main(int argc, char** argv)
         {
             if (0 == conn_num)
                 break;
+
+            if (nullptr != cnctor)
+                cnctor = nullptr;
         }
         else if (nullptr == cnctor && conn_num < client_num)
         {

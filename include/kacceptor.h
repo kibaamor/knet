@@ -12,13 +12,13 @@ namespace knet
         acceptor(workable* wkr);
         ~acceptor() override;
 
-        bool poll() override;
+        void poll() override;
 
         bool start(const address& addr);
         void stop();
 
     protected:
-        void on_poll(void* key, const rawpollevent_t& evt) override;
+        bool on_poll(void* key, const rawpollevent_t& evt) override;
 
     private:
         workable* const _wkr;

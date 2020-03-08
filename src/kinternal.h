@@ -3,10 +3,13 @@
 
 namespace knet
 {
+    void on_fatal_error(int err, const char* apiname);
+
     rawsocket_t create_rawsocket(int domain, int type, bool nonblock);
     void close_rawsocket(rawsocket_t& rs);
 
-    bool set_rawsocket_reuse_addr(rawsocket_t rs);
+    bool set_rawsocket_opt(rawsocket_t rs, int level, int optname, 
+        const void* optval, socklen_t optlen);
 
 #ifndef KNET_USE_IOCP
     bool set_rawsocket_nonblock(rawsocket_t rs);

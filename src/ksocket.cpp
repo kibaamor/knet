@@ -8,10 +8,10 @@
 namespace
 {
     // when using IOCP, FlagRead means socket has pending WSARecv
-    // when using epoll, FlagRead means socket can read
+    // when using epoll/kqueue, FlagRead means socket can read
     constexpr uint8_t FlagRead = 1u << 0u;
     // when using IOCP, FlagRead means socket has pending WSASend
-    // when using epoll, FlagRead means socket can write
+    // when using epoll/kqueue, FlagRead means socket can write
     constexpr uint8_t FlagWrite = 1u << 1u;
     // FlagCall means socket processing user callback
     constexpr uint8_t FlagCall = 1u << 2u;
@@ -63,8 +63,11 @@ namespace knet
 
     socket::~socket()
     {
-        kassert(FlagClose == _flag || 0 == _flag);
-
+#ifdef KNET_USE_IOCP
+        kassert(0 == _flag || FlagClose == _flag);
+#else
+        kassert(0 == _flag || FlagClose == _flag || (FlagWrite | FlagClose) == _flag);
+#endif
         if (nullptr != _rbuf)
         {
             delete _rbuf;
@@ -75,7 +78,13 @@ namespace knet
             delete _wbuf;
             _wbuf = nullptr;
         }
-        _cf->destroy_connection(_conn);
+
+        if (nullptr != _conn)
+        {
+            _conn->_socket = nullptr;
+            _cf->destroy_connection(_conn);
+            _conn = nullptr;
+        }
         close_rawsocket(_rs);
     }
 
@@ -180,6 +189,8 @@ namespace knet
 #define SHUT_RDWR SD_BOTH
 #endif
         shutdown(_rs, SHUT_RDWR);
+        close_rawsocket(_rs);
+
         delete this;
     }
 
@@ -188,7 +199,7 @@ namespace knet
         return is_flag_marked(_flag, FlagClose);
     }
 
-    void socket::on_rawpollevent(const rawpollevent_t& evt)
+    bool socket::on_rawpollevent(const rawpollevent_t& evt)
     {
 #ifdef KNET_USE_IOCP
         if (0 == evt.dwNumberOfBytesTransferred)
@@ -198,7 +209,7 @@ namespace knet
             else
                 unmark_flag(_flag, FlagWrite);
             close();
-            return;
+            return false;
         }
         
         const auto size = static_cast<size_t>(evt.dwNumberOfBytesTransferred);
@@ -206,38 +217,42 @@ namespace knet
         {
             _rbuf->used_size += size;
             if (!handle_read())
+            {
                 close();
+                return false;
+            }
         }
         else
         {
             handle_write(size);
             if (_wbuf->used_size > 0 && !try_write())
+            {
                 close();
+                return false;
+            }
         }
 #elif defined(KNET_USE_EPOLL)
+
         if ((0 != (evt.events & (EPOLLERR | EPOLLHUP)))
             || (0 != (evt.events & EPOLLIN) && !handle_can_read())
             || (0 != (evt.events & EPOLLOUT) && !handle_can_write()))
         {
             close();
-            return;
+            return false;
         }
+
 #else
-        if (EVFILT_READ == evt.filter)
-        {
-            if (!handle_can_read())
-                close();
-        }
-        else if (EVFILT_WRITE == evt.filter)
-        {
-            if (!handle_can_write())
-                close();
-        }
-        else
+
+        if ((0 != (evt.flags & EV_EOF))
+            || (EVFILT_READ == evt.filter && !handle_can_read())
+            || (EVFILT_WRITE == evt.filter && !handle_can_write()))
         {
             close();
+            return false;
         }
+
 #endif // KNET_USE_IOCP
+        return true;
     }
 
 #ifdef KNET_USE_IOCP
@@ -303,7 +318,7 @@ namespace knet
         {
             mark_flag(_flag, FlagWrite);
             if (_wbuf->used_size > 0 && !try_write())
-                close();
+                return false;
         }
         return true;
     }
@@ -331,7 +346,7 @@ namespace knet
             ret = _rbuf->used_size;
         _rbuf->used_size -= ret;
 
-        if (0 == _rbuf->unused_size())
+        if (0 == _rbuf->unused_size() && !is_flag_marked(_flag, FlagClose))
             mark_flag(_flag, FlagClose);
 
         if (is_flag_marked(_flag, FlagClose))
@@ -371,7 +386,13 @@ namespace knet
         while (wrote < _wbuf->used_size)
         {
             do
+            {
+#ifdef SO_NOSIGPIPE
                 ret = ::write(_rs, _wbuf->chunk + wrote, _wbuf->used_size - wrote);
+#else
+                ret = ::send(_rs, _wbuf->chunk + wrote, _wbuf->used_size - wrote, MSG_NOSIGNAL);
+#endif
+            }
             while (RAWSOCKET_ERROR == ret && EINTR == errno);
 
             if (RAWSOCKET_ERROR == ret)

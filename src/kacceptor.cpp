@@ -54,13 +54,12 @@ namespace knet
 #endif
     }
 
-    bool acceptor::poll()
+    void acceptor::poll()
     {
-        const auto ret = poller::poll();
+        poller::poll();
 #ifdef KNET_USE_IOCP
         post_accept();
 #endif
-        return ret;
     }
 
     bool acceptor::start(const address& addr)
@@ -73,7 +72,8 @@ namespace knet
         if (INVALID_RAWSOCKET == _rs)
             return false;
 
-        if (!set_rawsocket_reuse_addr(_rs))
+        int on = 1;
+        if (!set_rawsocket_opt(_rs, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on)))
         {
             close_rawsocket(_rs);
             return false;
@@ -120,7 +120,7 @@ namespace knet
         close_rawsocket(_rs);
     }
 
-    void acceptor::on_poll(void* key, const rawpollevent_t& evt)
+    bool acceptor::on_poll(void* key, const rawpollevent_t& evt)
     {
         (void)key;
 
@@ -166,6 +166,7 @@ namespace knet
                 _wkr->add_work(s);
         }
 #endif // KNET_USE_IOCP
+        return true;
     }
 
 #ifdef KNET_USE_IOCP

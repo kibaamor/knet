@@ -1,10 +1,7 @@
 dist: xenial
 language: cpp
-compiler: clang
-
-os:
-  - linux
-  - osx
+compiler: gcc
+os: linux
 
 env:
   global:

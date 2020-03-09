@@ -124,7 +124,6 @@ bool acceptor::on_poll(void* key, const rawpollevent_t& evt)
         io->rs = INVALID_RAWSOCKET;
     }
 
-    io->rs = INVALID_SOCKET;
     io->next = _free_ios;
     _free_ios = io;
 #elif defined(KNET_USE_EPOLL)

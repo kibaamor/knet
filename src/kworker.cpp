@@ -70,7 +70,7 @@ void async_worker::add_work(rawsocket_t rs)
 
 bool async_worker::start(size_t thread_num)
 {
-    if (thread_num <= 0 || !_infos.empty())
+    if (0 == thread_num || !_infos.empty())
         return false;
 
     _infos.resize(thread_num);

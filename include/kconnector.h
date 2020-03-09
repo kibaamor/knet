@@ -18,10 +18,9 @@ public:
 
 private:
     const address _addr;
-    workable* const _wkr = nullptr;
-
-    const bool _reconn = false;
-    const size_t _interval_ms = 0;
+    workable* const _wkr;
+    const bool _reconn;
+    const size_t _interval_ms;
 
     rawsocket_t _rs = INVALID_RAWSOCKET;
     size_t _last_interval_ms = 0;

@@ -23,8 +23,9 @@ if (CMAKE_CXX_CPPCHECK)
         APPEND CMAKE_CXX_CPPCHECK
         "--enable=all"
         "--suppress=unusedFunction"
-        "--suppress=missingIncludeSystem"
         "--suppress=functionConst"
+        "--suppress=missingIncludeSystem"
+        "--suppress=unmatchedSuppression"
         "--inconclusive"
         "--force"
         "--inline-suppr"

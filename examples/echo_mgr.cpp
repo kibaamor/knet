@@ -3,7 +3,6 @@
 #include <string>
 #include <iostream>
 
-
 echo_mgr& echo_mgr::get_instance()
 {
     static echo_mgr mgr;
@@ -13,8 +12,7 @@ echo_mgr& echo_mgr::get_instance()
 echo_mgr::~echo_mgr()
 {
     set_disconnect_all();
-    if (nullptr != _t)
-    {
+    if (nullptr != _t) {
         _t->join();
         delete _t;
     }
@@ -23,8 +21,7 @@ echo_mgr::~echo_mgr()
 void echo_mgr::update(int64_t delta_ms)
 {
     _total_ms += delta_ms;
-    if (_total_ms > 1000)
-    {
+    if (_total_ms > 1000) {
         const auto total_delta_s = _total_ms / 1000;
         _total_ms %= 1000;
 
@@ -36,24 +33,20 @@ void echo_mgr::update(int64_t delta_ms)
         auto send_mb = total_send_mb;
         auto recv_pkg_num = total_recv_pkg_num;
 
-        if (total_delta_s > 1)
-        {
+        if (total_delta_s > 1) {
             send_mb /= total_delta_s;
             recv_pkg_num /= total_delta_s;
         }
 
-        if (_is_server)
-        {
+        if (_is_server) {
             std::cout << "connection: " << get_conn_num()
-                << ", send: " << send_mb << " MB/S"
-                << std::endl;
-        }
-        else
-        {
+                      << ", send: " << send_mb << " MB/S"
+                      << std::endl;
+        } else {
             std::cout << "connection: " << get_conn_num()
-                << ", send: " << send_mb << " MB/S"
-                << ", recv package: " << recv_pkg_num << " Pkg/S"
-                << std::endl;
+                      << ", send: " << send_mb << " MB/S"
+                      << ", recv package: " << recv_pkg_num << " Pkg/S"
+                      << std::endl;
         }
     }
 }
@@ -72,15 +65,14 @@ void echo_mgr::check_console_input()
 
     _t = new std::thread([](echo_mgr* mgr) {
         std::string s;
-        while (!mgr->get_disconnect_all())
-        {
+        while (!mgr->get_disconnect_all()) {
             std::cin >> s;
-            if (s == "exit")
-            {
+            if (s == "exit") {
                 mgr->set_disconnect_all();
                 break;
             }
         }
-    }, this);
+    },
+        this);
     std::cout << R"(enter "exit" to exit program)" << std::endl;
 }

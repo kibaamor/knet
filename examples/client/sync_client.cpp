@@ -3,7 +3,6 @@
 #include <kworker.h>
 #include <iostream>
 
-
 int main(int argc, char** argv)
 {
     using namespace knet;
@@ -21,15 +20,14 @@ int main(int argc, char** argv)
 
     // log parameter info
     std::cout << "Hi, KNet(Sync Client)" << std::endl
-        << "ip:" << ip << std::endl
-        << "port: " << port << std::endl
-        << "client_num: " << client_num << std::endl
-        << "max_delay_ms: " << max_delay_ms << std::endl;
+              << "ip:" << ip << std::endl
+              << "port: " << port << std::endl
+              << "client_num: " << client_num << std::endl
+              << "max_delay_ms: " << max_delay_ms << std::endl;
 
     // parse ip address
     address addr;
-    if (!addr.pton(AF_INET, ip, port))
-    {
+    if (!addr.pton(AF_INET, ip, port)) {
         std::cerr << "pton failed" << std::endl;
         return -1;
     }
@@ -51,8 +49,7 @@ int main(int argc, char** argv)
     mgr.set_enable_log(true);
 
     auto last_ms = now_ms();
-    while (true)
-    {
+    while (true) {
         const auto beg_ms = now_ms();
         const auto delta_ms = (beg_ms > last_ms ? beg_ms - last_ms : 0);
         last_ms = beg_ms;
@@ -63,16 +60,13 @@ int main(int argc, char** argv)
         wkr->poll();
 
         const auto conn_num = mgr.get_conn_num();
-        if (mgr.get_disconnect_all())
-        {
+        if (mgr.get_disconnect_all()) {
             if (0 == conn_num)
                 break;
 
             if (nullptr != cnctor)
                 cnctor = nullptr;
-        }
-        else if (nullptr == cnctor && conn_num < client_num)
-        {
+        } else if (nullptr == cnctor && conn_num < client_num) {
             cnctor = connector_builder();
         }
 
@@ -86,4 +80,3 @@ int main(int argc, char** argv)
 
     return 0;
 }
-

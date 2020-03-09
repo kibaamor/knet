@@ -4,9 +4,7 @@
 #include <atomic>
 #include "../echo_mgr.h"
 
-
-class cecho_conn : public knet::tconnection
-{
+class cecho_conn : public knet::tconnection {
 public:
     cecho_conn(knet::connid_t id, knet::tconnection_factory* cf);
 
@@ -32,8 +30,7 @@ private:
 };
 
 class cecho_conn_factory_builder;
-class cecho_conn_factory : public knet::tconnection_factory
-{
+class cecho_conn_factory : public knet::tconnection_factory {
 public:
     cecho_conn_factory(cecho_conn_factory_builder* cfb = nullptr);
 
@@ -48,8 +45,7 @@ private:
     knet::connid_t _next_cid = 0;
 };
 
-class cecho_conn_factory_builder : public knet::connection_factory_builder
-{
+class cecho_conn_factory_builder : public knet::connection_factory_builder {
 public:
     knet::connection_factory* build_factory() override
     {
@@ -62,10 +58,12 @@ private:
     std::atomic<knet::connid_t> _next_cid = { 0 };
 };
 
-class cecho_worker : public knet::worker
-{
+class cecho_worker : public knet::worker {
 public:
-    cecho_worker(cecho_conn_factory* cf) : worker(cf) {}
+    cecho_worker(cecho_conn_factory* cf)
+        : worker(cf)
+    {
+    }
 
     void poll() override
     {
@@ -74,10 +72,12 @@ public:
     }
 };
 
-class cecho_async_worker : public knet::async_worker
-{
+class cecho_async_worker : public knet::async_worker {
 public:
-    cecho_async_worker(cecho_conn_factory_builder* cfb) : async_worker(cfb) {}
+    cecho_async_worker(cecho_conn_factory_builder* cfb)
+        : async_worker(cfb)
+    {
+    }
 
 protected:
     knet::worker* create_worker(knet::connection_factory* cf) override
@@ -86,10 +86,9 @@ protected:
     }
 };
 
-class cecho_connector : public knet::connector
-{
+class cecho_connector : public knet::connector {
 public:
-    cecho_connector(const knet::address& addr, knet::workable* wkr, 
+    cecho_connector(const knet::address& addr, knet::workable* wkr,
         bool reconn = true, size_t interval_ms = 1000);
 
     void on_reconnect() override;

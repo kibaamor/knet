@@ -3,13 +3,11 @@
 #include <atomic>
 #include <thread>
 
-
 #pragma pack(push)
 #pragma pack(1)
-struct echo_package
-{
-    uint32_t size;  // total package size
-    uint32_t id;    // package id
+struct echo_package {
+    uint32_t size; // total package size
+    uint32_t id; // package id
 
     static constexpr uint32_t get_hdr_size()
     {
@@ -29,8 +27,7 @@ struct echo_package
 };
 #pragma pack(pop)
 
-class echo_mgr
-{
+class echo_mgr {
 public:
     static echo_mgr& get_instance();
 
@@ -68,7 +65,7 @@ public:
     void check_console_input();
 
 private:
-    echo_mgr() {}
+    echo_mgr() { }
     ~echo_mgr();
 
 private:
@@ -81,8 +78,8 @@ private:
     int64_t _max_idle_ms = 0;
 
     std::atomic<int64_t> _conn_num = { 0 };
-    std::atomic<int64_t> _total_send = {0};
-    std::atomic<int64_t> _total_recv_pkg_num = {0};
+    std::atomic<int64_t> _total_send = { 0 };
+    std::atomic<int64_t> _total_recv_pkg_num = { 0 };
 
     bool _disconnect_all = false;
     std::thread* _t = nullptr;

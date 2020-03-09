@@ -3,13 +3,14 @@
 #include <kworker.h>
 #include <iostream>
 
-
 int main(int argc, char** argv)
 {
     using namespace knet;
 
     // initialize knet
     global_init();
+    std::ios::sync_with_stdio(false);
+    std::cin.tie(nullptr);
 
     // parse command line
     const in_port_t port = in_port_t(argc > 1 ? std::atoi(argv[1]) : 8888);
@@ -17,13 +18,12 @@ int main(int argc, char** argv)
 
     // log parameter info
     std::cout << "Hi, KNet(Sync Server)" << std::endl
-        << "port: " << port << std::endl
-        << "max_idle_ms: " << max_idle_ms << std::endl;
+              << "port: " << port << std::endl
+              << "max_idle_ms: " << max_idle_ms << std::endl;
 
     // parse ip address
     address addr;
-    if (!addr.pton(AF_INET, "0.0.0.0", port))
-    {
+    if (!addr.pton(AF_INET, "0.0.0.0", port)) {
         std::cerr << "pton failed" << std::endl;
         return -1;
     }
@@ -34,8 +34,7 @@ int main(int argc, char** argv)
 
     // create acceptor
     auto acc = std::make_shared<acceptor>(wkr.get());
-    if (!acc->start(addr))
-    {
+    if (!acc->start(addr)) {
         std::cerr << "acceptor::start failed" << std::endl;
         return -1;
     }
@@ -44,10 +43,10 @@ int main(int argc, char** argv)
     auto& mgr = echo_mgr::get_instance();
     mgr.check_console_input();
     mgr.set_max_idle_ms(max_idle_ms);
+    mgr.set_enable_log(true);
 
     auto last_ms = now_ms();
-    while (true)
-    {
+    while (true) {
         const auto beg_ms = now_ms();
         const auto delta_ms = (beg_ms > last_ms ? beg_ms - last_ms : 0);
         last_ms = beg_ms;
@@ -56,8 +55,7 @@ int main(int argc, char** argv)
         wkr->poll();
 
         const auto conn_num = mgr.get_conn_num();
-        if (mgr.get_disconnect_all())
-        {
+        if (mgr.get_disconnect_all()) {
             if (0 == conn_num)
                 break;
         }

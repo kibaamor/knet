@@ -3,7 +3,6 @@
 #include <iostream>
 #include <thread>
 
-
 secho_conn::secho_conn(knet::connid_t id, knet::tconnection_factory* cf)
     : tconnection(id, cf)
 {
@@ -12,27 +11,34 @@ secho_conn::secho_conn(knet::connid_t id, knet::tconnection_factory* cf)
 void secho_conn::on_connected()
 {
     auto& mgr = echo_mgr::get_instance();
-    if (mgr.get_disconnect_all())
+
+    if (mgr.get_enable_log())
+        std::cout << get_connid() << " on_connected" << std::endl;
+
+    if (mgr.get_disconnect_all()) {
         disconnect();
+        return;
+    }
+
     set_idle_timer();
 }
 
 size_t secho_conn::on_recv_data(char* data, size_t size)
 {
     auto& mgr = echo_mgr::get_instance();
-    if (mgr.get_disconnect_all())
-    {
+
+    if (mgr.get_enable_log())
+        std::cout << get_connid() << " on_recv_data, size: " << size << std::endl;
+
+    if (mgr.get_disconnect_all()) {
         disconnect();
         return 0;
     }
 
     _last_recv_ms = knet::now_ms();
-//     std::cout << "recv_data from " << get_connid() 
-//         << " at " << _last_recv_ms << std::endl;
 
     knet::buffer buf(data, size);
-    if (!send_data(&buf, 1))
-    {
+    if (!send_data(&buf, 1)) {
         std::cerr << "send_data failed!" << std::endl;
         disconnect();
         return 0;
@@ -45,20 +51,22 @@ size_t secho_conn::on_recv_data(char* data, size_t size)
 
 void secho_conn::on_timer(int64_t absms, const knet::userdata& ud)
 {
-    //std::cout << get_connid() << " on timer: " << absms << std::endl;
-    const auto nowms = knet::now_ms();
     auto& mgr = echo_mgr::get_instance();
-    if (_last_recv_ms > 0 && nowms > _last_recv_ms + mgr.get_max_idle_ms())
-    {
-        std::cerr << "!!!!!!!!!!!!!!!!!! "
-            << "kick client for idle too long! last_recv_ms: "
-            << _last_recv_ms << ", now_ms: " << nowms << std::endl;
+
+    if (mgr.get_enable_log())
+        std::cout << get_connid() << " on timer: " << absms << std::endl;
+
+    const auto nowms = knet::now_ms();
+    if (_last_recv_ms > 0 && nowms > _last_recv_ms + mgr.get_max_idle_ms()) {
+        std::cerr << "kick client: " << get_connid()
+                  << ", last_recv_ms: " << _last_recv_ms
+                  << ", now_ms: " << nowms
+                  << ", delta_ms: " << nowms - _last_recv_ms << std::endl;
         disconnect();
+        return;
     }
-    else
-    {
-        set_idle_timer();
-    }
+
+    set_idle_timer();
 }
 
 void secho_conn::on_attach_socket(knet::rawsocket_t rs)
@@ -73,7 +81,6 @@ void secho_conn::set_idle_timer()
     if (max_idle_ms > 0)
         add_timer(knet::now_ms() + max_idle_ms, 0);
 }
-
 
 secho_conn_factory::secho_conn_factory(secho_conn_factory_builder* cfb)
     : _cfb(cfb)

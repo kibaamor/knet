@@ -1,23 +1,20 @@
 #pragma once
 #include "knetfwd.h"
 
+namespace knet {
+class poller : noncopyable {
+public:
+    poller();
+    virtual ~poller();
 
-namespace knet
-{
-    class poller : noncopyable
-    {
-    public:
-        poller();
-        virtual ~poller();
+    virtual bool add(rawsocket_t rs, void* key);
+    virtual void poll();
 
-        virtual bool add(rawsocket_t rs, void* key);
-        virtual bool poll();
+protected:
+    virtual bool on_poll(void* key, const rawpollevent_t& evt) = 0;
 
-    protected:
-        virtual void on_poll(void* key, const rawpollevent_t& evt) = 0;
-
-    private:
-        rawpoller_t _rp = INVALID_RAWPOLLER;
-        rawpollevent_t _evts[POLL_EVENT_NUM] = {};
-    };
-}
+private:
+    rawpoller_t _rp = INVALID_RAWPOLLER;
+    rawpollevent_t _evts[POLL_EVENT_NUM] = {};
+};
+} // namespace knet

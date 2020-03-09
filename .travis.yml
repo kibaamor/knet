@@ -1,6 +1,6 @@
 dist: xenial
 language: cpp
-compiler: gcc
+compiler: clang
 os: linux
 
 env:

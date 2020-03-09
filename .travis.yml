@@ -1,5 +1,11 @@
 dist: xenial
 language: cpp
+
+notifications:
+  slack:
+    rooms:
+      secure: cKpsO84xSlLMDB/PELTUasVGzRlGtipNSEaTHIQbH66XZKgSlmYl1HhqWtSVU2W3rGfja0/a22ytAh75bg0Z0DcjbOI3+Hbrw27J12iHWvQ6jvBgFvOMagYzTvMfhkV2MRiTmCfzT73VDMSbjpRN3TmYhm8/GPtKV+eE6Y9CRMFippLYyJrePleFFMcsXVLshY27sDE8ZikvDmy7Juud1E6GtBTg8M7TP/h0254dJgXR8ZmMRdSLByxG4P1jmjWYCeuKcopS5yKqST4E1MWWI6vyARTtnB0luAyUoR0lm+7YCnN/N5w5/+a0iRTXrj3f5AdH/X3VHvUAJ8IEeRTzaHKipf/NTl6BG4NrYMh5TqIiIfLr8JhdKCLdHDNmXYNHizXgmULFO//TVshOWt0NPEQj7rsQoyuPZiBmTuM15bukOBDObje55Ln7mL6TZVhFcb7UrPFz3o5DFO5tZQDYNAy+IsEBmSidDzlGN6owwwP0emZjVVHrPTk75AxZwUYsqvGVb07yi0WsawLJz3MnvN3RRsyYvrjhQ3E1yniTqDYJhPLcprx2UW7iyTbUgF+ZfKUUt+GQ0AXElXZnmkzbOpOgusT4iqcopUlTQAiSa40FW9jhnEU2vJpd96RO7QozZrIVcXO3bCQb6zIW1mNJ6qCun8EuJdr0O/OmVOlVj+k=
+
 compiler:
   - gcc
   - clang
@@ -8,33 +14,12 @@ os:
   - linux
   - osx
 
-env:
-  global:
-    secure: K6FY3528v2+BOYibxYjANo/Wf31BXtcrR+bxkqsCPcZAletdt0VdgZTQ+ri58dVtK+1I9N0/64Wo2Sn6krvGrCwVjRRFFNFdGRSF1iS8mRKfwXQPDujOJQn/YtqcKLtxmVRF0CFMpxkLbrGFPo95D68MDUi8RLkG4Ao/sVmqvKviqltybpfDGbCxy8iGDkQfN3wqy37WM4GdCqlUAW7XyHWATFRP6JxgCo0zvvcHbRnEAW2+AkympTVpTuLcjK4tz2jeios6dw84DrvgdfL/g9jznE+cP7hGq1nSSTuyBdk928RTb4IAJGFhGX2Ewnm99RuXXtNRFuQGDRuN4Pp31uuk+TQs6evYakBkZt4t7ugVlpRPMYi03yBobi0yajPRvj4OUjs7WipHwQueQFHRJpFiBbcRXDv7+65g2L86Y2O0j9NAGK2R0GPhyOeMxiH+wLD9m/spchpT9vcqpReERGZz2oFlVFzn5oXHB0yjDNHJh6Yn+F8xyWan6SoK7qXbAtqpCC2g1MTmzwXraX67p1hR1jqNDom69ToURre98xp7vlIvbnpOA2S4PhrDmuOlCbQffyMIo5WjASieIe3eq31sWaz9FuuLiVSvAqMXc1LjEO7n+y7bkRFEbhxzgZBVv/B8wI8AaSdEZe3pMotSB9CwU2PMYPrU2YVbGvKxtos=
-
-before_install:
-  - echo -n | openssl s_client -connect scan.coverity.com:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' | sudo tee -a /etc/ssl/certs/ca-certificates.crt
-
-addons:
-  coverity_scan:
-    project:
-      name: "KibaAmor/knet"
-      description: "A cross platform lock-free and timer-supported(hearbeat etc.) C++11 network library."
-    notification_email: kibaamor@gmail.com
-    build_command_prepend: "mkdir -p $TRAVIS_BUILD_DIR/coverity_scan && cd $TRAVIS_BUILD_DIR/coverity_scan && cmake .. -DCMAKE_BUILD_TYPE=RELEASE"
-    build_command: "make -C $TRAVIS_BUILD_DIR/coverity_scan --jobs 2"
-    branch_pattern: coverity_scan
-
 before_script:
   - printenv
-  - mkdir -p $TRAVIS_BUILD_DIR/build_debug && cd $TRAVIS_BUILD_DIR/build_debug && cmake ..
-  - mkdir -p $TRAVIS_BUILD_DIR/build_release && cd $TRAVIS_BUILD_DIR/build_release && cmake ..
 
 script:
+  - mkdir -p $TRAVIS_BUILD_DIR/build_debug && cd $TRAVIS_BUILD_DIR/build_debug && cmake ..
   - cd $TRAVIS_BUILD_DIR/build_debug && cmake --build . --parallel 2 --clean-first --config Debug && ctest .
-  - cd $TRAVIS_BUILD_DIR/build_release && cmake --build . --parallel 2 --clean-first --config Release && ctest .
 
-notifications:
-  slack:
-    rooms:
-      secure: cKpsO84xSlLMDB/PELTUasVGzRlGtipNSEaTHIQbH66XZKgSlmYl1HhqWtSVU2W3rGfja0/a22ytAh75bg0Z0DcjbOI3+Hbrw27J12iHWvQ6jvBgFvOMagYzTvMfhkV2MRiTmCfzT73VDMSbjpRN3TmYhm8/GPtKV+eE6Y9CRMFippLYyJrePleFFMcsXVLshY27sDE8ZikvDmy7Juud1E6GtBTg8M7TP/h0254dJgXR8ZmMRdSLByxG4P1jmjWYCeuKcopS5yKqST4E1MWWI6vyARTtnB0luAyUoR0lm+7YCnN/N5w5/+a0iRTXrj3f5AdH/X3VHvUAJ8IEeRTzaHKipf/NTl6BG4NrYMh5TqIiIfLr8JhdKCLdHDNmXYNHizXgmULFO//TVshOWt0NPEQj7rsQoyuPZiBmTuM15bukOBDObje55Ln7mL6TZVhFcb7UrPFz3o5DFO5tZQDYNAy+IsEBmSidDzlGN6owwwP0emZjVVHrPTk75AxZwUYsqvGVb07yi0WsawLJz3MnvN3RRsyYvrjhQ3E1yniTqDYJhPLcprx2UW7iyTbUgF+ZfKUUt+GQ0AXElXZnmkzbOpOgusT4iqcopUlTQAiSa40FW9jhnEU2vJpd96RO7QozZrIVcXO3bCQb6zIW1mNJ6qCun8EuJdr0O/OmVOlVj+k=
+  - mkdir -p $TRAVIS_BUILD_DIR/build_release && cd $TRAVIS_BUILD_DIR/build_release && cmake ..
+  - cd $TRAVIS_BUILD_DIR/build_release && cmake --build . --parallel 2 --clean-first --config Release && ctest .

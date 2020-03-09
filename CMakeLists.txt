@@ -17,6 +17,22 @@ if (NOT CMAKE_BUILD_TYPE)
 endif()
 message("CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
 
+find_program(CMAKE_CXX_CPPCHECK NAMES cppcheck)
+if (CMAKE_CXX_CPPCHECK)
+    list(
+        APPEND CMAKE_CXX_CPPCHECK
+        "--enable=all"
+        "--suppress=unusedFunction"
+        "--suppress=missingIncludeSystem"
+        "--suppress=functionConst"
+        "--inconclusive"
+        "--force"
+        "--inline-suppr"
+        "--language=c++"
+        "--std=c++11"
+        )
+endif()
+
 if (WIN32)
     add_definitions(-DUNICODE)
     add_definitions(-D_UNICODE)

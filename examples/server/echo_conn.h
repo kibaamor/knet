@@ -22,7 +22,7 @@ private:
 class secho_conn_factory_builder;
 class secho_conn_factory : public knet::tconnection_factory {
 public:
-    secho_conn_factory(secho_conn_factory_builder* cfb = nullptr);
+    explicit secho_conn_factory(secho_conn_factory_builder* cfb = nullptr);
 
 protected:
     knet::tconnection* create_connection_impl() override;
@@ -50,7 +50,7 @@ private:
 
 class secho_worker : public knet::worker {
 public:
-    secho_worker(secho_conn_factory* cf)
+    explicit secho_worker(secho_conn_factory* cf)
         : worker(cf)
     {
     }
@@ -64,7 +64,7 @@ public:
 
 class secho_async_worker : public knet::async_worker {
 public:
-    secho_async_worker(secho_conn_factory_builder* cfb)
+    explicit secho_async_worker(secho_conn_factory_builder* cfb)
         : async_worker(cfb)
     {
     }

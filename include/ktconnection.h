@@ -33,7 +33,7 @@ private:
 };
 
 class _tconn_timer;
-class tconnection_factory : public connection_factory {
+class tconnection_factory : public connection_factory, noncopyable {
 public:
     tconnection_factory();
     ~tconnection_factory() override;

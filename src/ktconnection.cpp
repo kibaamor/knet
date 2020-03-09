@@ -28,7 +28,7 @@ bool operator<(const timer_key& lhs, const timer_key& rhs)
 namespace knet {
 class _tconn_timer {
 public:
-    _tconn_timer(tconnection_factory* cf)
+    explicit _tconn_timer(tconnection_factory* cf)
         : _cf(cf)
     {
     }

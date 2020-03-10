@@ -239,10 +239,15 @@ before_script:
   - eval "${MATRIX_EVAL}"
   - printenv
   - ${CXX} --version
+  - cmake --version
 
 script:
-  - mkdir -p $TRAVIS_BUILD_DIR/build_debug && cd $TRAVIS_BUILD_DIR/build_debug && cmake ..
-  - cd $TRAVIS_BUILD_DIR/build_debug && cmake --build . --parallel 2 --clean-first --config Debug && ctest -j2 --output-on-failure .
+  # Debug
+  - cmake -DCMAKE_BUILD_TYPE=Debug .
+  - make clean && make -j2 -k
+  - ctest -j2 --output-on-failure .
 
-  - mkdir -p $TRAVIS_BUILD_DIR/build_release && cd $TRAVIS_BUILD_DIR/build_release && cmake ..
-  - cd $TRAVIS_BUILD_DIR/build_release && cmake --build . --parallel 2 --clean-first --config Release && ctest -j2 --output-on-failure .
+  # Release
+  - cmake -DCMAKE_BUILD_TYPE=Release .
+  - make clean && make -j2 -k
+  - ctest -j2 --output-on-failure .

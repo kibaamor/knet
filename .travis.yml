@@ -1,25 +1,248 @@
-dist: xenial
 language: cpp
 
 notifications:
+  email: false
   slack:
+    on_success: change
+    on_failure: always
     rooms:
       secure: cKpsO84xSlLMDB/PELTUasVGzRlGtipNSEaTHIQbH66XZKgSlmYl1HhqWtSVU2W3rGfja0/a22ytAh75bg0Z0DcjbOI3+Hbrw27J12iHWvQ6jvBgFvOMagYzTvMfhkV2MRiTmCfzT73VDMSbjpRN3TmYhm8/GPtKV+eE6Y9CRMFippLYyJrePleFFMcsXVLshY27sDE8ZikvDmy7Juud1E6GtBTg8M7TP/h0254dJgXR8ZmMRdSLByxG4P1jmjWYCeuKcopS5yKqST4E1MWWI6vyARTtnB0luAyUoR0lm+7YCnN/N5w5/+a0iRTXrj3f5AdH/X3VHvUAJ8IEeRTzaHKipf/NTl6BG4NrYMh5TqIiIfLr8JhdKCLdHDNmXYNHizXgmULFO//TVshOWt0NPEQj7rsQoyuPZiBmTuM15bukOBDObje55Ln7mL6TZVhFcb7UrPFz3o5DFO5tZQDYNAy+IsEBmSidDzlGN6owwwP0emZjVVHrPTk75AxZwUYsqvGVb07yi0WsawLJz3MnvN3RRsyYvrjhQ3E1yniTqDYJhPLcprx2UW7iyTbUgF+ZfKUUt+GQ0AXElXZnmkzbOpOgusT4iqcopUlTQAiSa40FW9jhnEU2vJpd96RO7QozZrIVcXO3bCQb6zIW1mNJ6qCun8EuJdr0O/OmVOlVj+k=
 
-compiler:
-  - gcc
-  - clang
+env:
+  global:
+    secure: K6FY3528v2+BOYibxYjANo/Wf31BXtcrR+bxkqsCPcZAletdt0VdgZTQ+ri58dVtK+1I9N0/64Wo2Sn6krvGrCwVjRRFFNFdGRSF1iS8mRKfwXQPDujOJQn/YtqcKLtxmVRF0CFMpxkLbrGFPo95D68MDUi8RLkG4Ao/sVmqvKviqltybpfDGbCxy8iGDkQfN3wqy37WM4GdCqlUAW7XyHWATFRP6JxgCo0zvvcHbRnEAW2+AkympTVpTuLcjK4tz2jeios6dw84DrvgdfL/g9jznE+cP7hGq1nSSTuyBdk928RTb4IAJGFhGX2Ewnm99RuXXtNRFuQGDRuN4Pp31uuk+TQs6evYakBkZt4t7ugVlpRPMYi03yBobi0yajPRvj4OUjs7WipHwQueQFHRJpFiBbcRXDv7+65g2L86Y2O0j9NAGK2R0GPhyOeMxiH+wLD9m/spchpT9vcqpReERGZz2oFlVFzn5oXHB0yjDNHJh6Yn+F8xyWan6SoK7qXbAtqpCC2g1MTmzwXraX67p1hR1jqNDom69ToURre98xp7vlIvbnpOA2S4PhrDmuOlCbQffyMIo5WjASieIe3eq31sWaz9FuuLiVSvAqMXc1LjEO7n+y7bkRFEbhxzgZBVv/B8wI8AaSdEZe3pMotSB9CwU2PMYPrU2YVbGvKxtos=
 
-os:
-  - linux
-  - osx
+matrix:
+  include:
+    # GCC 4.9
+    - os: linux
+      dist: xenial
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-4.9
+      env:
+         - MATRIX_EVAL="CC=gcc-4.9 CXX=g++-4.9"
+    
+    # GCC 5
+    - os: linux
+      dist: xenial
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-5
+      env:
+         - MATRIX_EVAL="CC=gcc-5 CXX=g++-5"
+
+    # GCC6
+    - os: linux
+      dist: xenial
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-6
+      env:
+        - MATRIX_EVAL="CC=gcc-6 CXX=g++-6"
+
+    # GCC7
+    - os: linux
+      dist: xenial
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-7
+      env:
+        - MATRIX_EVAL="CC=gcc-7 CXX=g++-7"
+
+    # GCC8
+    - os: linux
+      dist: xenial
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-8
+      env:
+        - MATRIX_EVAL="CC=gcc-8 CXX=g++-8"
+
+    # GCC9
+    - os: linux
+      dist: xenial
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-9
+      env:
+        - MATRIX_EVAL="CC=gcc-9 CXX=g++-9"
+
+    # Clang 3.8
+    - os: linux
+      dist: xenial
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - sourceline: 'deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial-3.8 main'
+              key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
+          packages:
+            - clang-3.8
+      env:
+        - MATRIX_EVAL="CC=clang-3.8 CXX=clang++-3.8"
+
+    # Clang 3.9
+    - os: linux
+      dist: xenial
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - sourceline: 'deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial-3.9 main'
+              key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
+          packages:
+            - clang-3.9
+      env:
+        - MATRIX_EVAL="CC=clang-3.9 CXX=clang++-3.9"
+
+    # Clang 4
+    - os: linux
+      dist: xenial
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - sourceline: 'deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial-4.0 main'
+              key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
+          packages:
+            - clang-4.0
+      env:
+        - MATRIX_EVAL="CC=clang-4.0 CXX=clang++-4.0"
+
+    # Clang 5
+    - os: linux
+      dist: xenial
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - sourceline: 'deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial-5.0 main'
+              key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
+          packages:
+            - clang-5.0
+      env:
+        - MATRIX_EVAL="CC=clang-5.0 CXX=clang++-5.0"
+
+    # Clang 6
+    - os: linux
+      dist: xenial
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - sourceline: 'deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial-6.0 main'
+              key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
+          packages:
+            - clang-6.0
+      env:
+        - MATRIX_EVAL="CC=clang-6.0 CXX=clang++-6.0"
+
+    # Clang 7
+    - os: linux
+      dist: xenial
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - sourceline: 'deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial-7 main'
+              key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
+          packages:
+            - clang-7
+      env:
+        - MATRIX_EVAL="CC=clang-7 CXX=clang++-7"
+
+    # Clang 8
+    - os: linux
+      dist: xenial
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - sourceline: 'deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial-8 main'
+              key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
+          packages:
+            - clang-8
+      env:
+        - MATRIX_EVAL="CC=clang-8 CXX=clang++-8"
+
+    # Clang 9
+    - os: linux
+      dist: xenial
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - sourceline: 'deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial-9 main'
+              key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
+          packages:
+            - clang-9
+      env:
+        - MATRIX_EVAL="CC=clang-9 CXX=clang++-9"
+    
+    # osx image list https://docs.travis-ci.com/user/reference/osx/#macos-version
+    # Xcode 6.4 Clang
+    - os: osx
+      osx_image: xcode6.4
+      env:
+        - MATRIX_EVAL="CC=clang CXX=clang++"
+
+    # Xcode 7.3 Clang
+    - os: osx
+      osx_image: xcode7.3
+      env:
+        - MATRIX_EVAL="CC=clang CXX=clang++"
+
+    # Xcode 8.3 Clang
+    - os: osx
+      osx_image: xcode8.3
+      env:
+        - MATRIX_EVAL="CC=clang CXX=clang++"
+
+    # Xcode 9.4 Clang
+    - os: osx
+      osx_image: xcode9.4
+      env:
+        - MATRIX_EVAL="CC=clang CXX=clang++"
+
+    # Xcode 10.3 Clang
+    - os: osx
+      osx_image: xcode10.3
+      env:
+        - MATRIX_EVAL="CC=clang CXX=clang++"
+
+    # Xcode 11.3 Clang
+    - os: osx
+      osx_image: xcode11.3
+      env:
+        - MATRIX_EVAL="CC=clang CXX=clang++"
 
 before_script:
+  - eval "${MATRIX_EVAL}"
   - printenv
+  - ${CXX} --version
 
 script:
   - mkdir -p $TRAVIS_BUILD_DIR/build_debug && cd $TRAVIS_BUILD_DIR/build_debug && cmake ..
-  - cd $TRAVIS_BUILD_DIR/build_debug && cmake --build . --parallel 2 --clean-first --config Debug && ctest .
+  - cd $TRAVIS_BUILD_DIR/build_debug && cmake --build . --parallel 2 --clean-first --config Debug && ctest -j2 --output-on-failure .
 
   - mkdir -p $TRAVIS_BUILD_DIR/build_release && cd $TRAVIS_BUILD_DIR/build_release && cmake ..
-  - cd $TRAVIS_BUILD_DIR/build_release && cmake --build . --parallel 2 --clean-first --config Release && ctest .
+  - cd $TRAVIS_BUILD_DIR/build_release && cmake --build . --parallel 2 --clean-first --config Release && ctest -j2 --output-on-failure .

@@ -32,7 +32,7 @@ private:
 class cecho_conn_factory_builder;
 class cecho_conn_factory : public knet::tconnection_factory {
 public:
-    cecho_conn_factory(cecho_conn_factory_builder* cfb = nullptr);
+    explicit cecho_conn_factory(cecho_conn_factory_builder* cfb = nullptr);
 
 protected:
     knet::tconnection* create_connection_impl() override;
@@ -60,7 +60,7 @@ private:
 
 class cecho_worker : public knet::worker {
 public:
-    cecho_worker(cecho_conn_factory* cf)
+    explicit cecho_worker(cecho_conn_factory* cf)
         : worker(cf)
     {
     }
@@ -74,7 +74,7 @@ public:
 
 class cecho_async_worker : public knet::async_worker {
 public:
-    cecho_async_worker(cecho_conn_factory_builder* cfb)
+    explicit cecho_async_worker(cecho_conn_factory_builder* cfb)
         : async_worker(cfb)
     {
     }

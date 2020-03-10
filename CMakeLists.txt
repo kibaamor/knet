@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.1)
 
 project(knet CXX)
 
+option(KNET_ENABLE_CPPCHECK "enable cppcheck" OFF)
+
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -16,6 +18,25 @@ if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE RELWITHDEBINFO)
 endif()
 message("CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
+
+if (KNET_ENABLE_CPPCHECK)
+    find_program(CMAKE_CXX_CPPCHECK NAMES cppcheck)
+    if (CMAKE_CXX_CPPCHECK)
+        list(
+            APPEND CMAKE_CXX_CPPCHECK
+            "--enable=all"
+            "--suppress=unusedFunction"
+            "--suppress=functionConst"
+            "--suppress=missingIncludeSystem"
+            "--suppress=unmatchedSuppression"
+            "--inconclusive"
+            "--force"
+            "--inline-suppr"
+            "--language=c++"
+            "--std=c++11"
+            )
+    endif()
+endif()
 
 if (WIN32)
     add_definitions(-DUNICODE)

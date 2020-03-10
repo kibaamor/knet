@@ -16,7 +16,7 @@ class worker
     : public workable,
       public poller {
 public:
-    worker(connection_factory* cf);
+    explicit worker(connection_factory* cf);
     ~worker() override;
 
     void add_work(rawsocket_t rs) override;
@@ -38,7 +38,7 @@ class async_worker
     : public workable,
       noncopyable {
 public:
-    async_worker(connection_factory_builder* cfb);
+    explicit async_worker(connection_factory_builder* cfb);
     ~async_worker() override;
 
     void add_work(rawsocket_t rs) override;

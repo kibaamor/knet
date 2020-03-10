@@ -6,7 +6,7 @@ namespace knet {
 class workable;
 class acceptor : public poller {
 public:
-    acceptor(workable* wkr);
+    explicit acceptor(workable* wkr);
     ~acceptor() override;
 
     void poll() override;

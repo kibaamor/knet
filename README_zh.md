@@ -1,8 +1,8 @@
 # **knet** [English Version](./README.md)
 
-|Linux Build Status|Windows Build Status|Coverity Scan Build Status|License|
-|:--:|:--:|:--:|:--:|
-[![Linux Build Status](https://img.shields.io/travis/kibaamor/knet/master?label=Linux%20build&style=flat-square)](https://travis-ci.org/KibaAmor/knet)|[![Windows Build Status](https://img.shields.io/appveyor/build/kibaamor/knet/master?label=Windows%20build&style=flat-square)](https://ci.appveyor.com/project/KibaAmor/knet)|[![Coverity Scan Build Status](https://img.shields.io/coverity/scan/20462?label=Coverity%20build&style=flat-square)](https://scan.coverity.com/projects/kibaamor-knet)|[![License](https://img.shields.io/github/license/kibaamor/knet?label=License&style=flat-square)](./LICENSE)
+|                                                                   Linux Build Status                                                                   |                                                                             Windows Build Status                                                                             |                                                                       Coverity Scan Build Status                                                                       |                                                   License                                                    |
+| :----------------------------------------------------------------------------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :----------------------------------------------------------------------------------------------------------: |
+| [![Linux Build Status](https://img.shields.io/travis/kibaamor/knet/master?label=Linux%20build&style=flat-square)](https://travis-ci.org/KibaAmor/knet) | [![Windows Build Status](https://img.shields.io/appveyor/build/kibaamor/knet/master?label=Windows%20build&style=flat-square)](https://ci.appveyor.com/project/KibaAmor/knet) | [![Coverity Scan Build Status](https://img.shields.io/coverity/scan/20462?label=Coverity%20build&style=flat-square)](https://scan.coverity.com/projects/kibaamor-knet) | [![License](https://img.shields.io/github/license/kibaamor/knet?label=License&style=flat-square)](./LICENSE) |
 
 一个跨平台的无锁且支持定时器（如：心跳）的C++11网络库。
 
@@ -33,8 +33,10 @@
 ## 编译环境
 
 * CMake 3.1及以上
+* [Clang 3.3](http://clang.llvm.org/cxx_status.html)及以上(如果你使用Clang编译)
 * Visual Studio 2015及以上(Windows)
-* Gcc 4.9及以上(Linux)
+* [Gcc 4.9](https://gcc.gnu.org/gcc-5/changes.html#libstdcxx)及以上(Linux)
+* [Xcode 8.0](https://stackoverflow.com/questions/28094794/why-does-apple-clang-disallow-c11-thread-local-when-official-clang-supports) 及以上(MacOS)
 
 ## 如何使用
 

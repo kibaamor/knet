@@ -1,7 +1,8 @@
 language: cpp
 
-os: osx
-compiler: clang
+os: linux
+dist: xenial
+compiler: gcc
 
 notifications:
   email: false

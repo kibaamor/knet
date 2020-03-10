@@ -1,8 +1,8 @@
 # **knet** [中文版](./README_zh.md)
 
-|Linux Build Status|Windows Build Status|Coverity Scan Build Status|License|
-|:--:|:--:|:--:|:--:|
-[![Linux Build Status](https://img.shields.io/travis/kibaamor/knet/master?label=Linux%20build&style=flat-square)](https://travis-ci.org/KibaAmor/knet)|[![Windows Build Status](https://img.shields.io/appveyor/build/kibaamor/knet/master?label=Windows%20build&style=flat-square)](https://ci.appveyor.com/project/KibaAmor/knet)|[![Coverity Scan Build Status](https://img.shields.io/coverity/scan/20462?label=Coverity%20build&style=flat-square)](https://scan.coverity.com/projects/kibaamor-knet)|[![License](https://img.shields.io/github/license/kibaamor/knet?label=License&style=flat-square)](./LICENSE)
+|                                                                   Linux Build Status                                                                   |                                                                             Windows Build Status                                                                             |                                                                       Coverity Scan Build Status                                                                       |                                                   License                                                    |
+| :----------------------------------------------------------------------------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :----------------------------------------------------------------------------------------------------------: |
+| [![Linux Build Status](https://img.shields.io/travis/kibaamor/knet/master?label=Linux%20build&style=flat-square)](https://travis-ci.org/KibaAmor/knet) | [![Windows Build Status](https://img.shields.io/appveyor/build/kibaamor/knet/master?label=Windows%20build&style=flat-square)](https://ci.appveyor.com/project/KibaAmor/knet) | [![Coverity Scan Build Status](https://img.shields.io/coverity/scan/20462?label=Coverity%20build&style=flat-square)](https://scan.coverity.com/projects/kibaamor-knet) | [![License](https://img.shields.io/github/license/kibaamor/knet?label=License&style=flat-square)](./LICENSE) |
 
 A cross platform lock-free and timer-supported(hearbeat etc.) C++11 network library.
 
@@ -33,8 +33,10 @@ Table of Contents
 ## Environment
 
 * CMake 3.1 or higher
+* [Clang 3.3](http://clang.llvm.org/cxx_status.html) or higher (If you build with Clang)
 * Visual Studio 2015 or higher(Windows)
-* Gcc 4.9 or higher(Linux)
+* [Gcc 4.9](https://gcc.gnu.org/gcc-5/changes.html#libstdcxx) or higher(Linux)
+* [Xcode 8.0](https://stackoverflow.com/questions/28094794/why-does-apple-clang-disallow-c11-thread-local-when-official-clang-supports) or higher(MacOS)
 
 ## How To Use
 

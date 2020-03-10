@@ -26,7 +26,7 @@ addons:
       description: "A cross platform lock-free and timer-supported(hearbeat etc.) C++11 network library."
     notification_email: kibaamor@gmail.com
     build_command_prepend: "cmake -DCMAKE_BUILD_TYPE=DEBUG ."
-    build_command: "make -j2 -k"
+    build_command: "make"
     branch_pattern: coverity_scan
 
 script:

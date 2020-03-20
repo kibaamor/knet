@@ -1,29 +1,18 @@
 #pragma once
+#include "kworker.h"
 #include "kaddress.h"
 
 namespace knet {
-class workable;
-class connector : noncopyable {
+
+class connector final {
 public:
-    connector(const address& addr, workable* wkr,
-        bool reconn = true, size_t interval_ms = 1000);
-    virtual ~connector();
+    connector(workable& wkr);
+    ~connector();
 
-    bool update(size_t ms);
-
-    virtual void on_reconnect() { }
-    virtual void on_reconnect_failed() { }
-
-    const address& get_address() const { return _addr; }
+    bool connect(const address& addr);
 
 private:
-    const address _addr;
-    workable* const _wkr;
-    const bool _reconn;
-    const size_t _interval_ms;
-
-    rawsocket_t _rs = INVALID_RAWSOCKET;
-    size_t _last_interval_ms = 0;
-    bool _succ = false;
+    workable& _wkr;
 };
+
 } // namespace knet

@@ -4,11 +4,12 @@
 #include <stdexcept>
 #include <iostream>
 
-#ifndef KNET_USE_IOCP
+#ifdef KNET_PLATFORM_UNIX
 #include <sys/ioctl.h>
 #endif
 
 namespace knet {
+
 void on_fatal_error(int err, const char* apiname)
 {
     char buf[10240] = {};
@@ -36,9 +37,15 @@ void on_fatal_error(int err, const char* apiname)
     throw new std::runtime_error(std::string(buf));
 }
 
+bool set_rawsocket_bufsize(rawsocket_t rs, int size)
+{
+    return set_rawsocket_opt(rs, SOL_SOCKET, SO_RCVBUF, &size, sizeof(size))
+        && set_rawsocket_opt(rs, SOL_SOCKET, SO_SNDBUF, &size, sizeof(size));
+}
+
 rawsocket_t create_rawsocket(int domain, int type, bool nonblock)
 {
-#ifdef KNET_USE_IOCP
+#ifdef KNET_PLATFORM_WIN
 
     (void)nonblock;
     auto rs = WSASocketW(domain, type, 0, nullptr, 0, WSA_FLAG_OVERLAPPED);
@@ -99,7 +106,11 @@ void close_rawsocket(rawsocket_t& rs)
     if (INVALID_RAWSOCKET == rs)
         return;
 
-    closesocket(rs);
+#ifdef KNET_PLATFORM_WIN
+    ::closesocket(rs);
+#else
+    ::close(rs);
+#endif
     rs = INVALID_RAWSOCKET;
 }
 
@@ -110,7 +121,7 @@ bool set_rawsocket_opt(rawsocket_t rs, int level, int optname,
     return RAWSOCKET_ERROR != setsockopt(rs, level, optname, val, optlen);
 }
 
-#ifndef KNET_USE_IOCP
+#ifdef KNET_PLATFORM_UNIX
 
 bool set_rawsocket_nonblock(rawsocket_t rs)
 {

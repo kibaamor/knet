@@ -41,7 +41,21 @@ endif()
 if (WIN32)
     add_definitions(-DUNICODE)
     add_definitions(-D_UNICODE)
+
+    set(knet_platform_postfix "win")
+    set(knet_poller_postfix "iocp")
+else ()
+    add_definitions(-DKNET_PLATFORM_UNIX)
+    
+    set(knet_platform_postfix "unix")
+    if (CMAKE_SYSTEM_NAME MATCHES "Linux")
+        set(knet_poller_postfix "epoll")
+    else ()
+        set(knet_poller_postfix "kqueue")
+    endif ()
 endif()
+message("knet_platform_postfix: ${knet_platform_postfix}")
+message("knet_poller_postfix: ${knet_poller_postfix}")
 
 if (MSVC)
     add_definitions("/wd4100")
@@ -55,28 +69,40 @@ enable_testing()
 file(GLOB HDR_LIST
     "${PROJECT_SOURCE_DIR}/include/*.h"
 )
+source_group("hdrs" FILES ${HDR_LIST})
 
 file(GLOB SRC_LIST
     "${PROJECT_SOURCE_DIR}/src/*.h"
     "${PROJECT_SOURCE_DIR}/src/*.cpp"
+    "${PROJECT_SOURCE_DIR}/src/impl/*.h"
+    "${PROJECT_SOURCE_DIR}/src/impl/*.cpp"
+)
+source_group("srcs" FILES ${SRC_LIST})
+
+file(GLOB_RECURSE EXTRA_SRC_LIST
+    "${PROJECT_SOURCE_DIR}/src/*${knet_platform_postfix}.h"
+    "${PROJECT_SOURCE_DIR}/src/*${knet_platform_postfix}.cpp"
+    "${PROJECT_SOURCE_DIR}/src/*${knet_poller_postfix}.h"
+    "${PROJECT_SOURCE_DIR}/src/*${knet_poller_postfix}.cpp"
 )
 
-source_group("hdrs" FILES ${HDR_LIST})
-source_group("srcs" FILES ${SRC_LIST})
-add_library(${PROJECT_NAME} ${HDR_LIST} ${SRC_LIST})
+add_library(${PROJECT_NAME} ${HDR_LIST} ${SRC_LIST} ${EXTRA_SRC_LIST})
 
-target_include_directories(${PROJECT_NAME}
-    PUBLIC ${PROJECT_SOURCE_DIR}/include
-    )
+target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/include)
 
 if (WIN32)
-    target_link_libraries(${PROJECT_NAME}
-        ws2_32
-        )
+    target_link_libraries(${PROJECT_NAME} ws2_32)
+
+    target_compile_definitions(${PROJECT_NAME} PRIVATE KNET_PLATFORM_WIN KNET_POLLER_IOCP)
 else()
-    target_link_libraries(${PROJECT_NAME}
-        pthread
-        )
+    target_link_libraries(${PROJECT_NAME} pthread)
+    
+    target_compile_definitions(${PROJECT_NAME} PRIVATE KNET_PLATFORM_UNIX)
+    if (CMAKE_SYSTEM_NAME MATCHES "Linux")
+        target_compile_definitions(${PROJECT_NAME} PRIVATE KNET_POLLER_EPOLL)
+    else ()
+        target_compile_definitions(${PROJECT_NAME} PRIVATE KNET_POLLER_KQUEUE)
+    endif ()
 endif()
 
 

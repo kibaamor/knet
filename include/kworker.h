@@ -1,44 +1,33 @@
 #pragma once
-#include "kconnection.h"
-#include "kpoller.h"
+#include "kconn.h"
 #include <vector>
 #include <thread>
 
 namespace knet {
+
 class workable {
 public:
     virtual ~workable() = default;
-
     virtual void add_work(rawsocket_t rs) = 0;
 };
 
-class worker
-    : public workable,
-      public poller {
+class worker : public workable {
 public:
-    explicit worker(connection_factory* cf);
+    explicit worker(conn_factory& cf);
     ~worker() override;
+
+    virtual void update();
 
     void add_work(rawsocket_t rs) override;
 
-    void poll() override;
-
-    template <typename T>
-    T* get_cf() const { return static_cast<T*>(_cf); }
-
-protected:
-    bool on_poll(void* key, const rawpollevent_t& evt) override;
-
 private:
-    connection_factory* const _cf;
-    std::vector<socket*> _adds;
+    class impl;
+    std::unique_ptr<impl> _impl;
 };
 
-class async_worker
-    : public workable,
-      noncopyable {
+class async_worker : public workable {
 public:
-    explicit async_worker(connection_factory_builder* cfb);
+    explicit async_worker(conn_factory_builder& cfb);
     ~async_worker() override;
 
     void add_work(rawsocket_t rs) override;
@@ -47,7 +36,7 @@ public:
     virtual void stop();
 
 protected:
-    virtual worker* create_worker(connection_factory* cf)
+    virtual worker* create_worker(conn_factory& cf)
     {
         return new worker(cf);
     }
@@ -62,8 +51,9 @@ private:
     static void worker_thread(info* i);
 
 private:
-    connection_factory_builder* const _cfb;
+    conn_factory_builder& _cfb;
     std::vector<info> _infos;
     size_t _index = 0;
 };
+
 } // namespace knet

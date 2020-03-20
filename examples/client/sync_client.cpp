@@ -57,7 +57,7 @@ int main(int argc, char** argv)
         if (nullptr != cnctor && !cnctor->update(static_cast<size_t>(delta_ms)))
             cnctor = nullptr;
 
-        wkr->poll();
+        wkr->update();
 
         const auto conn_num = mgr.get_conn_num();
         if (mgr.get_disconnect_all()) {

@@ -1,4 +1,5 @@
-#include "../include/ktconnection.h"
+#include "../include/ktconn.h"
+#include "../include/kutils.h"
 #include <set>
 #include <map>
 
@@ -106,14 +107,14 @@ tconnection_factory::~tconnection_factory()
     delete _timer;
 }
 
-connection* tconnection_factory::create_connection()
+conn* tconnection_factory::create_conn()
 {
     auto tconn = create_connection_impl();
     _tconns.insert(std::make_pair(tconn->get_connid(), tconn));
     return tconn;
 }
 
-void tconnection_factory::destroy_connection(connection* conn)
+void tconnection_factory::destroy_conn(conn* conn)
 {
     auto tconn = static_cast<tconnection*>(conn);
     _tconns.erase(tconn->get_connid());

@@ -1,51 +1,32 @@
 #include "../include/kworker.h"
-#include "../include/kpoller.h"
-#include "ksocket.h"
+#include "../include/kutils.h"
+#include "impl/kworker_impl.h"
 #include "kspscqueue.h"
+#include "kinternal.h"
 #include <memory>
 
 namespace knet {
+
 using workqueue_t = spsc_queue<rawsocket_t, 1024>;
 
-worker::worker(connection_factory* cf)
-    : _cf(cf)
+worker::worker(conn_factory& cf)
 {
+    _impl.reset(new impl(cf));
 }
 
-worker::~worker()
-{
-    for (auto sock : _adds)
-        delete sock;
-    std::vector<socket*>().swap(_adds);
-}
+worker::~worker() = default;
 
-void worker::poll()
+void worker::update()
 {
-    poller::poll();
-
-    if (!_adds.empty()) {
-        for (auto sock : _adds) {
-            if (!sock->attach_poller(this))
-                delete sock;
-        }
-        _adds.clear();
-    }
+    _impl->update();
 }
 
 void worker::add_work(rawsocket_t rs)
 {
-    auto sock = new socket(_cf, rs);
-    _adds.push_back(sock);
+    _impl->add_work(rs);
 }
 
-bool worker::on_poll(void* key, const rawpollevent_t& evt)
-{
-    auto sock = static_cast<socket*>(key);
-    kassert(nullptr != sock);
-    return sock->on_rawpollevent(evt);
-}
-
-async_worker::async_worker(connection_factory_builder* cfb)
+async_worker::async_worker(conn_factory_builder& cfb)
     : _cfb(cfb)
 {
 }
@@ -65,7 +46,7 @@ void async_worker::add_work(rawsocket_t rs)
         if (wq->push(rs))
             return;
     }
-    ::closesocket(rs);
+    close_rawsocket(rs);
 }
 
 bool async_worker::start(size_t thread_num)
@@ -108,8 +89,8 @@ void async_worker::worker_thread(info* i)
     constexpr int64_t min_interval_ms = 50;
     auto q = static_cast<workqueue_t*>(i->q);
 
-    std::unique_ptr<connection_factory> cf(i->aw->_cfb->build_factory());
-    std::unique_ptr<worker> wkr(i->aw->create_worker(cf.get()));
+    std::unique_ptr<conn_factory> cf(i->aw->_cfb.build_factory());
+    std::unique_ptr<worker> wkr(i->aw->create_worker(*cf));
 
     rawsocket_t rs;
     while (i->r) {
@@ -118,7 +99,7 @@ void async_worker::worker_thread(info* i)
         while (q->pop(rs))
             wkr->add_work(rs);
 
-        wkr->poll();
+        wkr->update();
 
         const auto end_ms = now_ms();
         const auto cost_ms = end_ms > beg_ms ? end_ms - beg_ms : 0;
@@ -129,6 +110,6 @@ void async_worker::worker_thread(info* i)
     cf.reset();
 
     while (q->pop(rs))
-        ::closesocket(rs);
+        close_rawsocket(rs);
 }
 } // namespace knet

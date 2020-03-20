@@ -21,7 +21,7 @@ private:
     int32_t check_package(char* data, size_t size);
 
 private:
-    char _buf[knet::SOCKET_RWBUF_SIZE] = {};
+    char _buf[256 * 1024] = {};
     uint32_t _used_buf_size = 0;
     uint32_t _send_buf_size = 0;
 
@@ -45,9 +45,9 @@ private:
     knet::connid_t _next_cid = 0;
 };
 
-class cecho_conn_factory_builder : public knet::connection_factory_builder {
+class cecho_conn_factory_builder : public knet::conn_factory_builder {
 public:
-    knet::connection_factory* build_factory() override
+    knet::conn_factory* build_factory() override
     {
         return new cecho_conn_factory(this);
     }
@@ -65,9 +65,9 @@ public:
     {
     }
 
-    void poll() override
+    void update() override
     {
-        worker::poll();
+        worker::update();
         get_cf<cecho_conn_factory>()->update();
     }
 };
@@ -80,7 +80,7 @@ public:
     }
 
 protected:
-    knet::worker* create_worker(knet::connection_factory* cf) override
+    knet::worker* create_worker(knet::conn_factory* cf) override
     {
         return new cecho_worker(static_cast<cecho_conn_factory*>(cf));
     }

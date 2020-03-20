@@ -2,6 +2,7 @@
 #include "knetfwd.h"
 
 namespace knet {
+
 struct buffer {
     const void* data;
     size_t size;
@@ -14,9 +15,9 @@ struct buffer {
 };
 
 class socket;
-class connection {
+class conn {
 public:
-    virtual ~connection() = default;
+    virtual ~conn() = default;
 
     virtual void on_connected() { }
     virtual size_t on_recv_data(char* data, size_t size) { return size; }
@@ -36,21 +37,22 @@ private:
     socket* _socket = nullptr;
 };
 
-class connection_factory {
+class conn_factory {
 public:
-    virtual ~connection_factory() = default;
+    virtual ~conn_factory() = default;
 
-    virtual connection* create_connection() { return new connection(); }
-    virtual void destroy_connection(connection* conn) { delete conn; }
+    virtual conn* create_conn() { return new conn(); }
+    virtual void destroy_conn(conn* conn) { delete conn; }
 };
 
-class connection_factory_builder {
+class conn_factory_builder {
 public:
-    virtual ~connection_factory_builder() = default;
+    virtual ~conn_factory_builder() = default;
 
-    virtual connection_factory* build_factory()
+    virtual conn_factory* build_factory()
     {
-        return new connection_factory();
+        return new conn_factory();
     }
 };
+
 } // namespace knet

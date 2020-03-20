@@ -35,9 +35,9 @@ private:
     knet::connid_t _next_cid = 0;
 };
 
-class secho_conn_factory_builder : public knet::connection_factory_builder {
+class secho_conn_factory_builder : public knet::conn_factory_builder {
 public:
-    knet::connection_factory* build_factory() override
+    knet::conn_factory* build_factory() override
     {
         return new secho_conn_factory(this);
     }
@@ -55,9 +55,9 @@ public:
     {
     }
 
-    void poll() override
+    void update() override
     {
-        worker::poll();
+        worker::update();
         get_cf<secho_conn_factory>()->update();
     }
 };
@@ -70,7 +70,7 @@ public:
     }
 
 protected:
-    knet::worker* create_worker(knet::connection_factory* cf) override
+    knet::worker* create_worker(knet::conn_factory* cf) override
     {
         return new secho_worker(static_cast<secho_conn_factory*>(cf));
     }

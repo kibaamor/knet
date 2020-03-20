@@ -1,34 +1,22 @@
 #pragma once
+#include "kworker.h"
 #include "kaddress.h"
-#include "kpoller.h"
 
 namespace knet {
-class workable;
-class acceptor : public poller {
-public:
-    explicit acceptor(workable* wkr);
-    ~acceptor() override;
 
-    void poll() override;
+class acceptor final {
+public:
+    explicit acceptor(workable& wkr);
+    ~acceptor();
+
+    void update();
 
     bool start(const address& addr);
     void stop();
 
-protected:
-    bool on_poll(void* key, const rawpollevent_t& evt) override;
-
 private:
-    workable* const _wkr;
-
-    sa_family_t _family = AF_UNSPEC;
-    rawsocket_t _rs = INVALID_RAWSOCKET;
-
-#ifdef KNET_USE_IOCP
-    void post_accept();
-
-    struct accept_io;
-    accept_io* _ios = nullptr;
-    accept_io* _free_ios = nullptr;
-#endif
+    class impl;
+    std::unique_ptr<impl> _impl;
 };
+
 } // namespace knet

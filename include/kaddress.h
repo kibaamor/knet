@@ -1,29 +1,40 @@
 #pragma once
 #include "knetfwd.h"
+#include <iostream>
 
 namespace knet {
-class address {
+
+enum class family_t : int {
+    Unknown = 0,
+    Ipv4,
+    Ipv6,
+};
+
+class address final {
 public:
-    bool pton(sa_family_t family, const std::string& addr, in_port_t port);
-    bool ntop(std::string& addr, in_port_t& port) const;
+    bool pton(family_t fa, const std::string& addr, uint16_t port);
+    bool ntop(std::string& addr, uint16_t& port) const;
+
+    int get_rawfamily() const;
+    family_t get_family() const;
+    const void* get_sockaddr() const;
+    int get_socklen() const;
 
     std::string to_string() const;
 
-    sa_family_t get_family() const { return _addr.ss_family; }
-    const sockaddr* get_sockaddr() const;
-    socklen_t get_socklen() const;
-
 private:
-    sockaddr_storage _addr = {};
+    char _addr[128] = {};
 };
 
 std::ostream& operator<<(std::ostream& os, const address& addr);
-std::istream& operator>>(std::istream& is, address& addr);
+
 } // namespace knet
 
 namespace std {
+
 inline string to_string(const knet::address& addr)
 {
     return addr.to_string();
 }
+
 } // namespace std

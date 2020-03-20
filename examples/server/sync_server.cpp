@@ -33,7 +33,7 @@ int main(int argc, char** argv)
     auto wkr = std::make_shared<secho_worker>(cf.get());
 
     // create acceptor
-    auto acc = std::make_shared<acceptor>(wkr.get());
+    auto acc = std::make_shared<acceptor>(*wkr);
     if (!acc->start(addr)) {
         std::cerr << "acceptor::start failed" << std::endl;
         return -1;
@@ -51,8 +51,8 @@ int main(int argc, char** argv)
         const auto delta_ms = (beg_ms > last_ms ? beg_ms - last_ms : 0);
         last_ms = beg_ms;
 
-        acc->poll();
-        wkr->poll();
+        acc->update();
+        wkr->update();
 
         const auto conn_num = mgr.get_conn_num();
         if (mgr.get_disconnect_all()) {

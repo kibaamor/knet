@@ -1,5 +1,5 @@
 #pragma once
-#include "kconnection.h"
+#include "kconn.h"
 #include "kworker.h"
 #include "kuserdata.h"
 #include <unordered_map>
@@ -11,7 +11,7 @@ using timerid_t = int64_t;
 constexpr timerid_t INVALID_TIMERID = 0;
 
 class tconnection_factory;
-class tconnection : public connection {
+class tconnection : public conn {
 public:
     tconnection(connid_t id, tconnection_factory* cf)
         : _id(id)
@@ -33,7 +33,7 @@ private:
 };
 
 class _tconn_timer;
-class tconnection_factory : public connection_factory, noncopyable {
+class tconnection_factory : public conn_factory {
 public:
     tconnection_factory();
     ~tconnection_factory() override;
@@ -50,8 +50,8 @@ protected:
     virtual void destroy_connection_impl(tconnection* tconn) { delete tconn; }
 
 private:
-    connection* create_connection() override;
-    void destroy_connection(connection* conn) override;
+    conn* create_conn() override;
+    void destroy_conn(conn* conn) override;
 
 private:
     std::unordered_map<connid_t, tconnection*> _tconns;

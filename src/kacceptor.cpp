@@ -1,9 +1,9 @@
 #include "../include/kacceptor.h"
 
 #ifdef KNET_PLATFORM_WIN
-# include "acceptor/kacceptor_win.h"
+#include "acceptor/kacceptor_win.h"
 #else
-# include "acceptor/kacceptor_unix.h"
+#include "acceptor/kacceptor_unix.h"
 #endif
 
 namespace knet {

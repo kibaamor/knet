@@ -1,5 +1,5 @@
 #include "../include/kaddress.h"
-#include "kinternal.h"
+#include "internal/kinternal.h"
 #include <cstring>
 
 namespace knet {

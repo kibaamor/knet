@@ -47,16 +47,29 @@ public:
         _f &= ~kWrite;
     }
 
-    bool is_close() const { return 0 != (_f & kClose); }
-    bool is_call() const { return 0 != (_f & kCall); }
-    bool is_read() const { return 0 != (_f & kRead); }
-    bool is_write() const { return 0 != (_f & kWrite); }
+    bool is_close() const
+    {
+        return 0 != (_f & kClose);
+    }
+    bool is_call() const
+    {
+        return 0 != (_f & kCall);
+    }
+    bool is_read() const
+    {
+        return 0 != (_f & kRead);
+    }
+    bool is_write() const
+    {
+        return 0 != (_f & kWrite);
+    }
 
 private:
     static constexpr uint8_t kClose = 1u << 0u;
     static constexpr uint8_t kCall = 1u << 1u;
     static constexpr uint8_t kRead = 1u << 2u;
     static constexpr uint8_t kWrite = 1u << 3u;
+
     uint8_t _f = 0;
 };
 

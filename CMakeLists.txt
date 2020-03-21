@@ -74,8 +74,8 @@ source_group("hdrs" FILES ${HDR_LIST})
 file(GLOB SRC_LIST
     "${PROJECT_SOURCE_DIR}/src/*.h"
     "${PROJECT_SOURCE_DIR}/src/*.cpp"
-    "${PROJECT_SOURCE_DIR}/src/impl/*.h"
-    "${PROJECT_SOURCE_DIR}/src/impl/*.cpp"
+    "${PROJECT_SOURCE_DIR}/src/internal/*.h"
+    "${PROJECT_SOURCE_DIR}/src/internal/*.cpp"
 )
 source_group("srcs" FILES ${SRC_LIST})
 
@@ -85,6 +85,7 @@ file(GLOB_RECURSE EXTRA_SRC_LIST
     "${PROJECT_SOURCE_DIR}/src/*${knet_poller_postfix}.h"
     "${PROJECT_SOURCE_DIR}/src/*${knet_poller_postfix}.cpp"
 )
+source_group("srcs\\extra" FILES ${EXTRA_SRC_LIST})
 
 add_library(${PROJECT_NAME} ${HDR_LIST} ${SRC_LIST} ${EXTRA_SRC_LIST})
 
@@ -105,7 +106,6 @@ else()
     endif ()
 endif()
 
-
 install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/
     DESTINATION "include"
     )
@@ -114,6 +114,8 @@ install(TARGETS ${PROJECT_NAME}
     LIBRARY DESTINATION lib
     RUNTIME DESTINATION bin
     )
+
+#######################################################################################
 
 add_subdirectory(test)
 add_subdirectory(examples)

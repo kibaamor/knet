@@ -1,7 +1,7 @@
 #pragma once
 #include "../../include/kacceptor.h"
-#include "../kinternal.h"
-#include "../kpoller.h"
+#include "../internal/kinternal.h"
+#include "../internal/kpoller.h"
 
 namespace knet {
 
@@ -18,18 +18,14 @@ public:
     bool on_pollevent(void* key, void* evt) override;
 
 private:
-    void post_accept();
-
-private:
     workable& _wkr;
     std::unique_ptr<poller> _plr;
 
-    int _domain = AF_UNSPEC;
-    rawsocket_t _rs = INVALID_SOCKET;
+    int _family = AF_UNSPEC;
+    rawsocket_t _rs = INVALID_RAWSOCKET;
 
-    struct accept_io;
-    std::vector<accept_io> _ios;
-    accept_io* _free_ios = nullptr;
+    class pending_ios;
+    std::unique_ptr<pending_ios> _ios;
 };
 
 } // namespace knet

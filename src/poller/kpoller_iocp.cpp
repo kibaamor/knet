@@ -1,5 +1,4 @@
 #include "kpoller_iocp.h"
-#include "../kinternal.h"
 
 namespace knet {
 
@@ -8,7 +7,7 @@ poller::impl::impl(poller_client& clt)
 {
     _h = ::CreateIoCompletionPort(INVALID_HANDLE_VALUE, nullptr, 0, 1);
     if (nullptr != _h)
-        SetHandleInformation(_h, HANDLE_FLAG_INHERIT, 0);
+        ::SetHandleInformation(_h, HANDLE_FLAG_INHERIT, 0);
 }
 
 poller::impl::~impl()
@@ -33,8 +32,9 @@ void poller::impl::poll()
 
     ULONG num = 0;
     if (!::GetQueuedCompletionStatusEx(_h, evts, size, &num, 0, FALSE)) {
-        if (WAIT_TIMEOUT != WSAGetLastError())
-            on_fatal_error(WSAGetLastError(), "GetQueuedCompletionStatusEx");
+        const auto err = ::WSAGetLastError();
+        if (WAIT_TIMEOUT != err)
+            on_fatal_error(err, "GetQueuedCompletionStatusEx");
         return;
     }
 

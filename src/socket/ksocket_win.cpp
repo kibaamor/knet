@@ -1,12 +1,13 @@
 #include "ksocket_win.h"
-#include "../kpoller.h"
+#include "../internal/kinternal.h"
 
 namespace knet {
 
-struct socket::impl::sockbuf : WSABUF {
-    char chunk[128 * 1024] = {};
-    size_t used_size = 0;
+struct socket::impl::sockbuf {
     WSAOVERLAPPED ol = {};
+    char chunk[SOCKET_RWBUF_SIZE] = {};
+    size_t used_size = 0;
+    bool cancel = false;
 
     char* unused_ptr()
     {
@@ -29,12 +30,14 @@ struct socket::impl::sockbuf : WSABUF {
     bool post_read(rawsocket_t rs)
     {
         memset(&ol, 0, sizeof(ol));
-        buf = unused_ptr();
-        len = static_cast<ULONG>(unused_size());
+
+        WSABUF buf;
+        buf.buf = unused_ptr();
+        buf.len = static_cast<ULONG>(unused_size());
 
         DWORD dw = 0;
         DWORD flag = 0;
-        const auto ret = ::WSARecv(rs, this, 1, &dw, &flag, &ol, nullptr);
+        const auto ret = ::WSARecv(rs, &buf, 1, &dw, &flag, &ol, nullptr);
         if (SOCKET_ERROR == ret && ERROR_IO_PENDING != ::WSAGetLastError())
             return false;
 
@@ -44,11 +47,13 @@ struct socket::impl::sockbuf : WSABUF {
     bool post_write(rawsocket_t rs)
     {
         memset(&ol, 0, sizeof(ol));
-        buf = chunk;
-        len = static_cast<ULONG>(used_size);
+
+        WSABUF buf;
+        buf.buf = chunk;
+        buf.len = static_cast<ULONG>(used_size);
 
         DWORD dw = 0;
-        const auto ret = ::WSASend(rs, this, 1, &dw, 0, &ol, nullptr);
+        const auto ret = ::WSASend(rs, &buf, 1, &dw, 0, &ol, nullptr);
         if (SOCKET_ERROR == ret && ERROR_IO_PENDING != ::WSAGetLastError())
             return false;
 
@@ -64,35 +69,43 @@ struct socket::impl::sockbuf : WSABUF {
     }
 };
 
-socket::impl::impl(rawsocket_t rs)
-    : _rs(rs)
+socket::impl::impl(socket& s, rawsocket_t rs)
+    : _s(s)
+    , _rs(rs)
 {
 }
 
 socket::impl::~impl()
 {
-    kassert(INVALID_SOCKET == _rs);
+    kassert(INVALID_RAWSOCKET == _rs);
+    kassert(_f.is_close());
 }
 
 bool socket::impl::init(poller& plr, conn_factory& cf)
 {
-    if (INVALID_SOCKET == _rs) {
+    if (INVALID_RAWSOCKET == _rs) {
         return false;
     }
 
-    if (!plr.add(_rs, this)) {
+    if (!plr.add(_rs, &_s)) {
         close_rawsocket(_rs);
+        _f.mark_close();
         return false;
     }
 
-    _c.get_deleter().set_factory(&cf);
-    _c.reset(cf.create_conn());
+    _c = cf.create_conn();
 
     _rb.reset(new sockbuf());
     _wb.reset(new sockbuf());
 
-    if (!start())
+    if (!start()) {
         close_rawsocket(_rs);
+
+        _c->on_disconnect();
+        _c = nullptr;
+
+        return false;
+    }
 
     return true;
 }
@@ -127,21 +140,19 @@ bool socket::impl::write(buffer* buf, size_t num)
 
 void socket::impl::close()
 {
+    if (!_f.is_close())
+        _f.mark_close();
+
     if (_f.is_call() || _f.is_read() || _f.is_write()) {
-        if (!_f.is_close()) {
-            _f.mark_close();
-            ::CancelIoEx(reinterpret_cast<HANDLE>(_rs), nullptr);
-        }
+        _rb->cancel = _wb->cancel = true;
+        ::CancelIoEx(reinterpret_cast<HANDLE>(_rs), nullptr);
         return;
     }
 
-    {
-        scoped_call_flag s(_f);
-        _c->on_disconnect();
-    }
-
-    ::shutdown(_rs, SD_BOTH);
     close_rawsocket(_rs);
+
+    _c->on_disconnect();
+    _c = nullptr;
 
     delete this;
 }
@@ -155,9 +166,10 @@ bool socket::impl::handle_pollevent(void* evt)
 {
     auto e = reinterpret_cast<OVERLAPPED_ENTRY*>(evt);
 
+    const auto buf = CONTAINING_RECORD(e->lpOverlapped, socket::impl::sockbuf, ol);
     const auto size = static_cast<size_t>(e->dwNumberOfBytesTransferred);
-    if (e->lpOverlapped == &_rb->ol) {
-        if (0 == size) {
+    if (buf == _rb.get()) {
+        if (0 == size || buf->cancel) {
             _f.unmark_read();
             goto failed;
         }
@@ -169,8 +181,8 @@ bool socket::impl::handle_pollevent(void* evt)
 
         if (_rb->can_read() && !try_read())
             goto failed;
-    } else if (e->lpOverlapped == &_wb->ol) {
-        if (0 == size) {
+    } else if (buf == _wb.get()) {
+        if (0 == size || buf->cancel) {
             _f.unmark_write();
             goto failed;
         }
@@ -194,7 +206,7 @@ bool socket::impl::start()
 {
     {
         scoped_call_flag s(_f);
-        _c->on_connected();
+        _c->on_connected(&_s);
     }
 
     if (_f.is_close() || !try_read()) {
@@ -203,7 +215,6 @@ bool socket::impl::start()
             return true;
         }
 
-        _c->on_disconnect();
         return false;
     }
 

@@ -1,5 +1,6 @@
 #pragma once
-#include "../kpoller.h"
+#include "../internal/kpoller.h"
+#include "../internal/kinternal.h"
 #include <array>
 
 namespace knet {
@@ -15,7 +16,7 @@ public:
 private:
     poller_client& _clt;
     int _kq = -1;
-    std::array<kevent, 128> _evts;
+    std::array<kevent, POLL_EVENT_NUM> _evts;
 };
 
 } // namespace knet

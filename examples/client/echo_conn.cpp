@@ -1,9 +1,11 @@
 #include "echo_conn.h"
+#include <kutils.h>
 #include <iostream>
-#include <thread>
+#include <cassert>
 #include <algorithm>
 
 namespace {
+
 constexpr int64_t TIMER_ID_SEND_PACKAGE = 1;
 
 constexpr uint32_t get_min_pkg_size()
@@ -11,15 +13,18 @@ constexpr uint32_t get_min_pkg_size()
     // + sizeof(uint32_t) for package integrity check
     return echo_package::get_hdr_size() + sizeof(uint32_t);
 }
+
 } // namespace
 
-cecho_conn::cecho_conn(knet::connid_t id, knet::tconnection_factory* cf)
-    : tconnection(id, cf)
+cecho_conn::cecho_conn(conn_factory& cf)
+    : conn(cf)
 {
 }
 
-void cecho_conn::on_connected()
+void cecho_conn::on_connected(socket* s)
 {
+    conn::on_connected(s);
+
     auto& mgr = echo_mgr::get_instance();
 
     if (mgr.get_enable_log())
@@ -31,7 +36,7 @@ void cecho_conn::on_connected()
     }
 
     generate_packages();
-    add_timer(knet::now_ms() + mgr.get_delay_ms(), TIMER_ID_SEND_PACKAGE);
+    add_timer(now_ms() + mgr.get_delay_ms(), TIMER_ID_SEND_PACKAGE);
 }
 
 size_t cecho_conn::on_recv_data(char* data, size_t size)
@@ -56,7 +61,7 @@ size_t cecho_conn::on_recv_data(char* data, size_t size)
     return static_cast<size_t>(len);
 }
 
-void cecho_conn::on_timer(int64_t absms, const knet::userdata& ud)
+void cecho_conn::on_timer(int64_t absms, const userdata& ud)
 {
     auto& mgr = echo_mgr::get_instance();
 
@@ -68,17 +73,12 @@ void cecho_conn::on_timer(int64_t absms, const knet::userdata& ud)
         return;
     }
 
-    add_timer(knet::now_ms() + mgr.get_delay_ms(), TIMER_ID_SEND_PACKAGE);
-}
-
-void cecho_conn::on_attach_socket(knet::rawsocket_t rs)
-{
-    knet::set_rawsocket_bufsize(rs, 256 * 1024);
+    add_timer(now_ms() + mgr.get_delay_ms(), TIMER_ID_SEND_PACKAGE);
 }
 
 void cecho_conn::generate_packages()
 {
-    kassert(_send_buf_size == _used_buf_size);
+    assert(_send_buf_size == _used_buf_size);
 
     _send_buf_size = 0;
 
@@ -91,7 +91,7 @@ void cecho_conn::generate_packages()
         const auto unused_buf_size = max_buf_size - _used_buf_size;
 
         const auto max_size = (std::min)(max_pkg_size, unused_buf_size);
-        auto pkg_size = knet::u32rand_between(min_pkg_size, max_size);
+        auto pkg_size = u32rand_between(min_pkg_size, max_size);
 
         auto pkg = reinterpret_cast<echo_package*>(_buf + _used_buf_size);
         pkg->size = pkg_size;
@@ -107,11 +107,11 @@ bool cecho_conn::send_package()
     if (_send_buf_size == _used_buf_size)
         return true;
 
-    kassert(_send_buf_size < _used_buf_size);
+    assert(_send_buf_size < _used_buf_size);
 
-    auto send_size = knet::u32rand_between(1, _used_buf_size - _send_buf_size);
+    auto send_size = u32rand_between(1, _used_buf_size - _send_buf_size);
 
-    knet::buffer buf(_buf + _send_buf_size, send_size);
+    buffer buf(_buf + _send_buf_size, send_size);
     if (!send_data(&buf, 1)) {
         std::cerr << "send_package failed! size:" << buf.size << std::endl;
         return false;
@@ -155,40 +155,19 @@ int32_t cecho_conn::check_package(char* data, size_t size)
     return pkg->size;
 }
 
-cecho_conn_factory::cecho_conn_factory(cecho_conn_factory_builder* cfb)
-    : _cfb(cfb)
+cecho_conn_factory::cecho_conn_factory(connid_gener gener)
+    : conn_factory(gener)
 {
 }
 
-knet::tconnection* cecho_conn_factory::create_connection_impl()
+conn* cecho_conn_factory::do_create_conn()
 {
     echo_mgr::get_instance().inc_conn_num();
-    return new cecho_conn(get_next_connid(), this);
+    return new cecho_conn(*this);
 }
 
-void cecho_conn_factory::destroy_connection_impl(knet::tconnection* tconn)
+void cecho_conn_factory::do_destroy_conn(conn* c)
 {
     echo_mgr::get_instance().dec_conn_num();
-    knet::tconnection_factory::destroy_connection_impl(tconn);
-}
-
-knet::connid_t cecho_conn_factory::get_next_connid()
-{
-    return nullptr != _cfb ? _cfb->get_next_connid() : _next_cid++;
-}
-
-cecho_connector::cecho_connector(const knet::address& addr,
-    knet::workable* wkr, bool reconn, size_t interval_ms)
-    : connector(addr, wkr, reconn, interval_ms)
-{
-}
-
-void cecho_connector::on_reconnect()
-{
-    std::cout << "on reconnect: " << get_address() << std::endl;
-}
-
-void cecho_connector::on_reconnect_failed()
-{
-    std::cout << "on reconnect failed: " << get_address() << std::endl;
+    conn_factory::do_destroy_conn(c);
 }

@@ -1,7 +1,5 @@
 #pragma once
 #include "../include/knetfwd.h"
-#include "../include/kconn.h"
-#include "../include/kaddress.h"
 
 #ifdef _WIN32
 
@@ -20,8 +18,14 @@
 #include <mswsock.h>
 
 namespace knet {
+
+using sa_family_t = ADDRESS_FAMILY;
+using in_port_t = USHORT;
+using socklen_t = int;
+
 constexpr rawsocket_t INVALID_RAWSOCKET = INVALID_SOCKET;
 constexpr int RAWSOCKET_ERROR = SOCKET_ERROR;
+
 } // namespace knet
 
 #else
@@ -36,10 +40,12 @@ constexpr int RAWSOCKET_ERROR = SOCKET_ERROR;
 #include <arpa/inet.h>
 #include <netinet/in.h>
 
-namespace {
+namespace knet {
+
 constexpr rawsocket_t INVALID_RAWSOCKET = -1;
 constexpr int RAWSOCKET_ERROR = -1;
-} // namespace
+
+} // namespace knet
 
 #endif // _WIN32
 
@@ -47,6 +53,10 @@ constexpr int RAWSOCKET_ERROR = -1;
 #define kassert assert
 
 namespace knet {
+
+constexpr int IOCP_PENDING_ACCEPT_NUM = 64;
+constexpr int POLL_EVENT_NUM = 128;
+constexpr int SOCKET_RWBUF_SIZE = 256 * 1024;
 
 void on_fatal_error(int err, const char* apiname);
 
@@ -58,27 +68,9 @@ void close_rawsocket(rawsocket_t& rs);
 bool set_rawsocket_opt(rawsocket_t rs, int level, int optname,
     const void* optval, socklen_t optlen);
 
-#ifdef KNET_PLATFORM_WIN
-LPFN_ACCEPTEX get_accept_ex(rawsocket_t rs);
-#endif
-
 #ifdef KNET_PLATFORM_UNIX
 bool set_rawsocket_nonblock(rawsocket_t rs);
 bool set_rawsocket_cloexec(rawsocket_t rs);
 #endif
-
-class conn_deleter {
-public:
-    void set_factory(conn_factory* cf) { _cf = cf; }
-
-    void operator()(conn* c) const
-    {
-        if (nullptr != c && nullptr != _cf)
-            _cf->destroy_conn(c);
-    }
-
-private:
-    conn_factory* _cf = nullptr;
-};
 
 } // namespace knet

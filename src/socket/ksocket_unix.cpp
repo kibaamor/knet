@@ -1,11 +1,10 @@
 #include "ksocket_unix.h"
-#include "../kpoller.h"
-#include "kinternal.h"
+#include "../internal/kinternal.h"
 
 namespace knet {
 
 struct socket::impl::sockbuf {
-    char chunk[128 * 1024] = {};
+    char chunk[SOCKET_RWBUF_SIZE] = {};
     size_t used_size = 0;
 
     char* unused_ptr()
@@ -71,7 +70,7 @@ struct socket::impl::sockbuf {
         ssize_t ret = 0;
         while (unused_size() > 0) {
             do
-                ret = ::read(rs, wptr(), unused_size());
+                ret = ::read(rs, unused_ptr(), unused_size());
             while (-1 == ret && EINTR == errno);
 
             if (-1 == ret) {
@@ -89,35 +88,42 @@ struct socket::impl::sockbuf {
     }
 };
 
-socket::impl::impl(rawsocket_t rs)
-    : _rs(rs)
+socket::impl::impl(socket& s, rawsocket_t rs)
+    : _s(s)
+    , _rs(rs)
 {
 }
-
 socket::impl::~impl()
 {
-    kassert(-1 == _rs);
+    kassert(INVALID_RAWSOCKET == _rs);
+    kassert(_f.is_close());
 }
 
-bool socket::impl::init(poller* plr, conn_factory* cf)
+bool socket::impl::init(poller& plr, conn_factory& cf)
 {
-    if (-1 == _rs || nullptr == plr) {
+    if (INVALID_RAWSOCKET == _rs) {
         return false;
     }
 
-    if (!plr->add(_rs, this)) {
-        close_socket(_rs);
+    if (!plr.add(_rs, &_s)) {
+        close_rawsocket(_rs);
+        _f.mark_close();
         return false;
     }
 
-    _c.get_deleter().set_factory(cf);
-    _c.reset(cf->create_conn(this));
+    _c = cf.create_conn();
 
     _rb.reset(new sockbuf());
     _wb.reset(new sockbuf());
 
-    if (!start())
-        close_socket(_rs);
+    if (!start()) {
+        close_rawsocket(_rs);
+
+        _c->on_disconnect();
+        _c = nullptr;
+
+        return false;
+    }
 
     return true;
 }
@@ -152,33 +158,28 @@ bool socket::impl::write(buffer* buf, size_t num)
 
 void socket::impl::close()
 {
-    if (_f.is_call() || _f.is_read() || _f.is_write()) {
-        if (!_f.is_close()) {
-            _f.mark_close();
-            ::CancelIoEx(reinterpret_cast<HANDLE>(_rs), nullptr);
-        }
+    if (!_f.is_close())
+        _f.mark_close();
+
+    close_rawsocket(_rs);
+
+    if (_f.is_call())
         return;
-    }
 
-    {
-        scoped_call_flag s(_f);
-        _c->on_disconnect();
-    }
-
-    ::shutdown(_rs, SD_BOTH);
-    close_socket(_rs);
+    _c->on_disconnect();
+    _c = nullptr;
 
     delete this;
 }
 
-bool socket::impl::is_closing()
+bool socket::impl::is_closing() const
 {
     return _f.is_close();
 }
 
 bool socket::impl::handle_pollevent(void* evt)
 {
-#ifdef KNET_USE_EPOLL
+#ifdef KNET_POLLER_EPOLL
     auto e = reinterpret_cast<struct epoll_event*>(evt);
     if ((0 != (e->events & (EPOLLERR | EPOLLHUP)))
         || (0 != (e->events & EPOLLIN) && !handle_can_read())
@@ -186,7 +187,10 @@ bool socket::impl::handle_pollevent(void* evt)
         close();
         return false;
     }
-#else
+    return true;
+#endif
+
+#ifdef KNET_POLLER_KQUEUE
     auto e = reinterpret_cast<struct kevent*>(evt);
     if ((0 != (e->flags & EV_EOF))
         || (EVFILT_READ == e->filter && !handle_can_read())
@@ -194,23 +198,18 @@ bool socket::impl::handle_pollevent(void* evt)
         close();
         return false;
     }
-#endif
     return true;
+#endif
+
+    return false;
 }
 
 bool socket::impl::start()
 {
-    {
-        scoped_call_flag s(_f);
-        _c->on_connected();
-    }
+    scoped_call_flag s(_f);
+    _c->on_connected(&_s);
 
-    if (_f.is_close()) {
-        _c->on_disconnect();
-        return false;
-    }
-
-    return true;
+    return !_f.is_close();
 }
 
 bool socket::impl::handle_can_read()

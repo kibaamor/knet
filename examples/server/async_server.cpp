@@ -1,19 +1,19 @@
 #include "echo_conn.h"
-#include <kacceptor.h>
-#include <kworker.h>
 #include <iostream>
+#include <kacceptor.h>
+#include <kasync_worker.h>
+#include <kutils.h>
 
 int main(int argc, char** argv)
 {
     using namespace knet;
 
     // initialize knet
-    global_init();
     std::ios::sync_with_stdio(false);
     std::cin.tie(nullptr);
 
     // parse command line
-    const in_port_t port = in_port_t(argc > 1 ? std::atoi(argv[1]) : 8888);
+    const uint16_t port = uint16_t(argc > 1 ? std::atoi(argv[1]) : 8888);
     const auto max_idle_ms = argc > 2 ? std::atoi(argv[2]) : 996;
     const auto thread_num = argc > 3 ? std::atoi(argv[3]) : 8;
 
@@ -25,14 +25,14 @@ int main(int argc, char** argv)
 
     // parse ip address
     address addr;
-    if (!addr.pton(AF_INET, "0.0.0.0", port)) {
+    if (!addr.pton(family_t::Ipv4, "0.0.0.0", port)) {
         std::cerr << "pton failed" << std::endl;
         return -1;
     }
 
     // create worker
     auto cfb = std::make_shared<secho_conn_factory_builder>();
-    auto wkr = std::make_shared<secho_async_worker>(cfb.get());
+    auto wkr = std::make_shared<async_worker>(*cfb);
     if (!wkr->start(thread_num)) {
         std::cerr << "async_worker::start failed" << std::endl;
         return -1;

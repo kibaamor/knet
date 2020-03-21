@@ -1,6 +1,4 @@
 #include "kpoller_kqueue.h"
-#include "../kinternal.h"
-#include <sys/event.h>
 #include <set>
 
 namespace knet {
@@ -24,7 +22,7 @@ bool poller::impl::add(rawsocket_t rs, void* key)
     struct kevent ev[2];
     EV_SET(&ev[0], rs, EVFILT_READ, EV_ADD | EV_ENABLE | EV_CLEAR, 0, 0, key);
     EV_SET(&ev[1], rs, EVFILT_WRITE, EV_ADD | EV_ENABLE | EV_CLEAR, 0, 0, key);
-    return 0 == kevent(_kq, ev, 2, nullptr, 0, nullptr)
+    return 0 == ::kevent(_kq, ev, 2, nullptr, 0, nullptr)
         && 0 == (ev[0].flags & EV_ERROR)
         && 0 == (ev[1].flags & EV_ERROR);
 }
@@ -32,14 +30,14 @@ bool poller::impl::add(rawsocket_t rs, void* key)
 void poller::impl::poll()
 {
     struct timespec ts;
-    memset(&ts, 0, sizeof(ts));
+    ::memset(&ts, 0, sizeof(ts));
 
     auto evts = _evts.data();
     auto size = static_cast<int>(_evts.size());
 
     int num = 0;
     do
-        num = kevent(_rp, nullptr, 0, evts, size, &ts);
+        num = ::kevent(_rp, nullptr, 0, evts, size, &ts);
     while (-1 == num && EINTR == errno);
 
     if (-1 == num)

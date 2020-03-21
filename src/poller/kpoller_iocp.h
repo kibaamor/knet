@@ -1,6 +1,6 @@
 #pragma once
-#include "../kpoller.h"
-#include "../kinternal.h"
+#include "../internal/kpoller.h"
+#include "../internal/kinternal.h"
 #include <array>
 
 namespace knet {
@@ -16,7 +16,7 @@ public:
 private:
     poller_client& _clt;
     HANDLE _h = nullptr;
-    std::array<OVERLAPPED_ENTRY, 128> _evts;
+    std::array<OVERLAPPED_ENTRY, POLL_EVENT_NUM> _evts;
 };
 
 } // namespace knet

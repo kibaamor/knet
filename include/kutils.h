@@ -4,6 +4,11 @@
 
 namespace knet {
 
+uint32_t u32rand();
+float f32rand();
+uint32_t u32rand_between(uint32_t low, uint32_t high);
+int32_t s32rand_between(int32_t low, int32_t high);
+
 int64_t now_ms();
 void sleep_ms(int64_t ms);
 

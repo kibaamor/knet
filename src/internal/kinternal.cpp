@@ -17,11 +17,10 @@ void on_fatal_error(int err, const char* apiname)
 #ifdef _WIN32
 
     LPSTR msg = nullptr;
-    FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, nullptr, err,
-        MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&msg, 0, nullptr);
+    const auto flag = FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS;
+    FormatMessageA(flag, nullptr, err, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&msg, 0, nullptr);
 
-    snprintf(buf, sizeof(buf), "%s: (%d) %s", apiname, err,
-        (nullptr != msg ? msg : "Unknown error"));
+    snprintf(buf, sizeof(buf), "%s: (%d) %s", apiname, err, (nullptr != msg ? msg : "Unknown error"));
 
     if (nullptr != msg)
         LocalFree(msg);
@@ -34,7 +33,7 @@ void on_fatal_error(int err, const char* apiname)
 
     std::cerr << buf << std::endl;
     std::cerr.flush();
-    throw new std::runtime_error(std::string(buf));
+    abort();
 }
 
 bool set_rawsocket_bufsize(rawsocket_t rs, int size)
@@ -58,7 +57,7 @@ rawsocket_t create_rawsocket(int domain, int type, bool nonblock)
 
     return rs;
 
-#else // !KNET_USE_IOCP
+#else // !KNET_PLATFORM_WIN
 
     rawsocket_t rs = INVALID_RAWSOCKET;
 
@@ -82,8 +81,7 @@ rawsocket_t create_rawsocket(int domain, int type, bool nonblock)
         if (INVALID_RAWSOCKET == rs)
             break;
 
-        if (!set_rawsocket_cloexec(rs)
-            || (nonblock && !set_rawsocket_nonblock(rs))) {
+        if (!set_rawsocket_cloexec(rs) || (nonblock && !set_rawsocket_nonblock(rs))) {
             close_rawsocket(rs);
             break;
         }
@@ -98,7 +96,7 @@ rawsocket_t create_rawsocket(int domain, int type, bool nonblock)
 #endif
 
     return rs;
-#endif // KNET_USE_IOCP
+#endif // KNET_PLATFORM_WIN
 }
 
 void close_rawsocket(rawsocket_t& rs)
@@ -146,21 +144,6 @@ bool set_rawsocket_cloexec(rawsocket_t rs)
     return 0 == ret;
 }
 
-#else
-
-LPFN_ACCEPTEX get_accept_ex(rawsocket_t rs)
-{
-    static thread_local LPFN_ACCEPTEX _accept_ex = nullptr;
-    if (nullptr == _accept_ex) {
-        GUID guid = WSAID_ACCEPTEX;
-        DWORD dw = 0;
-        WSAIoctl(rs, SIO_GET_EXTENSION_FUNCTION_POINTER,
-            &guid, sizeof(guid), &_accept_ex, sizeof(_accept_ex),
-            &dw, nullptr, nullptr);
-    }
-    return _accept_ex;
-}
-
-#endif // !KNET_USE_IOCP
+#endif // !KNET_PLATFORM_UNIX
 
 } // namespace knet

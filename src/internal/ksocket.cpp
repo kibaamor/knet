@@ -1,16 +1,16 @@
 #include "ksocket.h"
 
 #ifdef KNET_PLATFORM_WIN
-#include "socket/ksocket_win.h"
+#include "../socket/ksocket_win.h"
 #else
-#include "socket/ksocket_unix.h"
+#include "../socket/ksocket_unix.h"
 #endif
 
 namespace knet {
 
 socket::socket(rawsocket_t rs)
 {
-    _impl.reset(new impl(rs));
+    _impl.reset(new impl(*this, rs));
 }
 
 socket::~socket() = default;

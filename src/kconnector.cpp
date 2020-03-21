@@ -1,5 +1,5 @@
 #include "../include/kconnector.h"
-#include "kinternal.h"
+#include "internal/kinternal.h"
 
 namespace knet {
 
@@ -18,7 +18,7 @@ bool connector::connect(const address& addr)
 
     const auto sa = static_cast<const sockaddr*>(addr.get_sockaddr());
     const auto salen = addr.get_socklen();
-    if (RAWSOCKET_ERROR != ::connect(rs, sa, salen)
+    if (-1 != ::connect(rs, sa, salen)
 #ifndef KNET_POLLER_IOCP
         && set_rawsocket_nonblock(_rs)
 #endif

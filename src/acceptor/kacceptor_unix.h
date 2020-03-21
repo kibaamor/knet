@@ -1,6 +1,7 @@
 #pragma once
 #include "../../include/kacceptor.h"
-#include "../kpoller.h"
+#include "../internal/kinternal.h"
+#include "../internal/kpoller.h"
 
 namespace knet {
 
@@ -20,8 +21,8 @@ private:
     workable& _wkr;
     std::unique_ptr<poller> _plr;
 
-    sa_family_t _family = AF_UNSPEC;
-    rawsocket_t _rs = -1;
+    int _family = AF_UNSPEC;
+    rawsocket_t _rs = INVALID_RAWSOCKET;
 };
 
 } // namespace knet

@@ -1,16 +1,15 @@
 #pragma once
-#include "../ksocket.h"
-#include "../kflag.h"
-#include "../kutils.h"
+#include "../internal/ksocket.h"
+#include "../internal/kflag.h"
 
 namespace knet {
 
 class socket::impl {
 public:
-    impl(rawsocket_t rs);
+    impl(socket& s, rawsocket_t rs);
     ~impl();
 
-    bool init(poller* poller, conn_factory* cf);
+    bool init(poller& plr, conn_factory& cf);
 
     bool write(buffer* buf, size_t num);
     void close();
@@ -25,10 +24,11 @@ private:
     bool try_write();
 
 private:
+    socket& _s;
     rawsocket_t _rs;
 
     flag _f;
-    std::unique_ptr<conn, conn_deleter> _c;
+    conn* _c = nullptr;
 
     struct sockbuf;
     std::unique_ptr<sockbuf> _rb;

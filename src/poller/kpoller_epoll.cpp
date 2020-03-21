@@ -1,6 +1,4 @@
 #include "kpoller_epoll.h"
-#include "../kinternal.h"
-#include <sys/epoll.h>
 
 namespace knet {
 
@@ -23,7 +21,7 @@ bool poller::impl::add(rawsocket_t rs, void* key)
     struct epoll_event ev = {};
     ev.events = EPOLLIN | EPOLLOUT | EPOLLRDHUP | EPOLLERR | EPOLLET;
     ev.data.ptr = key;
-    return 0 == epoll_ctl(_ep, EPOLL_CTL_ADD, rs, &ev);
+    return 0 == ::epoll_ctl(_ep, EPOLL_CTL_ADD, rs, &ev);
 }
 
 void poller::impl::poll()
@@ -33,7 +31,7 @@ void poller::impl::poll()
 
     int num = 0;
     do
-        num = epoll_wait(_rp, evts, size, 0);
+        num = ::epoll_wait(_rp, evts, size, 0);
     while (-1 == num && EINTR == errno);
 
     if (-1 == num)

@@ -18,6 +18,8 @@ public:
 
     bool handle_pollevent(void* evt);
 
+    void dispose();
+
 private:
     class impl;
     std::unique_ptr<impl> _impl;

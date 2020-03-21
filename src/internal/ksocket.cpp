@@ -40,4 +40,9 @@ bool socket::handle_pollevent(void* evt)
     return _impl->handle_pollevent(evt);
 }
 
+void socket::dispose()
+{
+    delete this;
+}
+
 } // namespace knet

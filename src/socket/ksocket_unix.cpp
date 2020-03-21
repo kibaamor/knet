@@ -169,7 +169,7 @@ void socket::impl::close()
     _c->on_disconnect();
     _c = nullptr;
 
-    delete this;
+    _s.dispose();
 }
 
 bool socket::impl::is_closing() const

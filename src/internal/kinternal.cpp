@@ -46,10 +46,11 @@ bool set_rawsocket_bufsize(rawsocket_t rs, size_t size)
 
 rawsocket_t create_rawsocket(int domain, bool nonblock)
 {
+    constexpr int type = SOCK_STREAM;
 #ifdef _WIN32
 
     (void)nonblock;
-    auto rs = WSASocketW(domain, SOCK_STREAM, 0, nullptr, 0, WSA_FLAG_OVERLAPPED);
+    auto rs = WSASocketW(domain, type, 0, nullptr, 0, WSA_FLAG_OVERLAPPED);
 
     if (INVALID_RAWSOCKET != rs) {
         auto h = reinterpret_cast<HANDLE>(rs);
@@ -79,7 +80,7 @@ rawsocket_t create_rawsocket(int domain, bool nonblock)
 
 #endif
 
-        rs = ::socket(domain, SOCK_STREAM, 0);
+        rs = ::socket(domain, type, 0);
         if (INVALID_RAWSOCKET == rs)
             break;
 

@@ -114,7 +114,10 @@ void sleep_ms(int64_t ms)
 #ifdef _WIN32
     ::Sleep(static_cast<DWORD>(ms));
 #else
-    ::usleep(static_cast<useconds_t>(ms * 1000));
+    struct timespec ts;
+    ts.tv_sec = ms / 1000;
+    ts.tv_nsec = (ms - ts.tv_sec * 1000) * 1000ul * 1000ul;
+    (void)::nanosleep(&ts, nullptr);
 #endif
 }
 

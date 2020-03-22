@@ -12,7 +12,7 @@ public:
 
 class poller final {
 public:
-    poller(poller_client& clt);
+    explicit poller(poller_client& clt);
     ~poller();
 
     bool add(rawsocket_t rs, void* key);

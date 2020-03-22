@@ -6,7 +6,7 @@ namespace knet {
 
 class connector final {
 public:
-    connector(workable& wkr);
+    explicit connector(workable& wkr);
     ~connector();
 
     bool connect(const address& addr);

@@ -72,8 +72,8 @@ const void* address::get_sockaddr() const
 
 int address::get_rawfamily() const
 {
-    auto& addr = *reinterpret_cast<const sockaddr_storage*>(_addr);
-    return addr.ss_family;
+    const auto addr = reinterpret_cast<const sockaddr_storage*>(_addr);
+    return addr->ss_family;
 }
 
 family_t address::get_family() const

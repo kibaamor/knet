@@ -6,7 +6,7 @@ using namespace knet;
 
 class secho_conn : public conn {
 public:
-    secho_conn(conn_factory& cf);
+    explicit secho_conn(conn_factory& cf);
 
     void on_connected(socket* s) override;
     size_t on_recv_data(char* data, size_t size) override;
@@ -19,7 +19,7 @@ private:
 
 class secho_conn_factory : public conn_factory {
 public:
-    secho_conn_factory(connid_gener gener = connid_gener());
+    explicit secho_conn_factory(connid_gener gener = connid_gener());
 
 protected:
     conn* do_create_conn() override;

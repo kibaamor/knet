@@ -6,7 +6,7 @@ namespace knet {
 
 class socket final {
 public:
-    socket(rawsocket_t rs);
+    explicit socket(rawsocket_t rs);
     ~socket();
 
     bool init(poller& plr, conn_factory& cf);

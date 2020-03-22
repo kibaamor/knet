@@ -18,13 +18,13 @@ public:
     }
 
 private:
-    connid_t _step = 1;
     connid_t _cur = 0;
+    connid_t _step = 1;
 };
 
 class conn_factory {
 public:
-    conn_factory(connid_gener gener = connid_gener());
+    explicit conn_factory(connid_gener gener = connid_gener());
     virtual ~conn_factory();
 
     virtual void update();

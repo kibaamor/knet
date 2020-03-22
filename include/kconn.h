@@ -12,7 +12,7 @@ class conn_factory;
 class socket;
 class conn {
 public:
-    conn(conn_factory& cf);
+    explicit conn(conn_factory& cf);
     virtual ~conn();
 
     virtual void on_connected(socket* s);

@@ -75,7 +75,7 @@ private:
 
 class scoped_call_flag {
 public:
-    scoped_call_flag(flag& f)
+    explicit scoped_call_flag(flag& f)
         : _f(f)
     {
         _f.mark_call();

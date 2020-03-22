@@ -236,10 +236,10 @@ bool socket::impl::handle_can_write()
 
 bool socket::impl::handle_read()
 {
-    const auto ptr = _rb->chunk;
     const auto max_size = _rb->used_size;
     size_t size = 0;
     {
+        const auto ptr = _rb->chunk;
         scoped_call_flag s(_f);
         do {
             const auto t = _c->on_recv_data(ptr + size, max_size - size);

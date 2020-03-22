@@ -23,6 +23,7 @@ message("CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
 if (KNET_ENABLE_CPPCHECK)
     find_program(CMAKE_CXX_CPPCHECK NAMES cppcheck)
     if (CMAKE_CXX_CPPCHECK)
+        message("knet enable cppcheck")
         list(
             APPEND CMAKE_CXX_CPPCHECK
             "--enable=all"
@@ -30,6 +31,8 @@ if (KNET_ENABLE_CPPCHECK)
             "--suppress=functionConst"
             "--suppress=missingIncludeSystem"
             "--suppress=unmatchedSuppression"
+            "--suppress=*:${PROJECT_SOURCE_DIR}/test/doctest.h"
+            "--library=posix"
             "--inconclusive"
             "--force"
             "--inline-suppr"
@@ -41,7 +44,7 @@ endif()
 
 if (CMAKE_BUILD_TYPE STREQUAL DEBUG OR CMAKE_BUILD_TYPE STREQUAL RELWITHDEBINFO)
     add_definitions(-DDEBUG)
-    message("enable knet debug")
+    message("knet enable debug")
 endif()
 
 if (WIN32)

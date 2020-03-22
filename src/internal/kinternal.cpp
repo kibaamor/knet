@@ -4,11 +4,12 @@
 #include <stdexcept>
 #include <iostream>
 
-#ifndef KNET_USE_IOCP
+#ifndef _WIN32
 #include <sys/ioctl.h>
 #endif
 
 namespace knet {
+
 void on_fatal_error(int err, const char* apiname)
 {
     char buf[10240] = {};
@@ -16,11 +17,10 @@ void on_fatal_error(int err, const char* apiname)
 #ifdef _WIN32
 
     LPSTR msg = nullptr;
-    FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, nullptr, err,
-        MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&msg, 0, nullptr);
+    const auto flag = FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS;
+    FormatMessageA(flag, nullptr, err, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&msg, 0, nullptr);
 
-    snprintf(buf, sizeof(buf), "%s: (%d) %s", apiname, err,
-        (nullptr != msg ? msg : "Unknown error"));
+    snprintf(buf, sizeof(buf), "%s: (%d) %s", apiname, err, (nullptr != msg ? msg : "Unknown error"));
 
     if (nullptr != msg)
         LocalFree(msg);
@@ -33,15 +33,23 @@ void on_fatal_error(int err, const char* apiname)
 
     std::cerr << buf << std::endl;
     std::cerr.flush();
-    throw new std::runtime_error(std::string(buf));
+    abort();
 }
 
-rawsocket_t create_rawsocket(int domain, int type, bool nonblock)
+bool set_rawsocket_bufsize(rawsocket_t rs, size_t size)
 {
-#ifdef KNET_USE_IOCP
+    auto s = static_cast<int>(size);
+    constexpr auto n = static_cast<socklen_t>(sizeof(s));
+    return set_rawsocket_opt(rs, SOL_SOCKET, SO_RCVBUF, &s, n)
+        && set_rawsocket_opt(rs, SOL_SOCKET, SO_SNDBUF, &s, n);
+}
+
+rawsocket_t create_rawsocket(int domain, bool nonblock)
+{
+#ifdef _WIN32
 
     (void)nonblock;
-    auto rs = WSASocketW(domain, type, 0, nullptr, 0, WSA_FLAG_OVERLAPPED);
+    auto rs = WSASocketW(domain, SOCK_STREAM, 0, nullptr, 0, WSA_FLAG_OVERLAPPED);
 
     if (INVALID_RAWSOCKET != rs) {
         auto h = reinterpret_cast<HANDLE>(rs);
@@ -51,7 +59,7 @@ rawsocket_t create_rawsocket(int domain, int type, bool nonblock)
 
     return rs;
 
-#else // !KNET_USE_IOCP
+#else
 
     rawsocket_t rs = INVALID_RAWSOCKET;
 
@@ -71,12 +79,11 @@ rawsocket_t create_rawsocket(int domain, int type, bool nonblock)
 
 #endif
 
-        rs = ::socket(domain, type, 0);
+        rs = ::socket(domain, SOCK_STREAM, 0);
         if (INVALID_RAWSOCKET == rs)
             break;
 
-        if (!set_rawsocket_cloexec(rs)
-            || (nonblock && !set_rawsocket_nonblock(rs))) {
+        if (!set_rawsocket_cloexec(rs) || (nonblock && !set_rawsocket_nonblock(rs))) {
             close_rawsocket(rs);
             break;
         }
@@ -91,7 +98,7 @@ rawsocket_t create_rawsocket(int domain, int type, bool nonblock)
 #endif
 
     return rs;
-#endif // KNET_USE_IOCP
+#endif
 }
 
 void close_rawsocket(rawsocket_t& rs)
@@ -99,7 +106,11 @@ void close_rawsocket(rawsocket_t& rs)
     if (INVALID_RAWSOCKET == rs)
         return;
 
-    closesocket(rs);
+#ifdef _WIN32
+    ::closesocket(rs);
+#else
+    ::close(rs);
+#endif
     rs = INVALID_RAWSOCKET;
 }
 
@@ -110,7 +121,7 @@ bool set_rawsocket_opt(rawsocket_t rs, int level, int optname,
     return RAWSOCKET_ERROR != setsockopt(rs, level, optname, val, optlen);
 }
 
-#ifndef KNET_USE_IOCP
+#ifndef _WIN32
 
 bool set_rawsocket_nonblock(rawsocket_t rs)
 {
@@ -135,21 +146,6 @@ bool set_rawsocket_cloexec(rawsocket_t rs)
     return 0 == ret;
 }
 
-#else
-
-LPFN_ACCEPTEX get_accept_ex(rawsocket_t rs)
-{
-    static thread_local LPFN_ACCEPTEX _accept_ex = nullptr;
-    if (nullptr == _accept_ex) {
-        GUID guid = WSAID_ACCEPTEX;
-        DWORD dw = 0;
-        WSAIoctl(rs, SIO_GET_EXTENSION_FUNCTION_POINTER,
-            &guid, sizeof(guid), &_accept_ex, sizeof(_accept_ex),
-            &dw, nullptr, nullptr);
-    }
-    return _accept_ex;
-}
-
-#endif // !KNET_USE_IOCP
+#endif
 
 } // namespace knet

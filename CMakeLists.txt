@@ -16,12 +16,14 @@ set(CMAKE_MINSIZEREL_POSTFIX "_msr" CACHE STRING "postfix for ReleaseWithDebug-b
 
 if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE RELWITHDEBINFO)
+    #set(CMAKE_BUILD_TYPE DEBUG)
 endif()
 message("CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
 
 if (KNET_ENABLE_CPPCHECK)
     find_program(CMAKE_CXX_CPPCHECK NAMES cppcheck)
     if (CMAKE_CXX_CPPCHECK)
+        message("knet enable cppcheck")
         list(
             APPEND CMAKE_CXX_CPPCHECK
             "--enable=all"
@@ -29,6 +31,8 @@ if (KNET_ENABLE_CPPCHECK)
             "--suppress=functionConst"
             "--suppress=missingIncludeSystem"
             "--suppress=unmatchedSuppression"
+            "--suppress=*:${PROJECT_SOURCE_DIR}/test/doctest.h"
+            "--library=posix"
             "--inconclusive"
             "--force"
             "--inline-suppr"
@@ -38,10 +42,28 @@ if (KNET_ENABLE_CPPCHECK)
     endif()
 endif()
 
+if (CMAKE_BUILD_TYPE STREQUAL DEBUG OR CMAKE_BUILD_TYPE STREQUAL RELWITHDEBINFO)
+    add_definitions(-DDEBUG)
+    message("knet enable debug")
+endif()
+
 if (WIN32)
     add_definitions(-DUNICODE)
     add_definitions(-D_UNICODE)
+
+    set(knet_platform_postfix "win")
+    set(knet_poller_postfix "iocp")
+else ()
+    set(knet_platform_postfix "unix")
+
+    if (CMAKE_SYSTEM_NAME MATCHES "Linux")
+        set(knet_poller_postfix "epoll")
+    else ()
+        set(knet_poller_postfix "kqueue")
+    endif ()
 endif()
+message("knet_platform_postfix: ${knet_platform_postfix}")
+message("knet_poller_postfix: ${knet_poller_postfix}")
 
 if (MSVC)
     add_definitions("/wd4100")
@@ -55,30 +77,33 @@ enable_testing()
 file(GLOB HDR_LIST
     "${PROJECT_SOURCE_DIR}/include/*.h"
 )
+source_group("hdrs" FILES ${HDR_LIST})
 
 file(GLOB SRC_LIST
     "${PROJECT_SOURCE_DIR}/src/*.h"
     "${PROJECT_SOURCE_DIR}/src/*.cpp"
+    "${PROJECT_SOURCE_DIR}/src/internal/*.h"
+    "${PROJECT_SOURCE_DIR}/src/internal/*.cpp"
 )
-
-source_group("hdrs" FILES ${HDR_LIST})
 source_group("srcs" FILES ${SRC_LIST})
-add_library(${PROJECT_NAME} ${HDR_LIST} ${SRC_LIST})
 
-target_include_directories(${PROJECT_NAME}
-    PUBLIC ${PROJECT_SOURCE_DIR}/include
-    )
+file(GLOB_RECURSE EXTRA_SRC_LIST
+    "${PROJECT_SOURCE_DIR}/src/*${knet_platform_postfix}.h"
+    "${PROJECT_SOURCE_DIR}/src/*${knet_platform_postfix}.cpp"
+    "${PROJECT_SOURCE_DIR}/src/*${knet_poller_postfix}.h"
+    "${PROJECT_SOURCE_DIR}/src/*${knet_poller_postfix}.cpp"
+)
+source_group("srcs\\extra" FILES ${EXTRA_SRC_LIST})
+
+add_library(${PROJECT_NAME} ${HDR_LIST} ${SRC_LIST} ${EXTRA_SRC_LIST})
+
+target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/include)
 
 if (WIN32)
-    target_link_libraries(${PROJECT_NAME}
-        ws2_32
-        )
+    target_link_libraries(${PROJECT_NAME} ws2_32)
 else()
-    target_link_libraries(${PROJECT_NAME}
-        pthread
-        )
+    target_link_libraries(${PROJECT_NAME} pthread)
 endif()
-
 
 install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/
     DESTINATION "include"
@@ -88,6 +113,8 @@ install(TARGETS ${PROJECT_NAME}
     LIBRARY DESTINATION lib
     RUNTIME DESTINATION bin
     )
+
+#######################################################################################
 
 add_subdirectory(test)
 add_subdirectory(examples)

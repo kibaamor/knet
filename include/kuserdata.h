@@ -3,6 +3,7 @@
 #include <type_traits>
 
 namespace knet {
+
 struct userdata {
     enum {
         unknown,
@@ -26,7 +27,8 @@ struct userdata {
         data.ptr = v;
     }
 
-    template <typename T, typename std::enable_if<std::is_floating_point<T>::value, int>::type = 0>
+    template <typename T,
+        typename std::enable_if<std::is_floating_point<T>::value, int>::type = 0>
     // cppcheck-suppress noExplicitConstructor
     userdata(T v)
         : type(floatpoint)
@@ -34,7 +36,8 @@ struct userdata {
         data.f64 = static_cast<double>(v);
     }
 
-    template <typename T, typename std::enable_if<std::is_integral<T>::value, int>::type = 0>
+    template <typename T,
+        typename std::enable_if<std::is_integral<T>::value, int>::type = 0>
     // cppcheck-suppress noExplicitConstructor
     userdata(T v)
         : type(integral)
@@ -48,4 +51,5 @@ struct userdata {
         return pointer == type ? static_cast<T*>(data.ptr) : nullptr;
     }
 };
+
 } // namespace knet

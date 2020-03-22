@@ -65,7 +65,7 @@ public:
     void check_console_input();
 
 private:
-    echo_mgr() { }
+    echo_mgr() {}
     ~echo_mgr();
 
 private:

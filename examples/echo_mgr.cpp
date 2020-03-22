@@ -1,5 +1,5 @@
 #include "echo_mgr.h"
-#include <knetfwd.h>
+#include <kutils.h>
 #include <string>
 #include <iostream>
 
@@ -69,7 +69,10 @@ void echo_mgr::check_console_input()
             std::cin >> s;
             if (s == "exit") {
                 mgr->set_disconnect_all();
+                //mgr->set_enable_log(true);
                 break;
+            } else if (s == "log") {
+                mgr->set_enable_log(!mgr->get_enable_log());
             }
         }
     },

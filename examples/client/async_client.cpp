@@ -1,20 +1,20 @@
 #include "echo_conn.h"
-#include <kconnector.h>
-#include <kworker.h>
 #include <iostream>
+#include <kconnector.h>
+#include <kasync_worker.h>
+#include <kutils.h>
 
 int main(int argc, char** argv)
 {
     using namespace knet;
 
     // initialize knet
-    global_init();
     std::ios::sync_with_stdio(false);
     std::cin.tie(nullptr);
 
     // parse command line
     const char* ip = argc > 1 ? argv[1] : "127.0.0.1";
-    const in_port_t port = in_port_t(argc > 2 ? std::atoi(argv[2]) : 8888);
+    const uint16_t port = uint16_t(argc > 2 ? std::atoi(argv[2]) : 8888);
     const auto client_num = argc > 3 ? std::atoi(argv[3]) : 1000;
     const auto max_delay_ms = argc > 4 ? std::atoi(argv[4]) : 1000;
     const auto thread_num = argc > 5 ? std::atoi(argv[5]) : 8;
@@ -29,24 +29,21 @@ int main(int argc, char** argv)
 
     // parse ip address
     address addr;
-    if (!addr.pton(AF_INET, ip, port)) {
+    if (!addr.pton(family_t::Ipv4, ip, port)) {
         std::cerr << "pton failed" << std::endl;
         return -1;
     }
 
     // create worker
     auto cfb = std::make_shared<cecho_conn_factory_builder>();
-    auto wkr = std::make_shared<cecho_async_worker>(cfb.get());
+    auto wkr = std::make_shared<async_worker>(*cfb);
     if (!wkr->start(thread_num)) {
         std::cerr << "async_echo_conn_mgr::start failed" << std::endl;
         return -1;
     }
 
     // create connector
-    auto connector_builder = [&addr, &wkr]() {
-        return std::make_shared<cecho_connector>(addr, wkr.get(), wkr.get());
-    };
-    auto cnctor = connector_builder();
+    auto cnctor = std::make_shared<connector>(*wkr);
 
     // check console input
     auto& mgr = echo_mgr::get_instance();
@@ -60,18 +57,13 @@ int main(int argc, char** argv)
         const auto delta_ms = (beg_ms > last_ms ? beg_ms - last_ms : 0);
         last_ms = beg_ms;
 
-        if (nullptr != cnctor && !cnctor->update(static_cast<size_t>(delta_ms)))
-            cnctor = nullptr;
-
         const auto conn_num = mgr.get_conn_num();
         if (mgr.get_disconnect_all()) {
             if (0 == conn_num)
                 break;
-
-            if (nullptr != cnctor)
-                cnctor = nullptr;
-        } else if (nullptr == cnctor && conn_num < client_num) {
-            cnctor = connector_builder();
+        } else if (conn_num < client_num) {
+            if (!cnctor->connect(addr))
+                std::cerr << "connect failed! address: " << addr << std::endl;
         }
 
         mgr.update(delta_ms);

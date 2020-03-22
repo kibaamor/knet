@@ -1,6 +1,7 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include "doctest.h"
 #include <knetfwd.h>
+#include <kutils.h>
 #include <kuserdata.h>
 #include <cfloat>
 #include <iostream>

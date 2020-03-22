@@ -2,14 +2,13 @@
 #include <atomic>
 
 namespace knet {
+
 template <typename T, unsigned int N>
 class spsc_queue {
 public:
     spsc_queue() = default;
     spsc_queue(const spsc_queue&) = delete;
-    spsc_queue(spsc_queue&&) = delete;
     spsc_queue& operator=(const spsc_queue&) = delete;
-    spsc_queue& operator=(spsc_queue&&) = delete;
     ~spsc_queue() = default;
 
     bool is_lock_free() const
@@ -19,12 +18,14 @@ public:
 
     bool is_empty() const
     {
-        return _rpos.load(std::memory_order_acquire) == _wpos.load(std::memory_order_acquire);
+        return _rpos.load(std::memory_order_acquire)
+            == _wpos.load(std::memory_order_acquire);
     }
 
     bool is_full() const
     {
-        return _rpos.load(std::memory_order_acquire) == (_wpos.load(std::memory_order_acquire) + 1) % N;
+        return _rpos.load(std::memory_order_acquire)
+            == (_wpos.load(std::memory_order_acquire) + 1) % N;
     }
 
     bool push(const T& val)
@@ -54,4 +55,5 @@ private:
     pos_t _wpos = { 0 };
     T _ring[N] = {};
 };
+
 } // namespace knet

@@ -1,19 +1,19 @@
 #include "echo_conn.h"
+#include <iostream>
 #include <kacceptor.h>
 #include <kworker.h>
-#include <iostream>
+#include <kutils.h>
 
 int main(int argc, char** argv)
 {
     using namespace knet;
 
     // initialize knet
-    global_init();
     std::ios::sync_with_stdio(false);
     std::cin.tie(nullptr);
 
     // parse command line
-    const in_port_t port = in_port_t(argc > 1 ? std::atoi(argv[1]) : 8888);
+    const uint16_t port = uint16_t(argc > 1 ? std::atoi(argv[1]) : 8888);
     const auto max_idle_ms = argc > 2 ? std::atoi(argv[2]) : 996;
 
     // log parameter info
@@ -23,17 +23,17 @@ int main(int argc, char** argv)
 
     // parse ip address
     address addr;
-    if (!addr.pton(AF_INET, "0.0.0.0", port)) {
+    if (!addr.pton(family_t::Ipv4, "0.0.0.0", port)) {
         std::cerr << "pton failed" << std::endl;
         return -1;
     }
 
     // create worker
     auto cf = std::make_shared<secho_conn_factory>();
-    auto wkr = std::make_shared<secho_worker>(cf.get());
+    auto wkr = std::make_shared<worker>(*cf);
 
     // create acceptor
-    auto acc = std::make_shared<acceptor>(wkr.get());
+    auto acc = std::make_shared<acceptor>(*wkr);
     if (!acc->start(addr)) {
         std::cerr << "acceptor::start failed" << std::endl;
         return -1;
@@ -51,8 +51,8 @@ int main(int argc, char** argv)
         const auto delta_ms = (beg_ms > last_ms ? beg_ms - last_ms : 0);
         last_ms = beg_ms;
 
-        acc->poll();
-        wkr->poll();
+        acc->update();
+        wkr->update();
 
         const auto conn_num = mgr.get_conn_num();
         if (mgr.get_disconnect_all()) {

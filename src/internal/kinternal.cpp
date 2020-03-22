@@ -79,7 +79,7 @@ rawsocket_t create_rawsocket(int domain, bool nonblock)
 
 #endif
 
-        rs = ::socket(domain, type, 0);
+        rs = ::socket(domain, SOCK_STREAM, 0);
         if (INVALID_RAWSOCKET == rs)
             break;
 

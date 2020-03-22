@@ -37,7 +37,7 @@ void poller::impl::poll()
 
     int num = 0;
     do
-        num = ::kevent(_rp, nullptr, 0, evts, size, &ts);
+        num = ::kevent(_kq, nullptr, 0, evts, size, &ts);
     while (-1 == num && EINTR == errno);
 
     if (-1 == num)
@@ -49,7 +49,7 @@ void poller::impl::poll()
             auto& e = evts[i];
             auto key = e.udata;
             if (ignores.find(key) == ignores.end()) {
-                if (!on_poll(key, &e))
+                if (!_clt.on_pollevent(key, &e))
                     ignores.insert(key);
             }
         }

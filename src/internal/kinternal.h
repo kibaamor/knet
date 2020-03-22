@@ -16,6 +16,7 @@
 
 #include <ws2tcpip.h>
 #include <mswsock.h>
+#include <intrin.h>
 
 namespace knet {
 
@@ -40,6 +41,14 @@ constexpr int RAWSOCKET_ERROR = SOCKET_ERROR;
 #include <arpa/inet.h>
 #include <netinet/in.h>
 
+#ifdef __linux__
+#include <sys/epoll.h>
+#else
+#include <sys/event.h>
+#endif
+
+#define __debugbreak __builtin_trap
+
 namespace knet {
 
 constexpr rawsocket_t INVALID_RAWSOCKET = -1;
@@ -49,8 +58,11 @@ constexpr int RAWSOCKET_ERROR = -1;
 
 #endif // _WIN32
 
-#include <cassert>
-#define kassert assert
+#define kassert(cond)   \
+do {                    \
+    if (!(cond))        \
+        __debugbreak(); \
+} while (false)
 
 namespace knet {
 

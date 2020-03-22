@@ -271,7 +271,7 @@ bool socket::impl::try_write()
         return false;
 
     if (_wb->used_size > 0)
-        _f.mark_write();
+        _f.unmark_write();
 
     return true;
 }

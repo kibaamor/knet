@@ -31,7 +31,7 @@ void poller::impl::poll()
 
     int num = 0;
     do
-        num = ::epoll_wait(_rp, evts, size, 0);
+        num = ::epoll_wait(_ep, evts, size, 0);
     while (-1 == num && EINTR == errno);
 
     if (-1 == num)

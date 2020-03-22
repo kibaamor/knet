@@ -15,8 +15,8 @@ set(CMAKE_RELWITHDEBINFO_POSTFIX "_rwdi" CACHE STRING "postfix for MinsizeReleas
 set(CMAKE_MINSIZEREL_POSTFIX "_msr" CACHE STRING "postfix for ReleaseWithDebug-built libraries" FORCE)
 
 if (NOT CMAKE_BUILD_TYPE)
-    # set(CMAKE_BUILD_TYPE RELWITHDEBINFO)
-    set(CMAKE_BUILD_TYPE DEBUG)
+    set(CMAKE_BUILD_TYPE RELWITHDEBINFO)
+    #set(CMAKE_BUILD_TYPE DEBUG)
 endif()
 message("CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
 
@@ -39,7 +39,7 @@ if (KNET_ENABLE_CPPCHECK)
     endif()
 endif()
 
-if (CMAKE_BUILD_TYPE STREQUAL DEBUG)
+if (CMAKE_BUILD_TYPE STREQUAL DEBUG OR CMAKE_BUILD_TYPE STREQUAL RELWITHDEBINFO)
     add_definitions(-DDEBUG)
     message("enable knet debug")
 endif()

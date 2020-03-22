@@ -1,5 +1,6 @@
 #pragma once
 #include "../include/knetfwd.h"
+#include <cstring>
 
 #ifdef _WIN32
 

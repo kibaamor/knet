@@ -146,7 +146,7 @@ bool socket::impl::write(buffer* buf, size_t num)
     for (size_t i = 0; i < num; ++i) {
         auto b = buf + i;
         if (b->size > 0 && nullptr != b->data) {
-            memcpy(_wb->unused_ptr(), b->data, b->size);
+            ::memcpy(_wb->unused_ptr(), b->data, b->size);
             _wb->used_size += b->size;
         }
     }

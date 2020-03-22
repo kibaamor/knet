@@ -1,10 +1,10 @@
 #include "kpoller.h"
 
-#if defined(KNET_POLLER_IOCP)
+#if defined(_WIN32)
 #include "../poller/kpoller_iocp.h"
-#elif defined(KNET_POLLER_EPOLL)
+#elif defined(__linux__)
 #include "../poller/kpoller_epoll.h"
-#elif defined(KNET_POLLER_KQUEUE)
+#else
 #include "../poller/kpoller_kqueue.h"
 #endif
 

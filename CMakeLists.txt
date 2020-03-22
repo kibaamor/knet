@@ -15,7 +15,8 @@ set(CMAKE_RELWITHDEBINFO_POSTFIX "_rwdi" CACHE STRING "postfix for MinsizeReleas
 set(CMAKE_MINSIZEREL_POSTFIX "_msr" CACHE STRING "postfix for ReleaseWithDebug-built libraries" FORCE)
 
 if (NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE RELWITHDEBINFO)
+    # set(CMAKE_BUILD_TYPE RELWITHDEBINFO)
+    set(CMAKE_BUILD_TYPE DEBUG)
 endif()
 message("CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
 
@@ -38,6 +39,11 @@ if (KNET_ENABLE_CPPCHECK)
     endif()
 endif()
 
+if (CMAKE_BUILD_TYPE STREQUAL DEBUG)
+    add_definitions(-DDEBUG)
+    message("enable knet debug")
+endif()
+
 if (WIN32)
     add_definitions(-DUNICODE)
     add_definitions(-D_UNICODE)
@@ -45,9 +51,8 @@ if (WIN32)
     set(knet_platform_postfix "win")
     set(knet_poller_postfix "iocp")
 else ()
-    add_definitions(-DKNET_PLATFORM_UNIX)
-    
     set(knet_platform_postfix "unix")
+
     if (CMAKE_SYSTEM_NAME MATCHES "Linux")
         set(knet_poller_postfix "epoll")
     else ()
@@ -93,17 +98,8 @@ target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/include)
 
 if (WIN32)
     target_link_libraries(${PROJECT_NAME} ws2_32)
-
-    target_compile_definitions(${PROJECT_NAME} PRIVATE KNET_PLATFORM_WIN KNET_POLLER_IOCP)
 else()
     target_link_libraries(${PROJECT_NAME} pthread)
-    
-    target_compile_definitions(${PROJECT_NAME} PRIVATE KNET_PLATFORM_UNIX)
-    if (CMAKE_SYSTEM_NAME MATCHES "Linux")
-        target_compile_definitions(${PROJECT_NAME} PRIVATE KNET_POLLER_EPOLL)
-    else ()
-        target_compile_definitions(${PROJECT_NAME} PRIVATE KNET_POLLER_KQUEUE)
-    endif ()
 endif()
 
 install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/

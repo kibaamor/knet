@@ -4,7 +4,7 @@
 #include <stdexcept>
 #include <iostream>
 
-#ifdef KNET_PLATFORM_UNIX
+#ifndef _WIN32
 #include <sys/ioctl.h>
 #endif
 
@@ -44,7 +44,7 @@ bool set_rawsocket_bufsize(rawsocket_t rs, int size)
 
 rawsocket_t create_rawsocket(int domain, int type, bool nonblock)
 {
-#ifdef KNET_PLATFORM_WIN
+#ifdef _WIN32
 
     (void)nonblock;
     auto rs = WSASocketW(domain, type, 0, nullptr, 0, WSA_FLAG_OVERLAPPED);
@@ -57,7 +57,7 @@ rawsocket_t create_rawsocket(int domain, int type, bool nonblock)
 
     return rs;
 
-#else // !KNET_PLATFORM_WIN
+#else
 
     rawsocket_t rs = INVALID_RAWSOCKET;
 
@@ -96,7 +96,7 @@ rawsocket_t create_rawsocket(int domain, int type, bool nonblock)
 #endif
 
     return rs;
-#endif // KNET_PLATFORM_WIN
+#endif
 }
 
 void close_rawsocket(rawsocket_t& rs)
@@ -104,7 +104,7 @@ void close_rawsocket(rawsocket_t& rs)
     if (INVALID_RAWSOCKET == rs)
         return;
 
-#ifdef KNET_PLATFORM_WIN
+#ifdef _WIN32
     ::closesocket(rs);
 #else
     ::close(rs);
@@ -119,7 +119,7 @@ bool set_rawsocket_opt(rawsocket_t rs, int level, int optname,
     return RAWSOCKET_ERROR != setsockopt(rs, level, optname, val, optlen);
 }
 
-#ifdef KNET_PLATFORM_UNIX
+#ifndef _WIN32
 
 bool set_rawsocket_nonblock(rawsocket_t rs)
 {
@@ -144,6 +144,6 @@ bool set_rawsocket_cloexec(rawsocket_t rs)
     return 0 == ret;
 }
 
-#endif // !KNET_PLATFORM_UNIX
+#endif
 
 } // namespace knet

@@ -1,6 +1,10 @@
 #include "../include/kutils.h"
 #include "internal/kinternal.h"
 #include <random>
+#ifndef _WIN32
+#include <sys/resource.h>
+#endif
+#include <iostream>
 
 namespace {
 
@@ -11,7 +15,33 @@ public:
 #ifdef _WIN32
         WSADATA wsadata;
         ::WSAStartup(MAKEWORD(2, 2), &wsadata);
+#else
+        struct rlimit rt;
+        auto ret = getrlimit(RLIMIT_NOFILE, &rt);
+        (void)ret;
+#ifdef KNET_DEBUG
+        auto en = errno;
+        std::cerr << "open file limit. getrlimit: " << ret
+                  << ", errno:" << en
+                  << ", cur:" << rt.rlim_cur
+                  << ", max:" << rt.rlim_max << std::endl;
+#endif // KNET_DEBUG
+
+        rt.rlim_cur = rt.rlim_max;
+#ifndef __linux__
+        if (rt.rlim_cur > OPEN_MAX)
+            rt.rlim_cur = OPEN_MAX;
 #endif
+        ret = setrlimit(RLIMIT_NOFILE, &rt);
+        (void)ret;
+#ifdef KNET_DEBUG
+        en = errno;
+        std::cerr << "open file limit. setrlimit: " << ret
+                  << ", errno:" << en
+                  << ", cur:" << rt.rlim_cur
+                  << ", max:" << rt.rlim_max << std::endl;
+#endif // KNET_DEBUG
+#endif // !_WIN32
     }
 };
 

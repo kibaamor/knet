@@ -1,6 +1,6 @@
 #include "ksocket.h"
 
-#ifdef KNET_PLATFORM_WIN
+#ifdef _WIN32
 #include "../socket/ksocket_win.h"
 #else
 #include "../socket/ksocket_unix.h"

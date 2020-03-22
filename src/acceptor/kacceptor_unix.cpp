@@ -57,7 +57,7 @@ bool acceptor::impl::on_pollevent(void* key, void* evt)
 {
     (void)key;
 
-#ifdef KNET_POLLER_EPOLL
+#ifdef __linux__
     while (true) {
         auto rs = ::accept4(_rs, nullptr, 0, SOCK_NONBLOCK | SOCK_CLOEXEC);
         if (INVALID_RAWSOCKET != rs) {

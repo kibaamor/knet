@@ -23,3 +23,7 @@ struct buffer {
 };
 
 } // namespace knet
+
+#ifdef DEBUG
+#define KNET_DEBUG
+#endif

@@ -19,7 +19,7 @@ bool connector::connect(const address& addr)
     const auto sa = static_cast<const sockaddr*>(addr.get_sockaddr());
     const auto salen = addr.get_socklen();
     if (-1 != ::connect(rs, sa, salen)
-#ifndef KNET_POLLER_IOCP
+#ifndef _WIN32
         && set_rawsocket_nonblock(rs)
 #endif
     ) {

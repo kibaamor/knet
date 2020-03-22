@@ -179,7 +179,7 @@ bool socket::impl::is_closing() const
 
 bool socket::impl::handle_pollevent(void* evt)
 {
-#ifdef KNET_POLLER_EPOLL
+#ifdef __linux__
     auto e = reinterpret_cast<struct epoll_event*>(evt);
     if ((0 != (e->events & (EPOLLERR | EPOLLHUP)))
         || (0 != (e->events & EPOLLIN) && !handle_can_read())
@@ -187,10 +187,7 @@ bool socket::impl::handle_pollevent(void* evt)
         close();
         return false;
     }
-    return true;
-#endif
-
-#ifdef KNET_POLLER_KQUEUE
+#else
     auto e = reinterpret_cast<struct kevent*>(evt);
     if ((0 != (e->flags & EV_EOF))
         || (EVFILT_READ == e->filter && !handle_can_read())
@@ -198,10 +195,8 @@ bool socket::impl::handle_pollevent(void* evt)
         close();
         return false;
     }
-    return true;
 #endif
-
-    return false;
+    return true;
 }
 
 bool socket::impl::start()

@@ -1,6 +1,6 @@
 #include "../include/kacceptor.h"
 
-#ifdef KNET_PLATFORM_WIN
+#ifdef _WIN32
 #include "acceptor/kacceptor_win.h"
 #else
 #include "acceptor/kacceptor_unix.h"

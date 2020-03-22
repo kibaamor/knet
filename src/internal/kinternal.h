@@ -58,11 +58,15 @@ constexpr int RAWSOCKET_ERROR = -1;
 
 #endif // _WIN32
 
-#define kassert(cond)   \
-do {                    \
-    if (!(cond))        \
-        __debugbreak(); \
-} while (false)
+#ifdef KNET_DEBUG
+#define kassert(cond)       \
+    do {                    \
+        if (!(cond))        \
+            __debugbreak(); \
+    } while (false)
+#else
+#define kassert(cond)
+#endif
 
 namespace knet {
 
@@ -80,7 +84,7 @@ void close_rawsocket(rawsocket_t& rs);
 bool set_rawsocket_opt(rawsocket_t rs, int level, int optname,
     const void* optval, socklen_t optlen);
 
-#ifdef KNET_PLATFORM_UNIX
+#ifndef _WIN32
 bool set_rawsocket_nonblock(rawsocket_t rs);
 bool set_rawsocket_cloexec(rawsocket_t rs);
 #endif

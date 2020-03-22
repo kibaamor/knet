@@ -202,6 +202,11 @@ failed:
     return false;
 }
 
+bool socket::impl::set_sockbuf_size(size_t size)
+{
+    return INVALID_RAWSOCKET != _rs && set_rawsocket_bufsize(_rs, size);
+}
+
 bool socket::impl::start()
 {
     {

@@ -20,6 +20,8 @@ public:
 
     void dispose();
 
+    bool set_sockbuf_size(size_t size);
+
 private:
     class impl;
     std::unique_ptr<impl> _impl;

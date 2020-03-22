@@ -199,6 +199,11 @@ bool socket::impl::handle_pollevent(void* evt)
     return true;
 }
 
+bool socket::impl::set_sockbuf_size(size_t size)
+{
+    return INVALID_RAWSOCKET != _rs && set_rawsocket_bufsize(_rs, size);
+}
+
 bool socket::impl::start()
 {
     scoped_call_flag s(_f);

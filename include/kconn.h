@@ -29,6 +29,9 @@ public:
 
     connid_t get_connid() const { return _id; }
 
+protected:
+    bool set_sockbuf_size(size_t size);
+
 private:
     conn_factory& _cf;
     const connid_t _id;

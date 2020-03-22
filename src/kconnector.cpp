@@ -12,7 +12,7 @@ connector::~connector() = default;
 
 bool connector::connect(const address& addr)
 {
-    auto rs = create_rawsocket(addr.get_rawfamily(), SOCK_STREAM, false);
+    auto rs = create_rawsocket(addr.get_rawfamily(), false);
     if (INVALID_RAWSOCKET == rs)
         return false;
 

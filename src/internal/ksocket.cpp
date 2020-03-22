@@ -45,4 +45,9 @@ void socket::dispose()
     delete this;
 }
 
+bool socket::set_sockbuf_size(size_t size)
+{
+    return _impl->set_sockbuf_size(size);
+}
+
 } // namespace knet

@@ -52,4 +52,9 @@ bool conn::is_disconnecting() const
     return nullptr == _s || _s->is_closing();
 }
 
+bool conn::set_sockbuf_size(size_t size)
+{
+    return nullptr != _s && _s->set_sockbuf_size(size);
+}
+
 } // namespace knet

@@ -16,6 +16,8 @@ public:
     bool is_closing() const;
     bool handle_pollevent(void* evt);
 
+    bool set_sockbuf_size(size_t size);
+
 private:
     bool start();
     bool try_read();

@@ -36,18 +36,20 @@ void on_fatal_error(int err, const char* apiname)
     abort();
 }
 
-bool set_rawsocket_bufsize(rawsocket_t rs, int size)
+bool set_rawsocket_bufsize(rawsocket_t rs, size_t size)
 {
-    return set_rawsocket_opt(rs, SOL_SOCKET, SO_RCVBUF, &size, sizeof(size))
-        && set_rawsocket_opt(rs, SOL_SOCKET, SO_SNDBUF, &size, sizeof(size));
+    auto s = static_cast<int>(size);
+    constexpr auto n = static_cast<socklen_t>(sizeof(s));
+    return set_rawsocket_opt(rs, SOL_SOCKET, SO_RCVBUF, &s, n)
+        && set_rawsocket_opt(rs, SOL_SOCKET, SO_SNDBUF, &s, n);
 }
 
-rawsocket_t create_rawsocket(int domain, int type, bool nonblock)
+rawsocket_t create_rawsocket(int domain, bool nonblock)
 {
 #ifdef _WIN32
 
     (void)nonblock;
-    auto rs = WSASocketW(domain, type, 0, nullptr, 0, WSA_FLAG_OVERLAPPED);
+    auto rs = WSASocketW(domain, SOCK_STREAM, 0, nullptr, 0, WSA_FLAG_OVERLAPPED);
 
     if (INVALID_RAWSOCKET != rs) {
         auto h = reinterpret_cast<HANDLE>(rs);

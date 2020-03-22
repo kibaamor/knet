@@ -23,7 +23,7 @@ bool acceptor::impl::start(const address& addr)
         return false;
 
     _family = addr.get_rawfamily();
-    _rs = create_rawsocket(_family, SOCK_STREAM, true);
+    _rs = create_rawsocket(_family, true);
     if (INVALID_RAWSOCKET == _rs)
         return false;
 

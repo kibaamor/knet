@@ -14,7 +14,7 @@ public:
     {
 #ifdef _WIN32
         WSADATA wsadata;
-        ::WSAStartup(MAKEWORD(2, 2), &wsadata);
+        (void)::WSAStartup(MAKEWORD(2, 2), &wsadata);
 #else
         struct rlimit rt;
         auto ret = getrlimit(RLIMIT_NOFILE, &rt);

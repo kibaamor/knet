@@ -24,6 +24,8 @@ cecho_conn::cecho_conn(conn_factory& cf)
 void cecho_conn::on_connected(socket* s)
 {
     conn::on_connected(s);
+    if (!set_sockbuf_size(128 * 1024))
+        std::cerr << get_connid() << " set_sockbuf_size failed!" << std::endl;
 
     auto& mgr = echo_mgr::get_instance();
 

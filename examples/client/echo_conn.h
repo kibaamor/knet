@@ -18,7 +18,7 @@ private:
     int32_t check_package(char* data, size_t size);
 
 private:
-    char _buf[256 * 1024] = {};
+    char _buf[128 * 1024] = {};
     uint32_t _used_buf_size = 0;
     uint32_t _send_buf_size = 0;
 

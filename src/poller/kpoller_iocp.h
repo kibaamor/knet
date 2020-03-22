@@ -16,7 +16,7 @@ public:
 private:
     poller_client& _clt;
     HANDLE _h = nullptr;
-    std::array<OVERLAPPED_ENTRY, POLL_EVENT_NUM> _evts;
+    std::array<OVERLAPPED_ENTRY, POLL_EVENT_NUM> _evts = {};
 };
 
 } // namespace knet

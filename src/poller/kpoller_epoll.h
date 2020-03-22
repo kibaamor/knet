@@ -16,7 +16,7 @@ public:
 private:
     poller_client& _clt;
     int _ep = -1;
-    std::array<struct epoll_event, POLL_EVENT_NUM> _evts;
+    std::array<struct epoll_event, POLL_EVENT_NUM> _evts = {};
 };
 
 } // namespace knet

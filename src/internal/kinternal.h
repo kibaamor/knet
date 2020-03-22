@@ -77,9 +77,9 @@ constexpr int SOCKET_RWBUF_SIZE = 256 * 1024;
 
 void on_fatal_error(int err, const char* apiname);
 
-bool set_rawsocket_bufsize(rawsocket_t rs, int size);
+bool set_rawsocket_bufsize(rawsocket_t rs, size_t size);
 
-rawsocket_t create_rawsocket(int domain, int type, bool nonblock);
+rawsocket_t create_rawsocket(int domain, bool nonblock);
 void close_rawsocket(rawsocket_t& rs);
 
 bool set_rawsocket_opt(rawsocket_t rs, int level, int optname,

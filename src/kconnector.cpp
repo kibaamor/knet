@@ -18,16 +18,22 @@ bool connector::connect(const address& addr)
 
     const auto sa = static_cast<const sockaddr*>(addr.get_sockaddr());
     const auto salen = addr.get_socklen();
-    if (-1 != ::connect(rs, sa, salen)
-#ifndef _WIN32
-        && set_rawsocket_nonblock(rs)
-#endif
-    ) {
-        _wkr.add_work(rs);
-        return true;
+    if (RAWSOCKET_ERROR == ::connect(rs, sa, salen)) {
+        kdebug("connect() failed");
+        close_rawsocket(rs);
+        return false;
     }
-    close_rawsocket(rs);
-    return false;
+
+#ifndef _WIN32
+    if (!set_rawsocket_nonblock(rs)) {
+        kdebug("set_rawsocket_nonblock() failed");
+        close_rawsocket(rs);
+        return false;
+    }
+#endif
+
+    _wkr.add_work(rs);
+    return true;
 }
 
 } // namespace knet

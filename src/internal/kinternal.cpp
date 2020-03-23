@@ -54,8 +54,12 @@ rawsocket_t create_rawsocket(int domain, bool nonblock)
 
     if (INVALID_RAWSOCKET != rs) {
         auto h = reinterpret_cast<HANDLE>(rs);
-        if (!SetHandleInformation(h, HANDLE_FLAG_INHERIT, 0))
+        if (!SetHandleInformation(h, HANDLE_FLAG_INHERIT, 0)) {
+            kdebug("SetHandleInformation() failed!");
             close_rawsocket(rs);
+        }
+    } else {
+        kdebug("WSASocketW() failed!");
     }
 
     return rs;
@@ -75,16 +79,26 @@ rawsocket_t create_rawsocket(int domain, bool nonblock)
         if (INVALID_RAWSOCKET != rs)
             break;
 
-        if (EINVAL != errno)
+        if (EINVAL != errno) {
+            kdebug("socket() failed!");
             return rs;
+        }
 
 #endif
 
         rs = ::socket(domain, type, 0);
-        if (INVALID_RAWSOCKET == rs)
+        if (INVALID_RAWSOCKET == rs) {
+            kdebug("socket() failed!");
             break;
+        }
 
-        if (!set_rawsocket_cloexec(rs) || (nonblock && !set_rawsocket_nonblock(rs))) {
+        if (!set_rawsocket_cloexec(rs)) {
+            kdebug("set_rawsocket_cloexec() failed!");
+            close_rawsocket(rs);
+            break;
+        }
+        if (nonblock && !set_rawsocket_nonblock(rs)) {
+            kdebug("set_rawsocket_nonblock() failed!");
             close_rawsocket(rs);
             break;
         }
@@ -93,8 +107,10 @@ rawsocket_t create_rawsocket(int domain, bool nonblock)
 #ifdef SO_NOSIGPIPE
     if (INVALID_RAWSOCKET != rs) {
         int on = 1;
-        if (!set_rawsocket_opt(rs, SOL_SOCKET, SO_NOSIGPIPE, &on, sizeof(on)))
+        if (!set_rawsocket_opt(rs, SOL_SOCKET, SO_NOSIGPIPE, &on, sizeof(on))) {
+            kdebug("set_rawsocket_opt(SO_NOSIGPIPE) failed!");
             close_rawsocket(rs);
+        }
     }
 #endif
 
@@ -145,6 +161,25 @@ bool set_rawsocket_cloexec(rawsocket_t rs)
     while (RAWSOCKET_ERROR == ret && EINTR == errno);
 
     return 0 == ret;
+}
+
+#endif
+
+#ifdef KNET_DEBUG
+
+void kdebug_impl(const std::string& log, const char* file, int line)
+{
+#ifdef _WIN32
+    const auto en = ::WSAGetLastError();
+#else
+    const auto en = errno;
+#endif
+
+    std::cerr << log
+              << " errno:" << en
+              << " file:" << file
+              << " line:" << line
+              << std::endl;
 }
 
 #endif

@@ -13,12 +13,15 @@ public:
     AutoInit()
     {
 #ifdef _WIN32
+
         WSADATA wsadata;
         (void)::WSAStartup(MAKEWORD(2, 2), &wsadata);
+
 #else
-        struct rlimit rt;
+
+        struct rlimit rt = {};
         auto ret = getrlimit(RLIMIT_NOFILE, &rt);
-        (void)ret;
+
 #ifdef KNET_DEBUG
         auto en = errno;
         std::cerr << "open file limit. getrlimit: " << ret
@@ -27,20 +30,26 @@ public:
                   << ", max:" << rt.rlim_max << std::endl;
 #endif // KNET_DEBUG
 
-        rt.rlim_cur = rt.rlim_max;
+        if (0 == ret) {
+            rt.rlim_cur = rt.rlim_max;
+
 #ifndef __linux__
-        if (rt.rlim_cur > OPEN_MAX)
-            rt.rlim_cur = OPEN_MAX;
+            if (rt.rlim_cur > OPEN_MAX)
+                rt.rlim_cur = OPEN_MAX;
 #endif
-        ret = setrlimit(RLIMIT_NOFILE, &rt);
-        (void)ret;
+
+            ret = setrlimit(RLIMIT_NOFILE, &rt);
+            (void)ret;
+
 #ifdef KNET_DEBUG
-        en = errno;
-        std::cerr << "open file limit. setrlimit: " << ret
-                  << ", errno:" << en
-                  << ", cur:" << rt.rlim_cur
-                  << ", max:" << rt.rlim_max << std::endl;
+            en = errno;
+            std::cerr << "open file limit. setrlimit: " << ret
+                      << ", errno:" << en
+                      << ", cur:" << rt.rlim_cur
+                      << ", max:" << rt.rlim_max << std::endl;
 #endif // KNET_DEBUG
+        }
+
 #endif // !_WIN32
     }
 };
@@ -49,7 +58,7 @@ AutoInit g_ai;
 
 std::default_random_engine& get_random_engine()
 {
-    static thread_local std::default_random_engine re{ std::random_device()() };
+    static thread_local std::default_random_engine re { std::random_device()() };
     return re;
 }
 

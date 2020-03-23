@@ -6,9 +6,6 @@
 
 int main(int argc, char** argv)
 {
-    using namespace knet;
-
-    // initialize knet
     std::ios::sync_with_stdio(false);
     std::cin.tie(nullptr);
 
@@ -35,15 +32,15 @@ int main(int argc, char** argv)
     }
 
     // create worker
-    auto cfb = std::make_shared<cecho_conn_factory_builder>();
-    auto wkr = std::make_shared<async_worker>(*cfb);
-    if (!wkr->start(thread_num)) {
+    cecho_conn_factory_builder cfb;
+    async_worker wkr(cfb);
+    if (!wkr.start(thread_num)) {
         std::cerr << "async_echo_conn_mgr::start failed" << std::endl;
         return -1;
     }
 
     // create connector
-    auto cnctor = std::make_shared<connector>(*wkr);
+    connector cnctor(wkr);
 
     // check console input
     auto& mgr = echo_mgr::get_instance();
@@ -62,7 +59,7 @@ int main(int argc, char** argv)
             if (0 == conn_num)
                 break;
         } else if (conn_num < client_num) {
-            if (!cnctor->connect(addr))
+            if (!cnctor.connect(addr))
                 std::cerr << "connect failed! address: " << addr << std::endl;
         }
 
@@ -74,7 +71,7 @@ int main(int argc, char** argv)
         sleep_ms(cost_ms < min_interval_ms ? min_interval_ms - cost_ms : 1);
     }
 
-    wkr->stop();
+    wkr.stop();
 
     return 0;
 }

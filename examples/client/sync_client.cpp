@@ -6,9 +6,6 @@
 
 int main(int argc, char** argv)
 {
-    using namespace knet;
-
-    // initialize knet
     std::ios::sync_with_stdio(false);
     std::cin.tie(nullptr);
 
@@ -33,11 +30,11 @@ int main(int argc, char** argv)
     }
 
     // create worker
-    auto cf = std::make_shared<cecho_conn_factory>();
-    auto wkr = std::make_shared<worker>(*cf);
+    cecho_conn_factory cf;
+    worker wkr(cf);
 
     // create connector
-    auto cnctor = std::make_shared<connector>(*wkr);
+    connector cnctor(wkr);
 
     // check console input
     auto& mgr = echo_mgr::get_instance();
@@ -51,14 +48,14 @@ int main(int argc, char** argv)
         const auto delta_ms = (beg_ms > last_ms ? beg_ms - last_ms : 0);
         last_ms = beg_ms;
 
-        wkr->update();
+        wkr.update();
 
         const auto conn_num = mgr.get_conn_num();
         if (mgr.get_disconnect_all()) {
             if (0 == conn_num)
                 break;
         } else if (conn_num < client_num) {
-            if (!cnctor->connect(addr))
+            if (!cnctor.connect(addr))
                 std::cerr << "connect failed! address: " << addr << std::endl;
         }
 

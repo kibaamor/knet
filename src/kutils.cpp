@@ -33,7 +33,7 @@ public:
         if (0 == ret) {
             rt.rlim_cur = rt.rlim_max;
 
-#ifndef __linux__
+#ifdef __APPLE__
             if (rt.rlim_cur > OPEN_MAX)
                 rt.rlim_cur = OPEN_MAX;
 #endif

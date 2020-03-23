@@ -90,4 +90,11 @@ bool set_rawsocket_nonblock(rawsocket_t rs);
 bool set_rawsocket_cloexec(rawsocket_t rs);
 #endif
 
+#ifdef KNET_DEBUG
+void kdebug_impl(const std::string& log, const char* file, int line);
+#define kdebug(log) kdebug_impl(log, __FILE__, __LINE__)
+#else
+#define kdebug(log)
+#endif
+
 } // namespace knet

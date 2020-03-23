@@ -123,6 +123,7 @@ bool acceptor::impl::start(const address& addr)
 
     int on = 1;
     if (!set_rawsocket_opt(_rs, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on))) {
+        kdebug("set_rawsocket_opt(SO_REUSEADDR) failed!");
         close_rawsocket(_rs);
         return false;
     }

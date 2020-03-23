@@ -29,6 +29,7 @@ bool acceptor::impl::start(const address& addr)
 
     int on = 1;
     if (!set_rawsocket_opt(_rs, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on))) {
+        kdebug("set_rawsocket_opt(SO_REUSEADDR) failed!");
         close_rawsocket(_rs);
         return false;
     }
@@ -65,8 +66,10 @@ bool acceptor::impl::on_pollevent(void* key, void* evt)
             continue;
         }
 
-        if (EINTR != errno)
+        if (EINTR != errno) {
+            kdebug("accept4() failed!");
             break;
+        }
     }
 #else
     while (true) {
@@ -74,16 +77,27 @@ bool acceptor::impl::on_pollevent(void* key, void* evt)
         if (INVALID_RAWSOCKET == rs) {
             if (EINTR == errno)
                 continue;
+
+            kdebug("accept() failed!");
             break;
         }
 
-        if (!set_rawsocket_nonblock(rs) || !set_rawsocket_cloexec(rs))
+        if (!set_rawsocket_nonblock(rs)) {
+            kdebug("set_rawsocket_nonblock() failed!");
             close_rawsocket(rs);
-        else
-            _wkr.add_work(rs);
+            continue;
+        }
+
+        if (!set_rawsocket_cloexec(rs)) {
+            kdebug("set_rawsocket_cloexec() failed!");
+            close_rawsocket(rs);
+            continue;
+        }
+
+        _wkr.add_work(rs);
     }
 #endif
     return true;
-}
+} // namespace knet
 
 } // namespace knet

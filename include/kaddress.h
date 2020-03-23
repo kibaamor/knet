@@ -23,7 +23,7 @@ public:
     std::string to_string() const;
 
 private:
-    char _addr[128] = {};
+    char _addr[256] = {};
 };
 
 std::ostream& operator<<(std::ostream& os, const address& addr);

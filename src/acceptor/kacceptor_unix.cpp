@@ -61,15 +61,16 @@ bool acceptor::impl::on_pollevent(void* key, void* evt)
 #ifdef __linux__
     while (true) {
         auto rs = ::accept4(_rs, nullptr, 0, SOCK_NONBLOCK | SOCK_CLOEXEC);
-        if (INVALID_RAWSOCKET != rs) {
-            _wkr.add_work(rs);
-            continue;
-        }
+        if (INVALID_RAWSOCKET == rs) {
+            if (EINTR == errno)
+                continue;
 
-        if (EINTR != errno) {
-            kdebug("accept4() failed!");
+            if (EAGAIN != errno)
+                kdebug("accept4() failed!");
             break;
         }
+
+        _wkr.add_work(rs);
     }
 #else
     while (true) {
@@ -78,7 +79,8 @@ bool acceptor::impl::on_pollevent(void* key, void* evt)
             if (EINTR == errno)
                 continue;
 
-            kdebug("accept() failed!");
+            if (EAGAIN != errno)
+                kdebug("accept() failed!");
             break;
         }
 

@@ -20,6 +20,7 @@
          * [通信协议](#通信协议)
          * [echo服务器](#echo服务器)
       * [echo客户端](#echo客户端)
+   * [代码质量](#代码质量)
 
 ## 特点
 
@@ -114,3 +115,7 @@ echo服务器将接收到的数据原封不动的发回给客户端。
 
 * 同步方式的echo客户端[examples/client/sync_client.cpp](./examples/client/sync_client.cpp)
 * 异步方式的echo客户端[examples/client/async_client.cpp](./examples/client/async_client.cpp)
+
+### 代码质量
+
+[![代码质量状态](https://codescene.io/projects/7651/status.svg)](https://codescene.io/projects/7651/jobs/latest-successful/results)

@@ -20,6 +20,7 @@ Table of Contents
          * [Protocol](#protocol)
          * [Echo Server](#echo-server)
       * [Echo Client](#echo-client)
+   * [Code Quality](#code-quality)
 
 ## Highlights
 
@@ -120,3 +121,7 @@ The client provides two types:
 
 * Synchronous Echo Client[examples/client/sync_client.cpp](./examples/client/sync_client.cpp)
 * Asynchronous Echo Client[examples/client/async_client.cpp](./examples/client/async_client.cpp)
+
+### Code Quality
+
+[![Code quality status](https://codescene.io/projects/7651/status.svg)](https://codescene.io/projects/7651/jobs/latest-successful/results)

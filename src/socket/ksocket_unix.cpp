@@ -4,8 +4,8 @@
 namespace knet {
 
 struct socket::impl::sockbuf {
-    char chunk[SOCKET_RWBUF_SIZE] = {};
     size_t used_size = 0;
+    char chunk[SOCKET_RWBUF_SIZE - sizeof(used_size)] = {};
 
     char* unused_ptr()
     {
@@ -86,6 +86,28 @@ struct socket::impl::sockbuf {
         }
         return true;
     }
+
+    bool check_can_write(const buffer* buf, size_t num) const
+    {
+        size_t total_size = 0;
+
+        for (size_t i = 0; i < num; ++i) {
+            auto b = buf + i;
+            kassert(b->size > 0 && nullptr != b->data);
+            total_size += b->size;
+        }
+
+        return total_size < unused_size();
+    }
+
+    void write(const buffer* buf, size_t num)
+    {
+        for (size_t i = 0; i < num; ++i) {
+            auto b = buf + i;
+            ::memcpy(unused_ptr(), b->data, b->size);
+            used_size += b->size;
+        }
+    }
 };
 
 socket::impl::impl(socket& s, rawsocket_t rs)
@@ -101,9 +123,8 @@ socket::impl::~impl()
 
 bool socket::impl::init(poller& plr, conn_factory& cf)
 {
-    if (INVALID_RAWSOCKET == _rs) {
+    if (INVALID_RAWSOCKET == _rs)
         return false;
-    }
 
     if (!plr.add(_rs, &_s)) {
         close_rawsocket(_rs);
@@ -130,29 +151,20 @@ bool socket::impl::init(poller& plr, conn_factory& cf)
 
 bool socket::impl::write(buffer* buf, size_t num)
 {
+    if (nullptr == buf || 0 == num)
+        return false;
+
     if (is_closing())
         return false;
 
-    size_t total_size = 0;
-    for (size_t i = 0; i < num; ++i)
-        total_size += buf[i].size;
-
-    if (0 == total_size)
-        return true;
-
-    if (total_size > _wb->unused_size())
+    if (!_wb->check_can_write(buf, num))
         return false;
 
-    for (size_t i = 0; i < num; ++i) {
-        auto b = buf + i;
-        if (b->size > 0 && nullptr != b->data) {
-            ::memcpy(_wb->unused_ptr(), b->data, b->size);
-            _wb->used_size += b->size;
-        }
-    }
+    _wb->write(buf, num);
 
-    if (_f.is_write())
+    if (_wb->can_write() && _f.is_write())
         return try_write();
+
     return true;
 }
 
@@ -179,24 +191,50 @@ bool socket::impl::is_closing() const
 
 bool socket::impl::handle_pollevent(void* evt)
 {
+    auto ret = true;
+
+    do {
 #ifdef __linux__
-    auto e = reinterpret_cast<struct epoll_event*>(evt);
-    if ((0 != (e->events & (EPOLLERR | EPOLLHUP)))
-        || (0 != (e->events & EPOLLIN) && !handle_can_read())
-        || (0 != (e->events & EPOLLOUT) && !handle_can_write())) {
-        close();
-        return false;
-    }
+        auto e = reinterpret_cast<struct epoll_event*>(evt);
+
+        if (0 != (e->events & (EPOLLERR | EPOLLHUP))) {
+            ret = false;
+            break;
+        }
+
+        if (0 != (e->events & EPOLLIN) && !handle_can_read()) {
+            ret = false;
+            break;
+        }
+
+        if (0 != (e->events & EPOLLOUT) && !handle_can_write()) {
+            ret = false;
+            break;
+        }
 #else
-    auto e = reinterpret_cast<struct kevent*>(evt);
-    if ((0 != (e->flags & EV_EOF))
-        || (EVFILT_READ == e->filter && !handle_can_read())
-        || (EVFILT_WRITE == e->filter && !handle_can_write())) {
-        close();
-        return false;
-    }
+        auto e = reinterpret_cast<struct kevent*>(evt);
+
+        if (0 != (e->flags & EV_EOF)) {
+            ret = false;
+            break;
+        }
+
+        if (EVFILT_READ == e->filter && !handle_can_read()) {
+            ret = false;
+            break;
+        }
+
+        if (EVFILT_WRITE == e->filter && !handle_can_write()) {
+            ret = false;
+            break;
+        }
 #endif
-    return true;
+    } while (false);
+
+    if (!ret)
+        close();
+
+    return ret;
 }
 
 bool socket::impl::set_sockbuf_size(size_t size)
@@ -255,11 +293,13 @@ bool socket::impl::handle_read()
             size += t;
         } while (size < max_size);
     }
+
     if (_f.is_close())
         return false;
 
     if (size > max_size)
         size = max_size;
+
     _rb->discard_used(size);
 
     return true;

@@ -22,8 +22,8 @@ private:
     bool start();
     bool try_read();
     bool try_write();
-    bool handle_read();
-    void handle_write(size_t wrote);
+    bool handle_read(size_t size);
+    void handle_write(size_t size);
 
 private:
     socket& _s;

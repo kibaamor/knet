@@ -3,11 +3,14 @@
 
 namespace knet {
 
-struct socket::impl::sockbuf {
+struct sockbuf_base {
     WSAOVERLAPPED ol = {}; // must be the first member to use CONTAINING_RECORD
     size_t used_size = 0;
     bool cancel = false;
-    char chunk[SOCKET_RWBUF_SIZE - sizeof(ol) - sizeof(used_size) - sizeof(cancel)] = {};
+};
+
+struct socket::impl::sockbuf : sockbuf_base {
+    char chunk[SOCKET_RWBUF_SIZE - sizeof(sockbuf_base)] = {};
 
     char* unused_ptr()
     {

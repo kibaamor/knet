@@ -4,10 +4,10 @@
 namespace knet {
 
 struct socket::impl::sockbuf {
-    WSAOVERLAPPED ol = {};
-    char chunk[SOCKET_RWBUF_SIZE] = {};
+    WSAOVERLAPPED ol = {}; // must be the first member to use CONTAINING_RECORD
     size_t used_size = 0;
     bool cancel = false;
+    char chunk[SOCKET_RWBUF_SIZE - sizeof(ol) - sizeof(used_size) - sizeof(cancel)] = {};
 
     char* unused_ptr()
     {
@@ -67,6 +67,28 @@ struct socket::impl::sockbuf {
         if (used_size > 0)
             ::memmove(chunk, chunk + num, used_size);
     }
+
+    bool check_can_write(const buffer* buf, size_t num) const
+    {
+        size_t total_size = 0;
+
+        for (size_t i = 0; i < num; ++i) {
+            auto b = buf + i;
+            kassert(b->size > 0 && nullptr != b->data);
+            total_size += b->size;
+        }
+
+        return total_size < unused_size();
+    }
+
+    void write(const buffer* buf, size_t num)
+    {
+        for (size_t i = 0; i < num; ++i) {
+            auto b = buf + i;
+            ::memcpy(unused_ptr(), b->data, b->size);
+            used_size += b->size;
+        }
+    }
 };
 
 socket::impl::impl(socket& s, rawsocket_t rs)
@@ -83,9 +105,8 @@ socket::impl::~impl()
 
 bool socket::impl::init(poller& plr, conn_factory& cf)
 {
-    if (INVALID_RAWSOCKET == _rs) {
+    if (INVALID_RAWSOCKET == _rs)
         return false;
-    }
 
     if (!plr.add(_rs, &_s)) {
         close_rawsocket(_rs);
@@ -112,30 +133,18 @@ bool socket::impl::init(poller& plr, conn_factory& cf)
 
 bool socket::impl::write(buffer* buf, size_t num)
 {
+    if (nullptr == buf || 0 == num)
+        return false;
+
     if (is_closing())
         return false;
 
-    size_t total_size = 0;
-    for (size_t i = 0; i < num; ++i)
-        total_size += buf[i].size;
-
-    if (0 == total_size)
-        return true;
-
-    if (total_size > _wb->unused_size())
+    if (!_wb->check_can_write(buf, num))
         return false;
 
-    for (size_t i = 0; i < num; ++i) {
-        auto b = buf + i;
-        if (b->size > 0 && nullptr != b->data) {
-            memcpy(_wb->unused_ptr(), b->data, b->size);
-            _wb->used_size += b->size;
-        }
-    }
+    _wb->write(buf, num);
 
-    if (!_f.is_write())
-        return try_write();
-    return true;
+    return try_write();
 }
 
 void socket::impl::close()
@@ -168,38 +177,41 @@ bool socket::impl::handle_pollevent(void* evt)
 
     const auto buf = CONTAINING_RECORD(e->lpOverlapped, socket::impl::sockbuf, ol);
     const auto size = static_cast<size_t>(e->dwNumberOfBytesTransferred);
-    if (buf == _rb.get()) {
-        if (0 == size || buf->cancel) {
+
+    kassert(buf == _rb.get() || buf == _wb.get());
+
+    auto ret = true;
+
+    do {
+        if (buf == _rb.get())
             _f.unmark_read();
-            goto failed;
-        }
-
-        _rb->used_size += size;
-        if (!handle_read()) {
-            goto failed;
-        }
-
-        if (_rb->can_read() && !try_read())
-            goto failed;
-    } else if (buf == _wb.get()) {
-        if (0 == size || buf->cancel) {
+        else
             _f.unmark_write();
-            goto failed;
+
+        if (0 == size || buf->cancel) {
+            ret = false;
+            break;
         }
 
-        handle_write(size);
-        if (_wb->can_write() && !try_write())
-            goto failed;
-    } else {
-        on_fatal_error(WSAGetLastError(), "invalid event in handle_pollevent");
-        goto failed;
-    }
+        if (buf == _rb.get()) {
+            if (!handle_read(size) || !try_read()) {
+                ret = false;
+                break;
+            }
+        } else {
+            handle_write(size);
 
-    return true;
+            if (!try_write()) {
+                ret = false;
+                break;
+            }
+        }
+    } while (false);
 
-failed:
-    close();
-    return false;
+    if (!ret)
+        close();
+
+    return ret;
 }
 
 bool socket::impl::set_sockbuf_size(size_t size)
@@ -228,40 +240,46 @@ bool socket::impl::start()
 
 bool socket::impl::try_read()
 {
-    if (_rb->post_read(_rs)) {
-        _f.mark_read();
+    if (!_rb->can_read() || _f.is_read())
         return true;
-    }
-    return false;
+
+    if (!_rb->post_read(_rs))
+        return false;
+
+    _f.mark_read();
+    return true;
 }
 
 bool socket::impl::try_write()
 {
-    if (_wb->post_write(_rs)) {
-        _f.mark_write();
+    if (!_wb->can_write() || _f.is_write())
         return true;
-    }
-    return false;
+
+    if (!_wb->post_write(_rs))
+        return false;
+
+    _f.mark_write();
+    return true;
 }
 
-bool socket::impl::handle_read()
+bool socket::impl::handle_read(size_t size)
 {
-    _f.unmark_read();
+    _rb->used_size += size;
 
     const auto ptr = _rb->chunk;
     const auto max_size = _rb->used_size;
-    size_t size = 0;
+    size = 0;
     {
         scoped_call_flag s(_f);
         do {
             const auto t = _c->on_recv_data(ptr + size, max_size - size);
-
             if (0 == t || _f.is_close())
                 break;
 
             size += t;
         } while (size < max_size);
     }
+
     if (_f.is_close())
         return false;
 
@@ -272,10 +290,9 @@ bool socket::impl::handle_read()
     return true;
 }
 
-void socket::impl::handle_write(size_t wrote)
+void socket::impl::handle_write(size_t size)
 {
-    _f.unmark_write();
-    _wb->discard_used(wrote);
+    _wb->discard_used(size);
 }
 
 } // namespace knet

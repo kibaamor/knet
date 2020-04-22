@@ -13,7 +13,7 @@ int main(int argc, char** argv)
     std::cin.tie(nullptr);
 
     // parse command line
-    const uint16_t port = uint16_t(argc > 1 ? std::atoi(argv[1]) : 8888);
+    const char* port = argc > 2 ? argv[2] : "8888";
     const auto max_idle_ms = argc > 2 ? std::atoi(argv[2]) : 996;
 
     // log parameter info
@@ -22,9 +22,11 @@ int main(int argc, char** argv)
               << "max_idle_ms: " << max_idle_ms << std::endl;
 
     // parse ip address
+    const auto ip = "";
+    const auto fa = family_t::Ipv4;
     address addr;
-    if (!addr.pton(family_t::Ipv4, "0.0.0.0", port)) {
-        std::cerr << "pton failed" << std::endl;
+    if (!address::resolve_one(ip, port, fa, addr)) {
+        std::cerr << "resolve address " << ip << ":" << port << " failed!" << std::endl;
         return -1;
     }
 

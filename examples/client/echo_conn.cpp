@@ -24,6 +24,14 @@ cecho_conn::cecho_conn(conn_factory& cf)
 void cecho_conn::on_connected(socket* s)
 {
     conn::on_connected(s);
+
+    // for test purpose, direct disconnect
+    if (0 == u32rand_between(0, 499)) {
+        std::cerr << "direct disconnect at on_connected" << std::endl;
+        disconnect();
+        return;
+    }
+
     if (!set_sockbuf_size(128 * 1024))
         std::cerr << get_connid() << " set_sockbuf_size failed!" << std::endl;
 

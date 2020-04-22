@@ -8,7 +8,7 @@ bool address::resolve_all(const std::string& node_name, const std::string& servi
     std::vector<address>& addrs)
 {
     struct addrinfo hints;
-    memset(&hints, 0, sizeof(hints));
+    ::memset(&hints, 0, sizeof(hints));
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_protocol = IPPROTO_TCP;
     hints.ai_family = AF_UNSPEC;
@@ -21,14 +21,14 @@ bool address::resolve_all(const std::string& node_name, const std::string& servi
 
     struct addrinfo* result = nullptr;
     const auto ret = ::getaddrinfo(nn, service_name.c_str(), &hints, &result);
-    if (0 != ret)
+    if (0 != ret || nullptr == result)
         return false;
 
     for (auto rp = result; nullptr != rp; rp = rp->ai_next) {
         addrs.emplace_back();
 
         auto& addr = addrs.back();
-        memcpy(addr._addr, rp->ai_addr, rp->ai_addrlen);
+        ::memcpy(addr._addr, rp->ai_addr, rp->ai_addrlen);
     }
 
     ::freeaddrinfo(result);
@@ -40,7 +40,7 @@ bool address::resolve_one(const std::string& node_name, const std::string& servi
     family_t fa, address& addr)
 {
     struct addrinfo hints;
-    memset(&hints, 0, sizeof(hints));
+    ::memset(&hints, 0, sizeof(hints));
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_protocol = IPPROTO_TCP;
 
@@ -66,15 +66,13 @@ bool address::resolve_one(const std::string& node_name, const std::string& servi
 
     struct addrinfo* result = nullptr;
     const auto ret = ::getaddrinfo(nn, service_name.c_str(), &hints, &result);
-    if (0 != ret)
+    if (0 != ret || nullptr == result)
         return false;
 
-    if (nullptr != result)
-        memcpy(addr._addr, result->ai_addr, result->ai_addrlen);
-
+    ::memcpy(addr._addr, result->ai_addr, result->ai_addrlen);
     ::freeaddrinfo(result);
 
-    return nullptr != result;
+    return true;
 }
 
 bool address::pton(family_t fa, const std::string& addr, uint16_t port)

@@ -10,8 +10,8 @@ int main(int argc, char** argv)
     std::cin.tie(nullptr);
 
     // parse command line
-    const char* ip = argc > 1 ? argv[1] : "127.0.0.1";
-    const uint16_t port = uint16_t(argc > 2 ? std::atoi(argv[2]) : 8888);
+    const char* ip = argc > 1 ? argv[1] : "localhost";
+    const char* port = argc > 2 ? argv[2] : "8888";
     const auto client_num = argc > 3 ? std::atoi(argv[3]) : 1000;
     const auto max_delay_ms = argc > 4 ? std::atoi(argv[4]) : 1000;
     const auto thread_num = argc > 5 ? std::atoi(argv[5]) : 8;
@@ -25,9 +25,10 @@ int main(int argc, char** argv)
               << "thread_num: " << thread_num << std::endl;
 
     // parse ip address
+    const auto fa = family_t::Ipv4;
     address addr;
-    if (!addr.pton(family_t::Ipv4, ip, port)) {
-        std::cerr << "pton failed" << std::endl;
+    if (!address::resolve_one(ip, port, fa, addr)) {
+        std::cerr << "resolve address " << ip << ":" << port << " failed!" << std::endl;
         return -1;
     }
 

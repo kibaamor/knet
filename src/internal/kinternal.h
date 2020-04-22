@@ -41,6 +41,7 @@ constexpr int RAWSOCKET_ERROR = SOCKET_ERROR;
 #include <sys/time.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
+#include <netdb.h>
 
 #ifdef __linux__
 #include <sys/epoll.h>

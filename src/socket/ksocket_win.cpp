@@ -124,6 +124,8 @@ bool socket::impl::init(poller& plr, conn_factory& cf)
 
     if (!start()) {
         close_rawsocket(_rs);
+        if (!_f.is_close())
+            _f.mark_close();
 
         _c->on_disconnect();
         _c = nullptr;

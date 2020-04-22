@@ -4,7 +4,7 @@
 | :----------------------------------------------------------------------------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :----------------------------------------------------------------------------------------------------------: |
 | [![Linux Build Status](https://img.shields.io/travis/kibaamor/knet/master?label=Linux%20build&style=flat-square)](https://travis-ci.org/KibaAmor/knet) | [![Windows Build Status](https://img.shields.io/appveyor/build/kibaamor/knet/master?label=Windows%20build&style=flat-square)](https://ci.appveyor.com/project/KibaAmor/knet) | [![Coverity Scan Build Status](https://img.shields.io/coverity/scan/20462?label=Coverity%20build&style=flat-square)](https://scan.coverity.com/projects/kibaamor-knet) | [![License](https://img.shields.io/github/license/kibaamor/knet?label=License&style=flat-square)](./LICENSE) |
 
-A cross platform lock-free and timer-supported(hearbeat etc.) C++11 network library.
+A cross platform lock-free and timer-supported(heartbeat etc.) C++11 network library.
 
 Table of Contents
 =================
@@ -90,7 +90,7 @@ In fact, both *connecting to server* and *accepting connection from client* are 
 
 ### Echo Server and Client
 
-[example](./examples/) provides [echo server](./examples/server)和[echo client](./examples/client).
+[example](./examples/) provides [echo server](./examples/server) and [echo client](./examples/client).
 
 #### Protocol
 

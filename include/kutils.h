@@ -4,9 +4,13 @@
 
 namespace knet {
 
+// [0, UINT32_MAX]
 uint32_t u32rand();
+// [0.0, 1.0)
 float f32rand();
+// [low, high]
 uint32_t u32rand_between(uint32_t low, uint32_t high);
+// [low, high]
 int32_t s32rand_between(int32_t low, int32_t high);
 
 int64_t now_ms();

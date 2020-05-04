@@ -8,11 +8,11 @@ class cecho_conn : public conn {
 public:
     explicit cecho_conn(conn_factory& cf);
 
-    void on_connected(socket* s) override;
-    size_t on_recv_data(char* data, size_t size) override;
-    void on_timer(int64_t absms, const userdata& ud) override;
-
 private:
+    void do_on_connected() override;
+    size_t do_on_recv_data(char* data, size_t size) override;
+    void do_on_timer(int64_t absms, const userdata& ud) override;
+
     void generate_packages();
     bool send_package();
     int32_t check_package(char* data, size_t size);
@@ -28,16 +28,16 @@ private:
 
 class cecho_conn_factory : public conn_factory {
 public:
-    explicit cecho_conn_factory(connid_gener gener = connid_gener());
+    cecho_conn_factory();
+    explicit cecho_conn_factory(connid_gener gener);
 
-protected:
+private:
     conn* do_create_conn() override;
     void do_destroy_conn(conn* c) override;
 };
 
 class cecho_conn_factory_builder : public conn_factory_builder {
-public:
-    conn_factory* build_factory(connid_gener gener) override
+    conn_factory* do_build_factory(connid_gener gener) override
     {
         return new cecho_conn_factory(gener);
     }

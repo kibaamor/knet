@@ -15,11 +15,11 @@ public:
     explicit conn(conn_factory& cf);
     virtual ~conn();
 
-    virtual void on_connected(socket* s);
-    virtual void on_disconnect();
-    virtual size_t on_recv_data(char* data, size_t size) = 0;
+    void on_connected(socket* s);
+    void on_disconnect();
+    size_t on_recv_data(char* data, size_t size);
 
-    virtual void on_timer(int64_t absms, const userdata& ud) = 0;
+    void on_timer(int64_t absms, const userdata& ud);
     timerid_t add_timer(int64_t absms, const userdata& ud);
     void del_timer(timerid_t tid);
 
@@ -31,6 +31,12 @@ public:
 
 protected:
     bool set_sockbuf_size(size_t size);
+
+private:
+    virtual void do_on_connected() { }
+    virtual void do_on_disconnect() { }
+    virtual size_t do_on_recv_data(char* data, size_t size) = 0;
+    virtual void do_on_timer(int64_t absms, const userdata& ud) { }
 
 private:
     conn_factory& _cf;

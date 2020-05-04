@@ -15,12 +15,24 @@ conn::~conn() = default;
 void conn::on_connected(socket* s)
 {
     _s = s;
+    do_on_connected();
 }
 
 void conn::on_disconnect()
 {
+    do_on_disconnect();
     _s = nullptr;
     _cf.destroy_conn(this);
+}
+
+size_t conn::on_recv_data(char* data, size_t size)
+{
+    return do_on_recv_data(data, size);
+}
+
+void conn::on_timer(int64_t absms, const userdata& ud)
+{
+    do_on_timer(absms, ud);
 }
 
 timerid_t conn::add_timer(int64_t absms, const userdata& ud)

@@ -44,6 +44,11 @@ bool async_worker::start(size_t thread_num)
         info.t = new std::thread(&worker_thread, &info);
     }
 
+    if (!do_start()) {
+        stop();
+        return false;
+    }
+
     return true;
 }
 
@@ -51,6 +56,8 @@ void async_worker::stop()
 {
     if (_infos.empty())
         return;
+
+    do_stop();
 
     for (auto& info : _infos)
         info.r = false;
@@ -63,7 +70,7 @@ void async_worker::stop()
         delete info.t;
         delete q;
     }
-    std::vector<info>().swap(_infos);
+    _infos.clear();
 }
 
 void async_worker::worker_thread(info* i)
@@ -72,7 +79,7 @@ void async_worker::worker_thread(info* i)
     auto q = static_cast<workqueue_t*>(i->q);
 
     std::unique_ptr<conn_factory> cf(i->aw->_cfb.build_factory(i->gener));
-    std::unique_ptr<worker> wkr(i->aw->create_worker(*cf));
+    std::unique_ptr<worker> wkr(i->aw->do_create_worker(*cf));
 
     rawsocket_t rs;
     while (i->r) {

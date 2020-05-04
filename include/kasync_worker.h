@@ -12,14 +12,16 @@ public:
 
     void add_work(rawsocket_t rs) override;
 
-    virtual bool start(size_t thread_num);
-    virtual void stop();
+    bool start(size_t thread_num);
+    void stop();
 
-protected:
-    virtual worker* create_worker(conn_factory& cf)
+private:
+    virtual worker* do_create_worker(conn_factory& cf)
     {
         return new worker(cf);
     }
+    virtual bool do_start() { return true; }
+    virtual void do_stop() { }
 
 private:
     struct info {

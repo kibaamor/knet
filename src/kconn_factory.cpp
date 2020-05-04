@@ -94,6 +94,11 @@ private:
     std::set<timer_key> _timer2del;
 };
 
+conn_factory::conn_factory()
+    : conn_factory(connid_gener())
+{
+}
+
 conn_factory::conn_factory(connid_gener gener)
     : _gener(gener)
 {
@@ -105,6 +110,7 @@ conn_factory::~conn_factory() = default;
 void conn_factory::update()
 {
     _timer->update();
+    do_update();
 }
 
 conn* conn_factory::create_conn()
@@ -141,6 +147,11 @@ void conn_factory::on_timer(connid_t cid, int64_t absms, const userdata& ud)
     auto c = get_conn(cid);
     if (nullptr != c)
         c->on_timer(absms, ud);
+}
+
+conn_factory* conn_factory_builder::build_factory(connid_gener gener)
+{
+    return do_build_factory(gener);
 }
 
 } // namespace knet

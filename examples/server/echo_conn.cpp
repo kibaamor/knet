@@ -8,10 +8,8 @@ secho_conn::secho_conn(conn_factory& cf)
 {
 }
 
-void secho_conn::on_connected(socket* s)
+void secho_conn::do_on_connected()
 {
-    conn::on_connected(s);
-
     // for test purpose, direct disconnect
     if (0 == u32rand_between(0, 499)) {
         std::cerr << "direct disconnect at on_connected" << std::endl;
@@ -35,7 +33,7 @@ void secho_conn::on_connected(socket* s)
     set_idle_timer();
 }
 
-size_t secho_conn::on_recv_data(char* data, size_t size)
+size_t secho_conn::do_on_recv_data(char* data, size_t size)
 {
     auto& mgr = echo_mgr::get_instance();
 
@@ -61,7 +59,7 @@ size_t secho_conn::on_recv_data(char* data, size_t size)
     return size;
 }
 
-void secho_conn::on_timer(int64_t absms, const knet::userdata& ud)
+void secho_conn::do_on_timer(int64_t absms, const knet::userdata& ud)
 {
     auto& mgr = echo_mgr::get_instance();
 
@@ -90,6 +88,10 @@ void secho_conn::set_idle_timer()
         add_timer(knet::now_ms() + max_idle_ms, 0);
 }
 
+secho_conn_factory::secho_conn_factory()
+{
+}
+
 secho_conn_factory::secho_conn_factory(connid_gener gener)
     : conn_factory(gener)
 {
@@ -104,5 +106,5 @@ conn* secho_conn_factory::do_create_conn()
 void secho_conn_factory::do_destroy_conn(conn* c)
 {
     echo_mgr::get_instance().dec_conn_num();
-    conn_factory::do_destroy_conn(c);
+    delete c;
 }

@@ -14,9 +14,12 @@ public:
     explicit worker(conn_factory& cf);
     ~worker() override;
 
-    virtual void update();
+    void update();
 
     void add_work(rawsocket_t rs) override;
+
+private:
+    virtual void do_update() { }
 
 private:
     class impl;

@@ -21,10 +21,8 @@ cecho_conn::cecho_conn(conn_factory& cf)
 {
 }
 
-void cecho_conn::on_connected(socket* s)
+void cecho_conn::do_on_connected()
 {
-    conn::on_connected(s);
-
     // for test purpose, direct disconnect
     if (0 == u32rand_between(0, 499)) {
         std::cerr << "direct disconnect at on_connected" << std::endl;
@@ -49,7 +47,7 @@ void cecho_conn::on_connected(socket* s)
     add_timer(now_ms() + mgr.get_delay_ms(), TIMER_ID_SEND_PACKAGE);
 }
 
-size_t cecho_conn::on_recv_data(char* data, size_t size)
+size_t cecho_conn::do_on_recv_data(char* data, size_t size)
 {
     auto& mgr = echo_mgr::get_instance();
 
@@ -71,7 +69,7 @@ size_t cecho_conn::on_recv_data(char* data, size_t size)
     return static_cast<size_t>(len);
 }
 
-void cecho_conn::on_timer(int64_t absms, const userdata& ud)
+void cecho_conn::do_on_timer(int64_t absms, const userdata& ud)
 {
     auto& mgr = echo_mgr::get_instance();
 
@@ -165,6 +163,10 @@ int32_t cecho_conn::check_package(char* data, size_t size)
     return pkg->size;
 }
 
+cecho_conn_factory::cecho_conn_factory()
+{
+}
+
 cecho_conn_factory::cecho_conn_factory(connid_gener gener)
     : conn_factory(gener)
 {
@@ -179,5 +181,5 @@ conn* cecho_conn_factory::do_create_conn()
 void cecho_conn_factory::do_destroy_conn(conn* c)
 {
     echo_mgr::get_instance().dec_conn_num();
-    conn_factory::do_destroy_conn(c);
+    delete c;
 }

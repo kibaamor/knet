@@ -10,6 +10,22 @@ secho_conn::secho_conn(conn_factory& cf)
 
 void secho_conn::do_on_connected()
 {
+    auto& mgr = echo_mgr::get_instance();
+
+    if (mgr.get_enable_log()) {
+        address sockAddr;
+        address peerAddr;
+
+        if (!get_sockaddr(sockAddr) || !get_peeraddr(peerAddr)) {
+            std::cerr << "get_sockaddr()/get_peeraddr() failed in on_connected" << std::endl;
+            disconnect();
+            return;
+        }
+
+        std::cout << get_connid() << " "
+                  << sockAddr << " <----> " << peerAddr << " on_connected" << std::endl;
+    }
+
     // for test purpose, direct disconnect
     if (0 == u32rand_between(0, 499)) {
         std::cerr << "direct disconnect at on_connected" << std::endl;
@@ -19,11 +35,6 @@ void secho_conn::do_on_connected()
 
     if (!set_sockbuf_size(128 * 1024))
         std::cerr << get_connid() << " set_sockbuf_size failed!" << std::endl;
-
-    auto& mgr = echo_mgr::get_instance();
-
-    if (mgr.get_enable_log())
-        std::cout << get_connid() << " on_connected" << std::endl;
 
     if (mgr.get_disconnect_all()) {
         disconnect();
@@ -49,7 +60,7 @@ size_t secho_conn::do_on_recv_data(char* data, size_t size)
 
     knet::buffer buf(data, size);
     if (!send_data(&buf, 1)) {
-        std::cerr << "send_data failed!" << std::endl;
+        std::cerr << get_connid() << " send_data failed!" << std::endl;
         disconnect();
         return 0;
     }

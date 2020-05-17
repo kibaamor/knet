@@ -72,6 +72,8 @@ constexpr int RAWSOCKET_ERROR = -1;
 
 namespace knet {
 
+class address;
+
 constexpr int IOCP_PENDING_ACCEPT_NUM = 64;
 constexpr int POLL_EVENT_NUM = 128;
 constexpr int SOCKET_RWBUF_SIZE = 256 * 1024;
@@ -85,6 +87,9 @@ void close_rawsocket(rawsocket_t& rs);
 
 bool set_rawsocket_opt(rawsocket_t rs, int level, int optname,
     const void* optval, socklen_t optlen);
+
+bool get_rawsocket_sockaddr(rawsocket_t rs, address& addr);
+bool get_rawsocket_peeraddr(rawsocket_t rs, address& addr);
 
 #ifndef _WIN32
 bool set_rawsocket_nonblock(rawsocket_t rs);

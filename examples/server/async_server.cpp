@@ -45,6 +45,15 @@ int main(int argc, char** argv)
         return -1;
     }
 
+    address sockAddr;
+    if (!acc.get_sockaddr(sockAddr)) {
+        std::cerr << "acceptor::get_sockaddr failed" << std::endl;
+        acc.stop();
+        wkr.stop();
+        return -1;
+    }
+    std::cout << "listening at " << sockAddr << std::endl;
+
     // check console input
     auto& mgr = echo_mgr::get_instance();
     mgr.check_console_input();

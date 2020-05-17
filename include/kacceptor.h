@@ -14,6 +14,8 @@ public:
     bool start(const address& addr);
     void stop();
 
+    bool get_sockaddr(address& addr) const;
+
 private:
     class impl;
     std::unique_ptr<impl> _impl;

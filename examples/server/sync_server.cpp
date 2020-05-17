@@ -31,15 +31,23 @@ int main(int argc, char** argv)
     }
 
     // create worker
-    auto cf = std::make_shared<secho_conn_factory>();
-    auto wkr = std::make_shared<worker>(*cf);
+    secho_conn_factory cf;
+    worker wkr(cf);
 
     // create acceptor
-    auto acc = std::make_shared<acceptor>(*wkr);
-    if (!acc->start(addr)) {
+    acceptor acc(wkr);
+    if (!acc.start(addr)) {
         std::cerr << "acceptor::start failed" << std::endl;
         return -1;
     }
+
+    address sockAddr;
+    if (!acc.get_sockaddr(sockAddr)) {
+        std::cerr << "acceptor::get_sockaddr failed" << std::endl;
+        acc.stop();
+        return -1;
+    }
+    std::cout << "listening at " << sockAddr << std::endl;
 
     // check console input
     auto& mgr = echo_mgr::get_instance();
@@ -53,8 +61,8 @@ int main(int argc, char** argv)
         const auto delta_ms = (beg_ms > last_ms ? beg_ms - last_ms : 0);
         last_ms = beg_ms;
 
-        acc->update();
-        wkr->update();
+        acc.update();
+        wkr.update();
 
         const auto conn_num = mgr.get_conn_num();
         if (mgr.get_disconnect_all()) {
@@ -70,7 +78,7 @@ int main(int argc, char** argv)
         sleep_ms(cost_ms < min_interval_ms ? min_interval_ms - cost_ms : 1);
     }
 
-    acc->stop();
+    acc.stop();
 
     return 0;
 }

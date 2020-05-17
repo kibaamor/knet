@@ -64,6 +64,16 @@ bool conn::is_disconnecting() const
     return nullptr == _s || _s->is_closing();
 }
 
+bool conn::get_sockaddr(address& addr) const
+{
+    return nullptr != _s && _s->get_sockaddr(addr);
+}
+
+bool conn::get_peeraddr(address& addr) const
+{
+    return nullptr != _s && _s->get_peeraddr(addr);
+}
+
 bool conn::set_sockbuf_size(size_t size)
 {
     return nullptr != _s && _s->set_sockbuf_size(size);

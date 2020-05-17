@@ -47,7 +47,20 @@ void socket::dispose()
 
 bool socket::set_sockbuf_size(size_t size)
 {
-    return _impl->set_sockbuf_size(size);
+    auto rs = _impl->get_rawsocket();
+    return INVALID_RAWSOCKET != rs && set_rawsocket_bufsize(rs, size);
+}
+
+bool socket::get_sockaddr(address& addr) const
+{
+    auto rs = _impl->get_rawsocket();
+    return INVALID_RAWSOCKET != rs && get_rawsocket_sockaddr(rs, addr);
+}
+
+bool socket::get_peeraddr(address& addr) const
+{
+    auto rs = _impl->get_rawsocket();
+    return INVALID_RAWSOCKET != rs && get_rawsocket_peeraddr(rs, addr);
 }
 
 } // namespace knet

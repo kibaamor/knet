@@ -7,7 +7,7 @@ namespace knet {
 
 class async_worker : public workable {
 public:
-    explicit async_worker(conn_factory_builder& cfb);
+    explicit async_worker(conn_factory_concretor& cfc);
     ~async_worker() override;
 
     void add_work(rawsocket_t rs) override;
@@ -21,7 +21,7 @@ private:
         return new worker(cf);
     }
     virtual bool do_start() { return true; }
-    virtual void do_stop() { }
+    virtual void do_stop() {}
 
 private:
     struct info {
@@ -34,7 +34,7 @@ private:
     static void worker_thread(info* i);
 
 private:
-    conn_factory_builder& _cfb;
+    conn_factory_concretor& _cfc;
     std::vector<info> _infos;
     size_t _index = 0;
 };

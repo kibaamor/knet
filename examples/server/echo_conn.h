@@ -29,8 +29,8 @@ private:
     void do_destroy_conn(conn* c) override;
 };
 
-class secho_conn_factory_builder : public conn_factory_builder {
-    conn_factory* do_build_factory(connid_gener gener) override
+class secho_conn_factory_concretor : public conn_factory_concretor {
+    conn_factory* do_concrete_factory(connid_gener gener) override
     {
         return new secho_conn_factory(gener);
     }

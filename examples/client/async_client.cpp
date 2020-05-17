@@ -33,8 +33,8 @@ int main(int argc, char** argv)
     }
 
     // create worker
-    cecho_conn_factory_builder cfb;
-    async_worker wkr(cfb);
+    cecho_conn_factory_concretor cfc;
+    async_worker wkr(cfc);
     if (!wkr.start(thread_num)) {
         std::cerr << "async_echo_conn_mgr::start failed" << std::endl;
         return -1;

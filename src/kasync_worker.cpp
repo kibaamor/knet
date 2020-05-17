@@ -7,8 +7,8 @@ namespace knet {
 
 using workqueue_t = spsc_queue<rawsocket_t, 1024>;
 
-async_worker::async_worker(conn_factory_builder& cfb)
-    : _cfb(cfb)
+async_worker::async_worker(conn_factory_concretor& cfc)
+    : _cfc(cfc)
 {
 }
 
@@ -78,7 +78,7 @@ void async_worker::worker_thread(info* i)
     constexpr int64_t min_interval_ms = 50;
     auto q = static_cast<workqueue_t*>(i->q);
 
-    std::unique_ptr<conn_factory> cf(i->aw->_cfb.build_factory(i->gener));
+    std::unique_ptr<conn_factory> cf(i->aw->_cfc.concrete_factory(i->gener));
     std::unique_ptr<worker> wkr(i->aw->do_create_worker(*cf));
 
     rawsocket_t rs;

@@ -47,7 +47,7 @@ public:
 private:
     virtual conn* do_create_conn() = 0;
     virtual void do_destroy_conn(conn* c) = 0;
-    virtual void do_update() { }
+    virtual void do_update() {}
 
 private:
     void on_timer(connid_t cid, int64_t absms, const userdata& ud);
@@ -60,14 +60,17 @@ private:
     std::unique_ptr<timer> _timer;
 };
 
-class conn_factory_builder {
+class conn_factory_concretor {
 public:
-    virtual ~conn_factory_builder() = default;
+    virtual ~conn_factory_concretor() = default;
 
-    conn_factory* build_factory(connid_gener gener);
+    conn_factory* concrete_factory(connid_gener gener)
+    {
+        return do_concrete_factory(gener);
+    }
 
 private:
-    virtual conn_factory* do_build_factory(connid_gener gener) = 0;
+    virtual conn_factory* do_concrete_factory(connid_gener gener) = 0;
 };
 
 } // namespace knet

@@ -149,9 +149,4 @@ void conn_factory::on_timer(connid_t cid, int64_t absms, const userdata& ud)
         c->on_timer(absms, ud);
 }
 
-conn_factory* conn_factory_builder::build_factory(connid_gener gener)
-{
-    return do_build_factory(gener);
-}
-
 } // namespace knet

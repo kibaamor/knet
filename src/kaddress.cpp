@@ -136,14 +136,9 @@ bool address::ntop(std::string& addr, uint16_t& port) const
     return true;
 }
 
-const void* address::get_sockaddr() const
-{
-    return reinterpret_cast<const void*>(&_addr);
-}
-
 int address::get_rawfamily() const
 {
-    const auto addr = reinterpret_cast<const sockaddr_storage*>(_addr);
+    const auto addr = as_ptr<sockaddr_storage>();
     return addr->ss_family;
 }
 

@@ -1,4 +1,5 @@
 #include "kinternal.h"
+#include "../../include/kaddress.h"
 #include <cstdio>
 #include <cstring>
 #include <stdexcept>
@@ -135,7 +136,21 @@ bool set_rawsocket_opt(rawsocket_t rs, int level, int optname,
     const void* optval, socklen_t optlen)
 {
     auto val = static_cast<const char*>(optval);
-    return RAWSOCKET_ERROR != setsockopt(rs, level, optname, val, optlen);
+    return RAWSOCKET_ERROR != ::setsockopt(rs, level, optname, val, optlen);
+}
+
+bool get_rawsocket_sockaddr(rawsocket_t rs, address& addr)
+{
+    auto ad = addr.as_ptr<sockaddr>();
+    socklen_t len = sizeof(sockaddr_storage);
+    return RAWSOCKET_ERROR != ::getsockname(rs, ad, &len);
+}
+
+bool get_rawsocket_peeraddr(rawsocket_t rs, address& addr)
+{
+    auto ad = addr.as_ptr<sockaddr>();
+    socklen_t len = sizeof(sockaddr_storage);
+    return RAWSOCKET_ERROR != ::getpeername(rs, ad, &len);
 }
 
 #ifndef _WIN32

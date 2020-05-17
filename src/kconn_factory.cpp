@@ -94,6 +94,11 @@ private:
     std::set<timer_key> _timer2del;
 };
 
+conn_factory::conn_factory()
+    : conn_factory(connid_gener())
+{
+}
+
 conn_factory::conn_factory(connid_gener gener)
     : _gener(gener)
 {
@@ -105,6 +110,7 @@ conn_factory::~conn_factory() = default;
 void conn_factory::update()
 {
     _timer->update();
+    do_update();
 }
 
 conn* conn_factory::create_conn()

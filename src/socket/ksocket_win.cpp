@@ -171,11 +171,6 @@ void socket::impl::close()
     _s.dispose();
 }
 
-bool socket::impl::is_closing() const
-{
-    return _f.is_close();
-}
-
 bool socket::impl::handle_pollevent(void* evt)
 {
     auto e = reinterpret_cast<OVERLAPPED_ENTRY*>(evt);
@@ -217,11 +212,6 @@ bool socket::impl::handle_pollevent(void* evt)
         close();
 
     return ret;
-}
-
-bool socket::impl::set_sockbuf_size(size_t size)
-{
-    return INVALID_RAWSOCKET != _rs && set_rawsocket_bufsize(_rs, size);
 }
 
 bool socket::impl::start()

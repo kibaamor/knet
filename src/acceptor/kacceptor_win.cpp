@@ -130,7 +130,7 @@ bool acceptor::impl::start(const address& addr)
 
     _plr.reset(new poller(*this));
 
-    const auto sa = static_cast<const sockaddr*>(addr.get_sockaddr());
+    const auto sa = addr.as_ptr<sockaddr>();
     const auto salen = addr.get_socklen();
     if (RAWSOCKET_ERROR == ::bind(_rs, sa, salen)
         || RAWSOCKET_ERROR == ::listen(_rs, SOMAXCONN)

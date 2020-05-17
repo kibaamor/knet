@@ -4,7 +4,7 @@
 
 namespace knet {
 
-struct userdata {
+struct userdata final {
     enum {
         unknown,
         pointer,

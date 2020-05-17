@@ -30,8 +30,8 @@ int main(int argc, char** argv)
     }
 
     // create worker
-    secho_conn_factory_builder cfb;
-    async_worker wkr(cfb);
+    secho_conn_factory_concretor cfc;
+    async_worker wkr(cfc);
     if (!wkr.start(thread_num)) {
         std::cerr << "async_worker::start failed" << std::endl;
         return -1;
@@ -44,6 +44,15 @@ int main(int argc, char** argv)
         wkr.stop();
         return -1;
     }
+
+    address sockAddr;
+    if (!acc.get_sockaddr(sockAddr)) {
+        std::cerr << "acceptor::get_sockaddr failed" << std::endl;
+        acc.stop();
+        wkr.stop();
+        return -1;
+    }
+    std::cout << "listening at " << sockAddr << std::endl;
 
     // check console input
     auto& mgr = echo_mgr::get_instance();

@@ -16,7 +16,7 @@ bool connector::connect(const address& addr)
     if (INVALID_RAWSOCKET == rs)
         return false;
 
-    const auto sa = static_cast<const sockaddr*>(addr.get_sockaddr());
+    const auto sa = addr.as_ptr<sockaddr>();
     const auto salen = addr.get_socklen();
     if (RAWSOCKET_ERROR == ::connect(rs, sa, salen)) {
         kdebug("connect() failed");

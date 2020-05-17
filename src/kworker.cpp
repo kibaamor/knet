@@ -46,6 +46,7 @@ worker::~worker() = default;
 void worker::update()
 {
     _impl->update();
+    do_update();
 }
 
 void worker::add_work(rawsocket_t rs)

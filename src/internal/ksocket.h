@@ -1,6 +1,7 @@
 #pragma once
 #include "kpoller.h"
 #include "../../include/kconn_factory.h"
+#include "../../include/kaddress.h"
 
 namespace knet {
 
@@ -21,6 +22,8 @@ public:
     void dispose();
 
     bool set_sockbuf_size(size_t size);
+    bool get_sockaddr(address& addr) const;
+    bool get_peeraddr(address& addr) const;
 
 private:
     class impl;

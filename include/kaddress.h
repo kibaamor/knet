@@ -22,11 +22,23 @@ public:
     bool pton(family_t fa, const std::string& addr, uint16_t port);
     bool ntop(std::string& addr, uint16_t& port) const;
 
+    template <typename T>
+    T* as_ptr()
+    {
+        static_assert(sizeof(_addr) >= sizeof(T), "invalid address type size");
+        return reinterpret_cast<T*>(_addr);
+    }
+
+    template <typename T>
+    const T* as_ptr() const
+    {
+        static_assert(sizeof(_addr) >= sizeof(T), "invalid address type size");
+        return reinterpret_cast<const T*>(_addr);
+    }
+
     int get_rawfamily() const;
     family_t get_family() const;
-    const void* get_sockaddr() const;
     int get_socklen() const;
-
     std::string to_string() const;
 
 private:

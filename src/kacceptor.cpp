@@ -30,4 +30,10 @@ void acceptor::stop()
     _impl->stop();
 }
 
+bool acceptor::get_sockaddr(address& addr) const
+{
+    auto rs = _impl->get_rawsocket();
+    return INVALID_RAWSOCKET != rs && get_rawsocket_sockaddr(rs, addr);
+}
+
 } // namespace knet

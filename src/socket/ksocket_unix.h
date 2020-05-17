@@ -13,10 +13,10 @@ public:
 
     bool write(buffer* buf, size_t num);
     void close();
-    bool is_closing() const;
+    bool is_closing() const { return _f.is_close(); }
     bool handle_pollevent(void* evt);
 
-    bool set_sockbuf_size(size_t size);
+    rawsocket_t get_rawsocket() const { return _rs; }
 
 private:
     bool start();

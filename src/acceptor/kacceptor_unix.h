@@ -17,6 +17,8 @@ public:
 
     bool on_pollevent(void* key, void* evt) override;
 
+    rawsocket_t get_rawsocket() const { return _rs; }
+
 private:
     workable& _wkr;
     std::unique_ptr<poller> _plr;

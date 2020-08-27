@@ -3,15 +3,7 @@ configure_file(
     ${PROJECT_SOURCE_DIR}/include/knet/knetcfg.h
 )
 
-if (CMAKE_BUILD_TYPE STREQUAL DEBUG OR CMAKE_BUILD_TYPE STREQUAL RELWITHDEBINFO)
-    add_definitions(-DDEBUG)
-    message("knet enable debug")
-endif()
-
 if (WIN32)
-    add_definitions(-DUNICODE)
-    add_definitions(-D_UNICODE)
-
     set(knet_platform_postfix "win")
     set(knet_poller_postfix "iocp")
 else ()
@@ -49,30 +41,22 @@ file(GLOB_RECURSE EXTRA_SRC_LIST
 )
 source_group("srcs\\extra" FILES ${EXTRA_SRC_LIST})
 
-add_library(${PROJECT_NAME} ${HDR_LIST} ${SRC_LIST} ${EXTRA_SRC_LIST})
-
-target_compile_definitions(${PROJECT_NAME}
-    PRIVATE
-        "EXPORTING_KNET"
-        $<$<CONFIG:Debug>:KNET_DEBUG>
-        $<$<CONFIG:RelWithDebInfo>:KNET_DEBUG>
-)
-set_target_properties(${PROJECT_NAME} PROPERTIES
-    POSITION_INDEPENDENT_CODE ${BUILD_SHARED_LIBS}
-)
-
-target_include_directories(${PROJECT_NAME} INTERFACE
-    $<INSTALL_INTERFACE:include>
-)
+add_library(${PROJECT_NAME} STATIC ${HDR_LIST} ${SRC_LIST} ${EXTRA_SRC_LIST})
 
 if (WIN32)
     target_link_libraries(${PROJECT_NAME} PRIVATE 
-        ws2_32 knet_compiler_flags)
+        ${PROJECT_NAME}_compiler_flags ws2_32)
 else()
     find_package(Threads REQUIRED)
     target_link_libraries(${PROJECT_NAME} PRIVATE
-        Threads::Threads ${CMAKE_DL_LIBS} knet_compiler_flags)
+        ${PROJECT_NAME}_compiler_flags Threads::Threads ${CMAKE_DL_LIBS})
 endif()
+
+target_compile_definitions(${PROJECT_NAME}
+    PRIVATE
+        $<$<CONFIG:Debug>:KNET_DEBUG>
+        $<$<CONFIG:RelWithDebInfo>:KNET_DEBUG>
+)
 
 install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/
     DESTINATION include
@@ -85,6 +69,11 @@ install(TARGETS ${PROJECT_NAME} ${PROJECT_NAME}_compiler_flags
 install(EXPORT ${PROJECT_NAME}Targets
     FILE ${PROJECT_NAME}Targets.cmake
     DESTINATION lib/cmake/${PROJECT_NAME}
+)
+
+target_include_directories(${PROJECT_NAME} INTERFACE
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/>
+    $<INSTALL_INTERFACE:include>
 )
 
 include(CMakePackageConfigHelpers)

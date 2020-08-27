@@ -20,8 +20,8 @@ matrix:
           packages:
             - g++-4.9
       env:
-         - MATRIX_EVAL="CC=gcc-4.9 CXX=g++-4.9"
-    
+        - MATRIX_EVAL="CC=gcc-4.9 CXX=g++-4.9"
+
     # GCC 5
     - os: linux
       dist: xenial
@@ -32,7 +32,7 @@ matrix:
           packages:
             - g++-5
       env:
-         - MATRIX_EVAL="CC=gcc-5 CXX=g++-5"
+        - MATRIX_EVAL="CC=gcc-5 CXX=g++-5"
 
     # GCC6
     - os: linux
@@ -89,8 +89,8 @@ matrix:
         apt:
           sources:
             - ubuntu-toolchain-r-test
-            - sourceline: 'deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial-3.8 main'
-              key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
+            - sourceline: "deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial-3.8 main"
+              key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
           packages:
             - clang-3.8
       env:
@@ -103,8 +103,8 @@ matrix:
         apt:
           sources:
             - ubuntu-toolchain-r-test
-            - sourceline: 'deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial-3.9 main'
-              key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
+            - sourceline: "deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial-3.9 main"
+              key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
           packages:
             - clang-3.9
       env:
@@ -117,8 +117,8 @@ matrix:
         apt:
           sources:
             - ubuntu-toolchain-r-test
-            - sourceline: 'deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial-4.0 main'
-              key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
+            - sourceline: "deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial-4.0 main"
+              key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
           packages:
             - clang-4.0
       env:
@@ -131,8 +131,8 @@ matrix:
         apt:
           sources:
             - ubuntu-toolchain-r-test
-            - sourceline: 'deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial-5.0 main'
-              key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
+            - sourceline: "deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial-5.0 main"
+              key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
           packages:
             - clang-5.0
       env:
@@ -145,8 +145,8 @@ matrix:
         apt:
           sources:
             - ubuntu-toolchain-r-test
-            - sourceline: 'deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial-6.0 main'
-              key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
+            - sourceline: "deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial-6.0 main"
+              key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
           packages:
             - clang-6.0
       env:
@@ -159,8 +159,8 @@ matrix:
         apt:
           sources:
             - ubuntu-toolchain-r-test
-            - sourceline: 'deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial-7 main'
-              key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
+            - sourceline: "deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial-7 main"
+              key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
           packages:
             - clang-7
       env:
@@ -173,8 +173,8 @@ matrix:
         apt:
           sources:
             - ubuntu-toolchain-r-test
-            - sourceline: 'deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial-8 main'
-              key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
+            - sourceline: "deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial-8 main"
+              key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
           packages:
             - clang-8
       env:
@@ -187,13 +187,13 @@ matrix:
         apt:
           sources:
             - ubuntu-toolchain-r-test
-            - sourceline: 'deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial-9 main'
-              key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
+            - sourceline: "deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial-9 main"
+              key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
           packages:
             - clang-9
       env:
         - MATRIX_EVAL="CC=clang-9 CXX=clang++-9"
-    
+
     # osx image list https://docs.travis-ci.com/user/reference/osx/#macos-version
     # Xcode 8.3 Clang
     - os: osx
@@ -233,5 +233,15 @@ script:
 
   # Release
   - cmake -DCMAKE_BUILD_TYPE=Release .
+  - make clean && make -j2 -k
+  - ctest -j2 --output-on-failure .
+
+  # MinSizeRel
+  - cmake -DCMAKE_BUILD_TYPE=MinSizeRel .
+  - make clean && make -j2 -k
+  - ctest -j2 --output-on-failure .
+
+  # RelWithDebInfo
+  - cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo .
   - make clean && make -j2 -k
   - ctest -j2 --output-on-failure .

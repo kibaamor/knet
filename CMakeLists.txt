@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.9)
+cmake_minimum_required(VERSION 3.15)
 
 project(knet VERSION 1.0.0)
 
@@ -14,29 +14,29 @@ if (NOT CMAKE_BUILD_TYPE)
 endif()
 message("CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
 
-option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
-option(KNET_BUILD_EXAMPLE "Build exmaple" OFF)
-option(KNET_BUILD_TEST "Build test" OFF)
+option(KNET_BUILD_EXAMPLE "Build exmaple" ON)
+option(KNET_BUILD_TEST "Build test" ON)
+
+message("CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX}")
+message("KNET_BUILD_EXAMPLE: ${KNET_BUILD_EXAMPLE}")
+message("KNET_BUILD_TEST: ${KNET_BUILD_TEST}")
 
 add_library(${PROJECT_NAME}_compiler_flags INTERFACE)
 target_compile_features(${PROJECT_NAME}_compiler_flags INTERFACE cxx_std_11)
-set(gcc_like_cxx "$<COMPILE_LANG_AND_ID:CXX,ARMClang,AppleClang,Clang,GNU>")
-set(msvc_cxx "$<COMPILE_LANG_AND_ID:CXX,MSVC>")
 target_compile_options(${PROJECT_NAME}_compiler_flags INTERFACE
-    "$<${gcc_like_cxx}:$<BUILD_INTERFACE:-Wall;-Wextra;-Wshadow;-Wformat=2;-Wunused>>"
-    "$<${msvc_cxx}:$<BUILD_INTERFACE:-W3>>"
+    "$<$<CXX_COMPILER_ID:ARMClang,AppleClang,Clang,GNU>:$<BUILD_INTERFACE:-Wall;-Wextra;-Wshadow;-Wformat=2;-Wunused>>"
+    "$<$<CXX_COMPILER_ID:MSVC>:$<BUILD_INTERFACE:-W4>>"
+    "$<$<PLATFORM_ID:Windows>:$<BUILD_INTERFACE:-DUNICODE;-D_UNICODE>>"
 )
 
 add_subdirectory(src)
 
 if (KNET_BUILD_EXAMPLE)
-    message("knet build examples")
     add_subdirectory(examples)
 endif()
 
 if (KNET_BUILD_TEST)
     include(CTest)
-    message("knet build test")
     add_subdirectory(test)
 endif()
 

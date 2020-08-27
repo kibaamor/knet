@@ -1,7 +1,7 @@
 #pragma once
 #include "kpoller.h"
-#include "../../include/kconn_factory.h"
-#include "../../include/kaddress.h"
+#include "../../include/knet/kconn_factory.h"
+#include "../../include/knet/kaddress.h"
 
 namespace knet {
 

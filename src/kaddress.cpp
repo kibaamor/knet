@@ -1,4 +1,4 @@
-#include "../include/kaddress.h"
+#include "../include/knet/kaddress.h"
 #include "internal/kinternal.h"
 #include <cstring>
 

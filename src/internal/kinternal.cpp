@@ -1,5 +1,5 @@
 #include "kinternal.h"
-#include "../../include/kaddress.h"
+#include "../../include/knet/kaddress.h"
 #include <cstdio>
 #include <cstring>
 #include <stdexcept>

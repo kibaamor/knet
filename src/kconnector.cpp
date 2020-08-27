@@ -1,4 +1,4 @@
-#include "../include/kconnector.h"
+#include "../include/knet/kconnector.h"
 #include "internal/kinternal.h"
 
 namespace knet {

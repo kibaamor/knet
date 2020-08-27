@@ -1,8 +1,10 @@
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.10)
 
 project(knet CXX)
 
 option(KNET_ENABLE_CPPCHECK "enable cppcheck" OFF)
+option(KNET_BUILD_EXAMPLE "build exmaple" ON)
+option(KNET_BUILD_TEST "build test" ON)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -16,7 +18,6 @@ set(CMAKE_MINSIZEREL_POSTFIX "_msr" CACHE STRING "postfix for ReleaseWithDebug-b
 
 if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE RELWITHDEBINFO)
-    #set(CMAKE_BUILD_TYPE DEBUG)
 endif()
 message("CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
 
@@ -70,12 +71,10 @@ if (MSVC)
     add_definitions("/W4")
 endif()
 
-enable_testing()
-
 #######################################################################################
 
 file(GLOB HDR_LIST
-    "${PROJECT_SOURCE_DIR}/include/*.h"
+    "${PROJECT_SOURCE_DIR}/include/knet/*.h"
 )
 source_group("hdrs" FILES ${HDR_LIST})
 
@@ -116,5 +115,13 @@ install(TARGETS ${PROJECT_NAME}
 
 #######################################################################################
 
-add_subdirectory(test)
-add_subdirectory(examples)
+if (KNET_BUILD_EXAMPLE)
+    message("knet build examples")
+    add_subdirectory(examples)
+endif()
+
+if (KNET_BUILD_TEST)
+    enable_testing()
+    message("knet build test")
+    add_subdirectory(test)
+endif()

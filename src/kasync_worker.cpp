@@ -1,5 +1,5 @@
-#include "../include/kasync_worker.h"
-#include "../include/kutils.h"
+#include "../include/knet/kasync_worker.h"
+#include "../include/knet/kutils.h"
 #include "internal/kspscqueue.h"
 #include "internal/kinternal.h"
 

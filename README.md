@@ -6,21 +6,22 @@
 
 A cross platform lock-free and timer-supported(heartbeat etc.) C++11 network library.
 
-Table of Contents
-=================
+## Table of Contents
 
-   * [Highlights](#highlights)
-   * [Environment](#environment)
-   * [How To Use](#how-to-use)
-      * [Compile](#compile)
-      * [Test](#test)
-   * [Core Concept](#core-concept)
-   * [Examples](#examples)
-      * [Echo Server and Client](#echo-server-and-client)
-         * [Protocol](#protocol)
-         * [Echo Server](#echo-server)
-      * [Echo Client](#echo-client)
-   * [Code Quality](#code-quality)
+* [Highlights](#highlights)
+* [Environment](#environment)
+* [How To Use](#how-to-use)
+  * [Compile](#compile)
+  * [Test](#test)
+* [Core Concept](#core-concept)
+* [Examples](#examples)
+  * [Echo Server and Client](#echo-server-and-client)
+    * [Protocol](#protocol)
+    * [Echo Server](#echo-server)
+  * [Echo Client](#echo-client)
+* [Code Quality](#code-quality)
+
+--------
 
 ## Highlights
 

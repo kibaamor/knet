@@ -1,119 +1,33 @@
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.9)
 
-project(knet CXX)
-
-option(KNET_ENABLE_CPPCHECK "enable cppcheck" OFF)
-option(KNET_BUILD_EXAMPLE "build exmaple" ON)
-option(KNET_BUILD_TEST "build test" ON)
-
-set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+project(knet VERSION 1.0.0)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 set(CMAKE_DEBUG_POSTFIX "_d" CACHE STRING "postfix for Debug-built libraries" FORCE)
-set(CMAKE_RELWITHDEBINFO_POSTFIX "_rwdi" CACHE STRING "postfix for MinsizeRelease-built libraries" FORCE)
-set(CMAKE_MINSIZEREL_POSTFIX "_msr" CACHE STRING "postfix for ReleaseWithDebug-built libraries" FORCE)
+set(CMAKE_MINSIZEREL_POSTFIX "_msr" CACHE STRING "postfix for MinsizeRelease-built libraries" FORCE)
+set(CMAKE_RELWITHDEBINFO_POSTFIX "_rwdi" CACHE STRING "postfix for ReleaseWithDebug-built libraries" FORCE)
 
 if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE RELWITHDEBINFO)
 endif()
 message("CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
 
-if (KNET_ENABLE_CPPCHECK)
-    find_program(CMAKE_CXX_CPPCHECK NAMES cppcheck)
-    if (CMAKE_CXX_CPPCHECK)
-        message("knet enable cppcheck")
-        list(
-            APPEND CMAKE_CXX_CPPCHECK
-            "--enable=all"
-            "--suppress=unusedFunction"
-            "--suppress=functionConst"
-            "--suppress=missingIncludeSystem"
-            "--suppress=unmatchedSuppression"
-            "--suppress=*:${PROJECT_SOURCE_DIR}/test/doctest.h"
-            "--library=posix"
-            "--inconclusive"
-            "--force"
-            "--inline-suppr"
-            "--language=c++"
-            "--std=c++11"
-            )
-    endif()
-endif()
+option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
+option(KNET_BUILD_EXAMPLE "Build exmaple" OFF)
+option(KNET_BUILD_TEST "Build test" OFF)
 
-if (CMAKE_BUILD_TYPE STREQUAL DEBUG OR CMAKE_BUILD_TYPE STREQUAL RELWITHDEBINFO)
-    add_definitions(-DDEBUG)
-    message("knet enable debug")
-endif()
-
-if (WIN32)
-    add_definitions(-DUNICODE)
-    add_definitions(-D_UNICODE)
-
-    set(knet_platform_postfix "win")
-    set(knet_poller_postfix "iocp")
-else ()
-    set(knet_platform_postfix "unix")
-
-    if (CMAKE_SYSTEM_NAME MATCHES "Linux")
-        set(knet_poller_postfix "epoll")
-    else ()
-        set(knet_poller_postfix "kqueue")
-    endif ()
-endif()
-message("knet_platform_postfix: ${knet_platform_postfix}")
-message("knet_poller_postfix: ${knet_poller_postfix}")
-
-if (MSVC)
-    add_definitions("/wd4100")
-    add_definitions("/W4")
-endif()
-
-#######################################################################################
-
-file(GLOB HDR_LIST
-    "${PROJECT_SOURCE_DIR}/include/knet/*.h"
+add_library(${PROJECT_NAME}_compiler_flags INTERFACE)
+target_compile_features(${PROJECT_NAME}_compiler_flags INTERFACE cxx_std_11)
+set(gcc_like_cxx "$<COMPILE_LANG_AND_ID:CXX,ARMClang,AppleClang,Clang,GNU>")
+set(msvc_cxx "$<COMPILE_LANG_AND_ID:CXX,MSVC>")
+target_compile_options(${PROJECT_NAME}_compiler_flags INTERFACE
+    "$<${gcc_like_cxx}:$<BUILD_INTERFACE:-Wall;-Wextra;-Wshadow;-Wformat=2;-Wunused>>"
+    "$<${msvc_cxx}:$<BUILD_INTERFACE:-W3>>"
 )
-source_group("hdrs" FILES ${HDR_LIST})
 
-file(GLOB SRC_LIST
-    "${PROJECT_SOURCE_DIR}/src/*.h"
-    "${PROJECT_SOURCE_DIR}/src/*.cpp"
-    "${PROJECT_SOURCE_DIR}/src/internal/*.h"
-    "${PROJECT_SOURCE_DIR}/src/internal/*.cpp"
-)
-source_group("srcs" FILES ${SRC_LIST})
-
-file(GLOB_RECURSE EXTRA_SRC_LIST
-    "${PROJECT_SOURCE_DIR}/src/*${knet_platform_postfix}.h"
-    "${PROJECT_SOURCE_DIR}/src/*${knet_platform_postfix}.cpp"
-    "${PROJECT_SOURCE_DIR}/src/*${knet_poller_postfix}.h"
-    "${PROJECT_SOURCE_DIR}/src/*${knet_poller_postfix}.cpp"
-)
-source_group("srcs\\extra" FILES ${EXTRA_SRC_LIST})
-
-add_library(${PROJECT_NAME} ${HDR_LIST} ${SRC_LIST} ${EXTRA_SRC_LIST})
-
-target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/include)
-
-if (WIN32)
-    target_link_libraries(${PROJECT_NAME} ws2_32)
-else()
-    target_link_libraries(${PROJECT_NAME} pthread)
-endif()
-
-install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/
-    DESTINATION "include"
-    )
-install(TARGETS ${PROJECT_NAME}
-    ARCHIVE DESTINATION lib
-    LIBRARY DESTINATION lib
-    RUNTIME DESTINATION bin
-    )
-
-#######################################################################################
+add_subdirectory(src)
 
 if (KNET_BUILD_EXAMPLE)
     message("knet build examples")
@@ -121,7 +35,14 @@ if (KNET_BUILD_EXAMPLE)
 endif()
 
 if (KNET_BUILD_TEST)
-    enable_testing()
+    include(CTest)
     message("knet build test")
     add_subdirectory(test)
 endif()
+
+include(InstallRequiredSystemLibraries)
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
+set(CPACK_PACKAGE_VERSION_MAJOR "${PROJECT_VERSION_MAJOR}")
+set(CPACK_PACKAGE_VERSION_MINOR "${PROJECT_VERSION_MINOR}")
+set(CPACK_PACKAGE_VERSION_PATCH "${PROJECT_VERSION_PATCH}")
+include(CPack)

@@ -3,6 +3,16 @@
 #include <string>
 #include <memory>
 
+#if defined(_WIN32)
+#if defined(EXPORTING_KNET)
+#define KNET_API __declspec(dllexport)
+#else
+#define KNET_API __declspec(dllimport)
+#endif
+#else // non windows
+#define KNET_API
+#endif
+
 namespace knet {
 
 #ifdef _WIN32
@@ -23,7 +33,3 @@ struct buffer {
 };
 
 } // namespace knet
-
-#ifdef DEBUG
-#define KNET_DEBUG
-#endif

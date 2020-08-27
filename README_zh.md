@@ -13,37 +13,39 @@
 
 ## 目录
 
-* [特点](#特点)
-* [编译环境](#编译环境)
-* [如何使用](#如何使用)
-  * [编译](#编译)
-  * [测试](#测试)
-* [核心概念](#核心概念)
-* [示例程序](#示例程序)
-  * [echo服务器和客户端](#echo服务器和客户端)
-    * [通信协议](#通信协议)
-    * [echo服务器](#echo服务器)
-  * [echo客户端](#echo客户端)
-* [代码质量](#代码质量)
+- [**knet**](#knet)
+  - [目录](#目录)
+  - [特点](#特点)
+  - [编译环境](#编译环境)
+  - [如何使用](#如何使用)
+    - [编译](#编译)
+    - [测试](#测试)
+  - [核心概念](#核心概念)
+  - [示例程序](#示例程序)
+    - [echo服务器和客户端](#echo服务器和客户端)
+      - [通信协议](#通信协议)
+      - [echo服务器](#echo服务器)
+    - [echo客户端](#echo客户端)
+    - [代码质量](#代码质量)
 
 --------
 
 ## 特点
 
-* 支持Window、Linux、MacOS、FreeBSD和OpenBSD
-* 同时支持同步、异步两种使用方式
-* 易于扩展，支持网络粘包
-* 代码少，无第三方库依赖
-* 无锁设计，每个连接的创建销毁逻辑都在同一个固定的线程中处理
-* 支持定时器，如心跳发送与检测
+- 支持Window、Linux、MacOS、FreeBSD和OpenBSD
+- 同时支持同步、异步两种使用方式
+- 易于扩展，支持网络粘包
+- 代码少，无第三方库依赖
+- 无锁设计，每个连接的创建销毁逻辑都在同一个固定的线程中处理
+- 支持定时器，如心跳发送与检测
 
 ## 编译环境
 
-* CMake 3.1及以上
-* [Clang 3.3](http://clang.llvm.org/cxx_status.html)及以上(如果你使用Clang编译)
-* Visual Studio 2015及以上(Windows)
-* [Gcc 4.9](https://gcc.gnu.org/gcc-5/changes.html#libstdcxx)及以上(Linux)
-* [Xcode 8.0](https://stackoverflow.com/questions/28094794/why-does-apple-clang-disallow-c11-thread-local-when-official-clang-supports) 及以上(MacOS)
+- CMake 3.15 及以上
+- [Clang 3.8](http://clang.llvm.org/cxx_status.html)及以上(如果你使用Clang编译)
+- Visual Studio 2015及以上(Windows)
+- [Gcc 4.9](https://gcc.gnu.org/gcc-5/changes.html#libstdcxx)及以上(Linux)
+- [Xcode 9.4](https://stackoverflow.com/questions/28094794/why-does-apple-clang-disallow-c11-thread-local-when-official-clang-supports) 及以上(MacOS)
 
 ## 如何使用
 
@@ -87,10 +89,10 @@ knet的核心概念是：`socket的生产-消费`。
 └───────────┘                  └──────────────┘
 ```
 
-* [connector](./src/kconnector.cpp) 连接器，在客户端连接服务器时使用
-* [acceptor](./src/kacceptor.cpp) 接收器，在服务器想要接受客户端连接时使用
-* [worker](./src/kworker.cpp) socket的同步处理逻辑
-* [async_worker](./src/kworker.cpp) socket的异步处理逻辑
+- [connector](./src/kconnector.cpp) 连接器，在客户端连接服务器时使用
+- [acceptor](./src/kacceptor.cpp) 接收器，在服务器想要接受客户端连接时使用
+- [worker](./src/kworker.cpp) socket的同步处理逻辑
+- [async_worker](./src/kworker.cpp) socket的异步处理逻辑
 
 ## 示例程序
 
@@ -109,8 +111,8 @@ echo服务器将接收到的数据原封不动的发回给客户端。
 
 服务器提供了两种：
 
-* 同步方式的echo服务端[examples/server/sync_server.cpp](./examples/server/sync_server.cpp)
-* 异步方式的echo服务端[examples/server/async_server.cpp](./examples/server/async_server.cpp)
+- 同步方式的echo服务端[examples/server/sync_server.cpp](./examples/server/sync_server.cpp)
+- 异步方式的echo服务端[examples/server/async_server.cpp](./examples/server/async_server.cpp)
 
 ### echo客户端
 
@@ -119,8 +121,8 @@ echo服务器将接收到的数据原封不动的发回给客户端。
 
 客户端也提供了两种：
 
-* 同步方式的echo客户端[examples/client/sync_client.cpp](./examples/client/sync_client.cpp)
-* 异步方式的echo客户端[examples/client/async_client.cpp](./examples/client/async_client.cpp)
+- 同步方式的echo客户端[examples/client/sync_client.cpp](./examples/client/sync_client.cpp)
+- 异步方式的echo客户端[examples/client/async_client.cpp](./examples/client/async_client.cpp)
 
 ### 代码质量
 

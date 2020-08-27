@@ -13,37 +13,39 @@ A cross platform lock-free and timer-supported(heartbeat etc.) C++11 network lib
 
 ## Table of Contents
 
-* [Highlights](#highlights)
-* [Environment](#environment)
-* [How To Use](#how-to-use)
-  * [Compile](#compile)
-  * [Test](#test)
-* [Core Concept](#core-concept)
-* [Examples](#examples)
-  * [Echo Server and Client](#echo-server-and-client)
-    * [Protocol](#protocol)
-    * [Echo Server](#echo-server)
-  * [Echo Client](#echo-client)
-* [Code Quality](#code-quality)
+- [**knet**](#knet)
+  - [Table of Contents](#table-of-contents)
+  - [Highlights](#highlights)
+  - [Environment](#environment)
+  - [How To Use](#how-to-use)
+    - [Compile](#compile)
+    - [Test](#test)
+  - [Core Concept](#core-concept)
+  - [Examples](#examples)
+    - [Echo Server and Client](#echo-server-and-client)
+      - [Protocol](#protocol)
+      - [Echo Server](#echo-server)
+    - [Echo Client](#echo-client)
+    - [Code Quality](#code-quality)
 
 --------
 
 ## Highlights
 
-* Support Windows, Linux, MacOS, FreeBSD, OpenBSD
-* Support Synchronous and Asynchronous processing connections
-* Support network package defragment
-* Less code and no third party dependency
-* Lockfree, connection work on same fixed thread
-* Timer support, such as: hearbeat check etc.
+- Support Windows, Linux, MacOS, FreeBSD, OpenBSD
+- Support Synchronous and Asynchronous processing connections
+- Support network package defragment
+- Less code and no third party dependency
+- Lockfree, connection work on same fixed thread
+- Timer support, such as: hearbeat check etc.
 
 ## Environment
 
-* CMake 3.1 or higher
-* [Clang 3.3](http://clang.llvm.org/cxx_status.html) or higher (If you build with Clang)
-* Visual Studio 2015 or higher(Windows)
-* [Gcc 4.9](https://gcc.gnu.org/gcc-5/changes.html#libstdcxx) or higher(Linux)
-* [Xcode 8.0](https://stackoverflow.com/questions/28094794/why-does-apple-clang-disallow-c11-thread-local-when-official-clang-supports) or higher(MacOS)
+- CMake 3.15 or higher
+- [Clang 3.8](http://clang.llvm.org/cxx_status.html) or higher (If you build with Clang)
+- Visual Studio 2015 or higher(Windows)
+- [Gcc 4.9](https://gcc.gnu.org/gcc-5/changes.html#libstdcxx) or higher(Linux)
+- [Xcode 9.4](https://stackoverflow.com/questions/28094794/why-does-apple-clang-disallow-c11-thread-local-when-official-clang-supports) or higher(MacOS)
 
 ## How To Use
 
@@ -87,10 +89,10 @@ In fact, both *connecting to server* and *accepting connection from client* are 
 └───────────┘                  └──────────────┘
 ```
 
-* [connector](./src/kconnector.cpp) connect to server
-* [acceptor](./src/kacceptor.cpp) accept connection from client
-* [worker](./src/kworker.cpp) synchronous processing connections
-* [async_worker](./src/kworker.cpp) asynchronous processing connections
+- [connector](./src/kconnector.cpp) connect to server
+- [acceptor](./src/kacceptor.cpp) accept connection from client
+- [worker](./src/kworker.cpp) synchronous processing connections
+- [async_worker](./src/kworker.cpp) asynchronous processing connections
 
 ## Examples
 
@@ -115,8 +117,8 @@ A timer is also set to check whether a client message is received within the spe
 
 The server provides two types:
 
-* Synchronous Echo Server[examples/server/sync_server.cpp](./examples/server/sync_server.cpp)
-* Asynchronous Echo Server[examples/server/async_server.cpp](./examples/server/async_server.cpp)
+- Synchronous Echo Server[examples/server/sync_server.cpp](./examples/server/sync_server.cpp)
+- Asynchronous Echo Server[examples/server/async_server.cpp](./examples/server/async_server.cpp)
 
 ### Echo Client
 
@@ -125,8 +127,8 @@ When the network package returned by the server is received, the data envelope i
 
 The client provides two types:
 
-* Synchronous Echo Client[examples/client/sync_client.cpp](./examples/client/sync_client.cpp)
-* Asynchronous Echo Client[examples/client/async_client.cpp](./examples/client/async_client.cpp)
+- Synchronous Echo Client[examples/client/sync_client.cpp](./examples/client/sync_client.cpp)
+- Asynchronous Echo Client[examples/client/async_client.cpp](./examples/client/async_client.cpp)
 
 ### Code Quality
 

@@ -194,13 +194,35 @@ matrix:
       env:
         - MATRIX_EVAL="CC=clang-9 CXX=clang++-9"
 
-    # osx image list https://docs.travis-ci.com/user/reference/osx/#macos-version
-    # Xcode 8.3 Clang
-    - os: osx
-      osx_image: xcode8.3
+    # Clang 10
+    - os: linux
+      dist: xenial
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - sourceline: "deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial-10 main"
+              key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
+          packages:
+            - clang-10
       env:
-        - MATRIX_EVAL="CC=clang CXX=clang++"
+        - MATRIX_EVAL="CC=clang-10 CXX=clang++-10"
 
+    # Clang 11
+    - os: linux
+      dist: xenial
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - sourceline: "deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial-11 main"
+              key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
+          packages:
+            - clang-10
+      env:
+        - MATRIX_EVAL="CC=clang-11 CXX=clang++-11"
+
+    # osx image list https://docs.travis-ci.com/user/reference/osx/#macos-version
     # Xcode 9.4 Clang
     - os: osx
       osx_image: xcode9.4
@@ -213,9 +235,15 @@ matrix:
       env:
         - MATRIX_EVAL="CC=clang CXX=clang++"
 
-    # Xcode 11.3 Clang
+    # Xcode 11.5 Clang
     - os: osx
-      osx_image: xcode11.3
+      osx_image: xcode11.5
+      env:
+        - MATRIX_EVAL="CC=clang CXX=clang++"
+
+    # Xcode 12(Universal) Clang
+    - os: osx
+      osx_image: xcode12u
       env:
         - MATRIX_EVAL="CC=clang CXX=clang++"
 

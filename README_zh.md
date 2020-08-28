@@ -49,7 +49,7 @@
 
 ## 如何使用
 
-Windows和Linux下都可以使用下面的命令
+Windows、Linux和macOS下都可以使用下面的命令
 
 ### 编译
 

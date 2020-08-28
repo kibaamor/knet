@@ -302,22 +302,21 @@ before_script:
   - cmake --version
 
 script:
+  # Generate project
+  - cmake . -B build
+
   # Debug
-  - cmake -DCMAKE_BUILD_TYPE=Debug .
-  - make clean && make -j2 -k
-  - ctest -j2 --output-on-failure .
+  - cmake --build build --clean-first --config Debug
+  - (cd build && ctest --output-on-failure)
 
   # Release
-  - cmake -DCMAKE_BUILD_TYPE=Release .
-  - make clean && make -j2 -k
-  - ctest -j2 --output-on-failure .
+  - cmake --build build --clean-first --config Release
+  - (cd build && ctest --output-on-failure)
 
   # MinSizeRel
-  - cmake -DCMAKE_BUILD_TYPE=MinSizeRel .
-  - make clean && make -j2 -k
-  - ctest -j2 --output-on-failure .
+  - cmake --build build --clean-first --config MinSizeRel
+  - (cd build && ctest --output-on-failure)
 
   # RelWithDebInfo
-  - cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo .
-  - make clean && make -j2 -k
-  - ctest -j2 --output-on-failure .
+  - cmake --build build --clean-first --config RelWithDebInfo
+  - (cd build && ctest --output-on-failure)

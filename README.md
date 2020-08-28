@@ -49,7 +49,7 @@ A cross platform lock-free and timer-supported(heartbeat etc.) C++11 network lib
 
 ## How To Use
 
-below command working on Windows and Linux
+below command working on Windows, Linux and macOS
 
 ### Compile
 

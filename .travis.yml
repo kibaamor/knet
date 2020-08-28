@@ -9,291 +9,275 @@ notifications:
       secure: cKpsO84xSlLMDB/PELTUasVGzRlGtipNSEaTHIQbH66XZKgSlmYl1HhqWtSVU2W3rGfja0/a22ytAh75bg0Z0DcjbOI3+Hbrw27J12iHWvQ6jvBgFvOMagYzTvMfhkV2MRiTmCfzT73VDMSbjpRN3TmYhm8/GPtKV+eE6Y9CRMFippLYyJrePleFFMcsXVLshY27sDE8ZikvDmy7Juud1E6GtBTg8M7TP/h0254dJgXR8ZmMRdSLByxG4P1jmjWYCeuKcopS5yKqST4E1MWWI6vyARTtnB0luAyUoR0lm+7YCnN/N5w5/+a0iRTXrj3f5AdH/X3VHvUAJ8IEeRTzaHKipf/NTl6BG4NrYMh5TqIiIfLr8JhdKCLdHDNmXYNHizXgmULFO//TVshOWt0NPEQj7rsQoyuPZiBmTuM15bukOBDObje55Ln7mL6TZVhFcb7UrPFz3o5DFO5tZQDYNAy+IsEBmSidDzlGN6owwwP0emZjVVHrPTk75AxZwUYsqvGVb07yi0WsawLJz3MnvN3RRsyYvrjhQ3E1yniTqDYJhPLcprx2UW7iyTbUgF+ZfKUUt+GQ0AXElXZnmkzbOpOgusT4iqcopUlTQAiSa40FW9jhnEU2vJpd96RO7QozZrIVcXO3bCQb6zIW1mNJ6qCun8EuJdr0O/OmVOlVj+k=
 
 matrix:
-  include:
-    # GCC 4.9
-    - os: linux
-      dist: xenial
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-            - sourceline: "deb https://apt.kitware.com/ubuntu/ xenial main"
-              key_url: "https://apt.kitware.com/keys/kitware-archive-latest.asc"
-          packages:
-            - g++-4.9
-            - cmake
-      env:
-        - MATRIX_EVAL="CC=gcc-4.9 CXX=g++-4.9 PATH=/usr/local/bin:/usr/bin:$PATH"
+  # GCC 5
+  - os: linux
+    dist: xenial
+    addons:
+      apt:
+        sources:
+          - ubuntu-toolchain-r-test
+          - sourceline: "deb https://apt.kitware.com/ubuntu/ xenial main"
+            key_url: "https://apt.kitware.com/keys/kitware-archive-latest.asc"
+        packages:
+          - g++-5
+          - cmake
+    env:
+      - MATRIX_EVAL="CC=gcc-5 CXX=g++-5 PATH=/usr/local/bin:/usr/bin:$PATH"
 
-    # GCC 5
-    - os: linux
-      dist: xenial
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-            - sourceline: "deb https://apt.kitware.com/ubuntu/ xenial main"
-              key_url: "https://apt.kitware.com/keys/kitware-archive-latest.asc"
-          packages:
-            - g++-5
-            - cmake
-      env:
-        - MATRIX_EVAL="CC=gcc-5 CXX=g++-5 PATH=/usr/local/bin:/usr/bin:$PATH"
+  # GCC6
+  - os: linux
+    dist: xenial
+    addons:
+      apt:
+        sources:
+          - ubuntu-toolchain-r-test
+          - sourceline: "deb https://apt.kitware.com/ubuntu/ xenial main"
+            key_url: "https://apt.kitware.com/keys/kitware-archive-latest.asc"
+        packages:
+          - g++-6
+          - cmake
+    env:
+      - MATRIX_EVAL="CC=gcc-6 CXX=g++-6 PATH=/usr/local/bin:/usr/bin:$PATH"
 
-    # GCC6
-    - os: linux
-      dist: xenial
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-            - sourceline: "deb https://apt.kitware.com/ubuntu/ xenial main"
-              key_url: "https://apt.kitware.com/keys/kitware-archive-latest.asc"
-          packages:
-            - g++-6
-            - cmake
-      env:
-        - MATRIX_EVAL="CC=gcc-6 CXX=g++-6 PATH=/usr/local/bin:/usr/bin:$PATH"
+  # GCC7
+  - os: linux
+    dist: xenial
+    addons:
+      apt:
+        sources:
+          - ubuntu-toolchain-r-test
+          - sourceline: "deb https://apt.kitware.com/ubuntu/ xenial main"
+            key_url: "https://apt.kitware.com/keys/kitware-archive-latest.asc"
+        packages:
+          - g++-7
+          - cmake
+    env:
+      - MATRIX_EVAL="CC=gcc-7 CXX=g++-7 PATH=/usr/local/bin:/usr/bin:$PATH"
 
-    # GCC7
-    - os: linux
-      dist: xenial
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-            - sourceline: "deb https://apt.kitware.com/ubuntu/ xenial main"
-              key_url: "https://apt.kitware.com/keys/kitware-archive-latest.asc"
-          packages:
-            - g++-7
-            - cmake
-      env:
-        - MATRIX_EVAL="CC=gcc-7 CXX=g++-7 PATH=/usr/local/bin:/usr/bin:$PATH"
+  # GCC8
+  - os: linux
+    dist: xenial
+    addons:
+      apt:
+        sources:
+          - ubuntu-toolchain-r-test
+          - sourceline: "deb https://apt.kitware.com/ubuntu/ xenial main"
+            key_url: "https://apt.kitware.com/keys/kitware-archive-latest.asc"
+        packages:
+          - g++-8
+          - cmake
+    env:
+      - MATRIX_EVAL="CC=gcc-8 CXX=g++-8 PATH=/usr/local/bin:/usr/bin:$PATH"
 
-    # GCC8
-    - os: linux
-      dist: xenial
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-            - sourceline: "deb https://apt.kitware.com/ubuntu/ xenial main"
-              key_url: "https://apt.kitware.com/keys/kitware-archive-latest.asc"
-          packages:
-            - g++-8
-            - cmake
-      env:
-        - MATRIX_EVAL="CC=gcc-8 CXX=g++-8 PATH=/usr/local/bin:/usr/bin:$PATH"
+  # GCC9
+  - os: linux
+    dist: xenial
+    addons:
+      apt:
+        sources:
+          - ubuntu-toolchain-r-test
+          - sourceline: "deb https://apt.kitware.com/ubuntu/ xenial main"
+            key_url: "https://apt.kitware.com/keys/kitware-archive-latest.asc"
+        packages:
+          - g++-9
+          - cmake
+    env:
+      - MATRIX_EVAL="CC=gcc-9 CXX=g++-9 PATH=/usr/local/bin:/usr/bin:$PATH"
 
-    # GCC9
-    - os: linux
-      dist: xenial
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-            - sourceline: "deb https://apt.kitware.com/ubuntu/ xenial main"
-              key_url: "https://apt.kitware.com/keys/kitware-archive-latest.asc"
-          packages:
-            - g++-9
-            - cmake
-      env:
-        - MATRIX_EVAL="CC=gcc-9 CXX=g++-9 PATH=/usr/local/bin:/usr/bin:$PATH"
+  # Clang 3.8
+  - os: linux
+    dist: xenial
+    addons:
+      apt:
+        sources:
+          - ubuntu-toolchain-r-test
+          - sourceline: "deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial-3.8 main"
+            key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
+          - sourceline: "deb https://apt.kitware.com/ubuntu/ xenial main"
+            key_url: "https://apt.kitware.com/keys/kitware-archive-latest.asc"
+        packages:
+          - clang-3.8
+          - cmake
+    env:
+      - MATRIX_EVAL="CC=clang-3.8 CXX=clang++-3.8 PATH=/usr/local/bin:/usr/bin:$PATH"
 
-    # Clang 3.8
-    - os: linux
-      dist: xenial
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-            - sourceline: "deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial-3.8 main"
-              key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
-            - sourceline: "deb https://apt.kitware.com/ubuntu/ xenial main"
-              key_url: "https://apt.kitware.com/keys/kitware-archive-latest.asc"
-          packages:
-            - clang-3.8
-            - cmake
-      env:
-        - MATRIX_EVAL="CC=clang-3.8 CXX=clang++-3.8 PATH=/usr/local/bin:/usr/bin:$PATH"
+  # Clang 3.9
+  - os: linux
+    dist: xenial
+    addons:
+      apt:
+        sources:
+          - ubuntu-toolchain-r-test
+          - sourceline: "deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial-3.9 main"
+            key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
+          - sourceline: "deb https://apt.kitware.com/ubuntu/ xenial main"
+            key_url: "https://apt.kitware.com/keys/kitware-archive-latest.asc"
+        packages:
+          - clang-3.9
+          - cmake
+    env:
+      - MATRIX_EVAL="CC=clang-3.9 CXX=clang++-3.9 PATH=/usr/local/bin:/usr/bin:$PATH"
 
-    # Clang 3.9
-    - os: linux
-      dist: xenial
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-            - sourceline: "deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial-3.9 main"
-              key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
-            - sourceline: "deb https://apt.kitware.com/ubuntu/ xenial main"
-              key_url: "https://apt.kitware.com/keys/kitware-archive-latest.asc"
-          packages:
-            - clang-3.9
-            - cmake
-      env:
-        - MATRIX_EVAL="CC=clang-3.9 CXX=clang++-3.9 PATH=/usr/local/bin:/usr/bin:$PATH"
+  # Clang 4
+  - os: linux
+    dist: xenial
+    addons:
+      apt:
+        sources:
+          - ubuntu-toolchain-r-test
+          - sourceline: "deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial-4.0 main"
+            key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
+          - sourceline: "deb https://apt.kitware.com/ubuntu/ xenial main"
+            key_url: "https://apt.kitware.com/keys/kitware-archive-latest.asc"
+        packages:
+          - clang-4.0
+          - cmake
+    env:
+      - MATRIX_EVAL="CC=clang-4.0 CXX=clang++-4.0 PATH=/usr/local/bin:/usr/bin:$PATH"
 
-    # Clang 4
-    - os: linux
-      dist: xenial
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-            - sourceline: "deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial-4.0 main"
-              key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
-            - sourceline: "deb https://apt.kitware.com/ubuntu/ xenial main"
-              key_url: "https://apt.kitware.com/keys/kitware-archive-latest.asc"
-          packages:
-            - clang-4.0
-            - cmake
-      env:
-        - MATRIX_EVAL="CC=clang-4.0 CXX=clang++-4.0 PATH=/usr/local/bin:/usr/bin:$PATH"
+  # Clang 5
+  - os: linux
+    dist: xenial
+    addons:
+      apt:
+        sources:
+          - ubuntu-toolchain-r-test
+          - sourceline: "deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial-5.0 main"
+            key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
+          - sourceline: "deb https://apt.kitware.com/ubuntu/ xenial main"
+            key_url: "https://apt.kitware.com/keys/kitware-archive-latest.asc"
+        packages:
+          - clang-5.0
+          - cmake
+    env:
+      - MATRIX_EVAL="CC=clang-5.0 CXX=clang++-5.0 PATH=/usr/local/bin:/usr/bin:$PATH"
 
-    # Clang 5
-    - os: linux
-      dist: xenial
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-            - sourceline: "deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial-5.0 main"
-              key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
-            - sourceline: "deb https://apt.kitware.com/ubuntu/ xenial main"
-              key_url: "https://apt.kitware.com/keys/kitware-archive-latest.asc"
-          packages:
-            - clang-5.0
-            - cmake
-      env:
-        - MATRIX_EVAL="CC=clang-5.0 CXX=clang++-5.0 PATH=/usr/local/bin:/usr/bin:$PATH"
+  # Clang 6
+  - os: linux
+    dist: xenial
+    addons:
+      apt:
+        sources:
+          - ubuntu-toolchain-r-test
+          - sourceline: "deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial-6.0 main"
+            key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
+          - sourceline: "deb https://apt.kitware.com/ubuntu/ xenial main"
+            key_url: "https://apt.kitware.com/keys/kitware-archive-latest.asc"
+        packages:
+          - clang-6.0
+          - cmake
+    env:
+      - MATRIX_EVAL="CC=clang-6.0 CXX=clang++-6.0 PATH=/usr/local/bin:/usr/bin:$PATH"
 
-    # Clang 6
-    - os: linux
-      dist: xenial
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-            - sourceline: "deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial-6.0 main"
-              key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
-            - sourceline: "deb https://apt.kitware.com/ubuntu/ xenial main"
-              key_url: "https://apt.kitware.com/keys/kitware-archive-latest.asc"
-          packages:
-            - clang-6.0
-            - cmake
-      env:
-        - MATRIX_EVAL="CC=clang-6.0 CXX=clang++-6.0 PATH=/usr/local/bin:/usr/bin:$PATH"
+  # Clang 7
+  - os: linux
+    dist: xenial
+    addons:
+      apt:
+        sources:
+          - ubuntu-toolchain-r-test
+          - sourceline: "deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial-7 main"
+            key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
+          - sourceline: "deb https://apt.kitware.com/ubuntu/ xenial main"
+            key_url: "https://apt.kitware.com/keys/kitware-archive-latest.asc"
+        packages:
+          - clang-7
+          - cmake
+    env:
+      - MATRIX_EVAL="CC=clang-7 CXX=clang++-7 PATH=/usr/local/bin:/usr/bin:$PATH"
 
-    # Clang 7
-    - os: linux
-      dist: xenial
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-            - sourceline: "deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial-7 main"
-              key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
-            - sourceline: "deb https://apt.kitware.com/ubuntu/ xenial main"
-              key_url: "https://apt.kitware.com/keys/kitware-archive-latest.asc"
-          packages:
-            - clang-7
-            - cmake
-      env:
-        - MATRIX_EVAL="CC=clang-7 CXX=clang++-7 PATH=/usr/local/bin:/usr/bin:$PATH"
+  # Clang 8
+  - os: linux
+    dist: xenial
+    addons:
+      apt:
+        sources:
+          - ubuntu-toolchain-r-test
+          - sourceline: "deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial-8 main"
+            key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
+          - sourceline: "deb https://apt.kitware.com/ubuntu/ xenial main"
+            key_url: "https://apt.kitware.com/keys/kitware-archive-latest.asc"
+        packages:
+          - clang-8
+          - cmake
+    env:
+      - MATRIX_EVAL="CC=clang-8 CXX=clang++-8 PATH=/usr/local/bin:/usr/bin:$PATH"
 
-    # Clang 8
-    - os: linux
-      dist: xenial
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-            - sourceline: "deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial-8 main"
-              key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
-            - sourceline: "deb https://apt.kitware.com/ubuntu/ xenial main"
-              key_url: "https://apt.kitware.com/keys/kitware-archive-latest.asc"
-          packages:
-            - clang-8
-            - cmake
-      env:
-        - MATRIX_EVAL="CC=clang-8 CXX=clang++-8 PATH=/usr/local/bin:/usr/bin:$PATH"
+  # Clang 9
+  - os: linux
+    dist: xenial
+    addons:
+      apt:
+        sources:
+          - ubuntu-toolchain-r-test
+          - sourceline: "deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial-9 main"
+            key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
+          - sourceline: "deb https://apt.kitware.com/ubuntu/ xenial main"
+            key_url: "https://apt.kitware.com/keys/kitware-archive-latest.asc"
+        packages:
+          - clang-9
+          - cmake
+    env:
+      - MATRIX_EVAL="CC=clang-9 CXX=clang++-9 PATH=/usr/local/bin:/usr/bin:$PATH"
 
-    # Clang 9
-    - os: linux
-      dist: xenial
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-            - sourceline: "deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial-9 main"
-              key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
-            - sourceline: "deb https://apt.kitware.com/ubuntu/ xenial main"
-              key_url: "https://apt.kitware.com/keys/kitware-archive-latest.asc"
-          packages:
-            - clang-9
-            - cmake
-      env:
-        - MATRIX_EVAL="CC=clang-9 CXX=clang++-9 PATH=/usr/local/bin:/usr/bin:$PATH"
+  # Clang 10
+  - os: linux
+    dist: xenial
+    addons:
+      apt:
+        sources:
+          - ubuntu-toolchain-r-test
+          - sourceline: "deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial-10 main"
+            key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
+          - sourceline: "deb https://apt.kitware.com/ubuntu/ xenial main"
+            key_url: "https://apt.kitware.com/keys/kitware-archive-latest.asc"
+        packages:
+          - clang-10
+          - cmake
+    env:
+      - MATRIX_EVAL="CC=clang-10 CXX=clang++-10 PATH=/usr/local/bin:/usr/bin:$PATH"
 
-    # Clang 10
-    - os: linux
-      dist: xenial
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-            - sourceline: "deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial-10 main"
-              key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
-            - sourceline: "deb https://apt.kitware.com/ubuntu/ xenial main"
-              key_url: "https://apt.kitware.com/keys/kitware-archive-latest.asc"
-          packages:
-            - clang-10
-            - cmake
-      env:
-        - MATRIX_EVAL="CC=clang-10 CXX=clang++-10 PATH=/usr/local/bin:/usr/bin:$PATH"
+  # Clang 11
+  - os: linux
+    dist: xenial
+    addons:
+      apt:
+        sources:
+          - ubuntu-toolchain-r-test
+          - sourceline: "deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial-11 main"
+            key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
+          - sourceline: "deb https://apt.kitware.com/ubuntu/ xenial main"
+            key_url: "https://apt.kitware.com/keys/kitware-archive-latest.asc"
+        packages:
+          - clang-11
+          - cmake
+    env:
+      - MATRIX_EVAL="CC=clang-11 CXX=clang++-11 PATH=/usr/local/bin:/usr/bin:$PATH"
 
-    # Clang 11
-    - os: linux
-      dist: xenial
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-            - sourceline: "deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial-11 main"
-              key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
-            - sourceline: "deb https://apt.kitware.com/ubuntu/ xenial main"
-              key_url: "https://apt.kitware.com/keys/kitware-archive-latest.asc"
-          packages:
-            - clang-11
-            - cmake
-      env:
-        - MATRIX_EVAL="CC=clang-11 CXX=clang++-11 PATH=/usr/local/bin:/usr/bin:$PATH"
+  # osx image list https://docs.travis-ci.com/user/reference/osx/#macos-version
+  # Xcode 9.4 Clang
+  - os: osx
+    osx_image: xcode9.4
+    env:
+      - MATRIX_EVAL="CC=clang CXX=clang++"
 
-    # osx image list https://docs.travis-ci.com/user/reference/osx/#macos-version
-    # Xcode 9.4 Clang
-    - os: osx
-      osx_image: xcode9.4
-      env:
-        - MATRIX_EVAL="CC=clang CXX=clang++"
+  # Xcode 10.3 Clang
+  - os: osx
+    osx_image: xcode10.3
+    env:
+      - MATRIX_EVAL="CC=clang CXX=clang++"
 
-    # Xcode 10.3 Clang
-    - os: osx
-      osx_image: xcode10.3
-      env:
-        - MATRIX_EVAL="CC=clang CXX=clang++"
+  # Xcode 11.5 Clang
+  - os: osx
+    osx_image: xcode11.5
+    env:
+      - MATRIX_EVAL="CC=clang CXX=clang++"
 
-    # Xcode 11.5 Clang
-    - os: osx
-      osx_image: xcode11.5
-      env:
-        - MATRIX_EVAL="CC=clang CXX=clang++"
-
-    # Xcode 12(Universal) Clang
-    - os: osx
-      osx_image: xcode12u
-      env:
-        - MATRIX_EVAL="CC=clang CXX=clang++"
+  # Xcode 12(Universal) Clang
+  - os: osx
+    osx_image: xcode12u
+    env:
+      - MATRIX_EVAL="CC=clang CXX=clang++"
 
 before_script:
   - eval "${MATRIX_EVAL}"

@@ -2,7 +2,7 @@
 
 [中文版](./README_zh.md)
 
-A cross platform lock-free and timer-supported(heartbeat etc.) C++11 network library.
+A cross platform lock-free and timer-supported C++11 network library.
 
 [![Travis CI](https://img.shields.io/travis/kibaamor/knet/master?label=Linux&style=flat-square)](https://travis-ci.org/KibaAmor/knet)
 [![Travis CI](https://img.shields.io/travis/kibaamor/knet/master?label=OSX&style=flat-square)](https://travis-ci.org/KibaAmor/knet)
@@ -18,8 +18,8 @@ A cross platform lock-free and timer-supported(heartbeat etc.) C++11 network lib
   - [Highlights](#highlights)
   - [Environment](#environment)
   - [How To Use](#how-to-use)
-    - [Compile](#compile)
-    - [Test](#test)
+    - [vcpkg](#vcpkg)
+    - [Build from source](#build-from-source)
   - [Core Concept](#core-concept)
   - [Examples](#examples)
     - [Echo Server and Client](#echo-server-and-client)
@@ -44,14 +44,18 @@ A cross platform lock-free and timer-supported(heartbeat etc.) C++11 network lib
 - CMake 3.15 or higher
 - [Clang 3.8](http://clang.llvm.org/cxx_status.html) or higher (If you build with Clang)
 - Visual Studio 2015 or higher(Windows)
-- [Gcc 4.9](https://gcc.gnu.org/gcc-5/changes.html#libstdcxx) or higher(Linux)
+- [G++ 5](https://gcc.gnu.org/gcc-5/changes.html#libstdcxx) or higher(Linux)
 - [Xcode 9.4](https://stackoverflow.com/questions/28094794/why-does-apple-clang-disallow-c11-thread-local-when-official-clang-supports) or higher(MacOS)
 
 ## How To Use
 
-below command working on Windows, Linux and macOS
+### [vcpkg](https://github.com/microsoft/vcpkg)
 
-### Compile
+```bash
+vcpkg install knet
+```
+
+### Build from source
 
 ```bash
 # enter source code root directory
@@ -60,18 +64,14 @@ cd knet
 # generate project
 cmake . -B build
 
-# build RELASE
+# build Release
 cmake --build build --config Release
-```
 
-### Test
+# run tests
+(cd build && ctest --output-on-failure)
 
-```bash
-# enter build directory(under source code root directory)
-cd build
-
-# test
-ctest -C Release
+# install
+(cd build && sudo make install)
 ```
 
 ## Core Concept

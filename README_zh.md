@@ -2,7 +2,7 @@
 
 [English Version](./README.md)
 
-一个跨平台的无锁且支持定时器（如：心跳）的C++11网络库。
+一个跨平台的无锁且支持定时器的C++11网络库。
 
 [![Travis CI](https://img.shields.io/travis/kibaamor/knet/master?label=Linux&style=flat-square)](https://travis-ci.org/KibaAmor/knet)
 [![Travis CI](https://img.shields.io/travis/kibaamor/knet/master?label=OSX&style=flat-square)](https://travis-ci.org/KibaAmor/knet)
@@ -18,8 +18,8 @@
   - [特点](#特点)
   - [编译环境](#编译环境)
   - [如何使用](#如何使用)
-    - [编译](#编译)
-    - [测试](#测试)
+    - [vcpkg](#vcpkg)
+    - [从源代码编译安装](#从源代码编译安装)
   - [核心概念](#核心概念)
   - [示例程序](#示例程序)
     - [echo服务器和客户端](#echo服务器和客户端)
@@ -44,34 +44,34 @@
 - CMake 3.15 及以上
 - [Clang 3.8](http://clang.llvm.org/cxx_status.html)及以上(如果你使用Clang编译)
 - Visual Studio 2015及以上(Windows)
-- [Gcc 4.9](https://gcc.gnu.org/gcc-5/changes.html#libstdcxx)及以上(Linux)
+- [G++ 5](https://gcc.gnu.org/gcc-5/changes.html#libstdcxx)及以上(Linux)
 - [Xcode 9.4](https://stackoverflow.com/questions/28094794/why-does-apple-clang-disallow-c11-thread-local-when-official-clang-supports) 及以上(MacOS)
 
 ## 如何使用
 
-Windows、Linux和macOS下都可以使用下面的命令
-
-### 编译
+### [vcpkg](https://github.com/microsoft/vcpkg)
 
 ```bash
-# 进入源码根目录
-cd knet
-
-# 生成工程
-cmake . -B build
-
-# 编译Relase
-cmake --build build --config Release
+vcpkg install knet
 ```
 
-### 测试
+### 从源代码编译安装
 
 ```bash
-# 进入源码根目录下的build目录
-cd build
+# 进入项目目录
+cd knet
+
+# 生产编译工程文件
+cmake . -B build
+
+# 编译Release
+cmake --build build --config Release
 
 # 运行测试
-ctest -C Release
+(cd build && ctest --output-on-failure)
+
+# 安装
+(cd build && sudo make install)
 ```
 
 ## 核心概念

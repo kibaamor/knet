@@ -30,7 +30,7 @@ add_library(${PROJECT_NAME}_compiler_flags INTERFACE)
 target_compile_features(${PROJECT_NAME}_compiler_flags INTERFACE cxx_std_11)
 target_compile_options(${PROJECT_NAME}_compiler_flags INTERFACE
     "$<${gcc_like_cxx}:$<BUILD_INTERFACE:-Wall;-Wextra;-Wno-unused-function;-Wno-unused-parameter;-Wno-format-nonliteral;-Wshadow;-Wformat=2>>"
-    "$<${msvc_cxx}:$<BUILD_INTERFACE:-W4>>"
+    "$<${msvc_cxx}:$<BUILD_INTERFACE:-W4;-wd4100>>"
     # https://developers.redhat.com/blog/2018/03/21/compiler-and-linker-flags-gcc/
     "$<${gcc_debug_like}:$<BUILD_INTERFACE:-D_FORTIFY_SOURCE=2;-D_GLIBCXX_ASSERTIONS;-fasynchronous-unwind-tables;-fstack-protector-all>>"
     "$<$<PLATFORM_ID:Windows>:$<BUILD_INTERFACE:-DUNICODE;-D_UNICODE>>"

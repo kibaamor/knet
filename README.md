@@ -59,7 +59,7 @@ vcpkg install knet
 
 ```bash
 # clone source code
-git clone https://github.com/KibaAmor/knet.git # or https://gitee.com/kibaamor/knet
+git clone https://github.com/KibaAmor/knet.git # or https://gitee.com/kibaamor/knet.git
 
 # enter source code root directory
 cd knet

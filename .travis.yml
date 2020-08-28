@@ -36,4 +36,4 @@ addons:
     branch_pattern: coverity_scan
 
 script:
-  - cat $TRAVIS_BUILD_DIR/build/cov-int/scm_log.txt
+  - cat $TRAVIS_BUILD_DIR/cov-int/scm_log.txt

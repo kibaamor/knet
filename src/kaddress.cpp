@@ -8,6 +8,7 @@ union saun {
     void* v;
     sockaddr_in* sa;
     sockaddr_in6* sa6;
+    sockaddr_storage* ss;
 
     saun(void* v_)
         : v(v_)
@@ -121,7 +122,7 @@ bool address::pton(family_t fa, const std::string& addr, uint16_t port)
 
         return 1 == ::inet_pton(addr6.sin6_family, addr.c_str(), sa);
     } else {
-        auto& ad = *reinterpret_cast<sockaddr_storage*>(_addr);
+        auto& ad = *tmp.ss;
         ad.ss_family = AF_UNSPEC;
     }
 

@@ -23,7 +23,7 @@ matrix:
             - g++-4.9
             - cmake
       env:
-        - MATRIX_EVAL="CC=gcc-4.9 CXX=g++-4.9"
+        - MATRIX_EVAL="CC=gcc-4.9 CXX=g++-4.9 PATH=/usr/local/bin:/usr/bin:$PATH"
 
     # GCC 5
     - os: linux
@@ -38,7 +38,7 @@ matrix:
             - g++-5
             - cmake
       env:
-        - MATRIX_EVAL="CC=gcc-5 CXX=g++-5"
+        - MATRIX_EVAL="CC=gcc-5 CXX=g++-5 PATH=/usr/local/bin:/usr/bin:$PATH"
 
     # GCC6
     - os: linux
@@ -53,7 +53,7 @@ matrix:
             - g++-6
             - cmake
       env:
-        - MATRIX_EVAL="CC=gcc-6 CXX=g++-6"
+        - MATRIX_EVAL="CC=gcc-6 CXX=g++-6 PATH=/usr/local/bin:/usr/bin:$PATH"
 
     # GCC7
     - os: linux
@@ -68,7 +68,7 @@ matrix:
             - g++-7
             - cmake
       env:
-        - MATRIX_EVAL="CC=gcc-7 CXX=g++-7"
+        - MATRIX_EVAL="CC=gcc-7 CXX=g++-7 PATH=/usr/local/bin:/usr/bin:$PATH"
 
     # GCC8
     - os: linux
@@ -83,7 +83,7 @@ matrix:
             - g++-8
             - cmake
       env:
-        - MATRIX_EVAL="CC=gcc-8 CXX=g++-8"
+        - MATRIX_EVAL="CC=gcc-8 CXX=g++-8 PATH=/usr/local/bin:/usr/bin:$PATH"
 
     # GCC9
     - os: linux
@@ -98,22 +98,7 @@ matrix:
             - g++-9
             - cmake
       env:
-        - MATRIX_EVAL="CC=gcc-9 CXX=g++-9"
-
-    # GCC10
-    - os: linux
-      dist: xenial
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-            - sourceline: "deb https://apt.kitware.com/ubuntu/ xenial main"
-              key_url: "https://apt.kitware.com/keys/kitware-archive-latest.asc"
-          packages:
-            - g++-10
-            - cmake
-      env:
-        - MATRIX_EVAL="CC=gcc-10 CXX=g++-10"
+        - MATRIX_EVAL="CC=gcc-9 CXX=g++-9 PATH=/usr/local/bin:/usr/bin:$PATH"
 
     # Clang 3.8
     - os: linux
@@ -130,7 +115,7 @@ matrix:
             - clang-3.8
             - cmake
       env:
-        - MATRIX_EVAL="CC=clang-3.8 CXX=clang++-3.8"
+        - MATRIX_EVAL="CC=clang-3.8 CXX=clang++-3.8 PATH=/usr/local/bin:/usr/bin:$PATH"
 
     # Clang 3.9
     - os: linux
@@ -147,7 +132,7 @@ matrix:
             - clang-3.9
             - cmake
       env:
-        - MATRIX_EVAL="CC=clang-3.9 CXX=clang++-3.9"
+        - MATRIX_EVAL="CC=clang-3.9 CXX=clang++-3.9 PATH=/usr/local/bin:/usr/bin:$PATH"
 
     # Clang 4
     - os: linux
@@ -164,7 +149,7 @@ matrix:
             - clang-4.0
             - cmake
       env:
-        - MATRIX_EVAL="CC=clang-4.0 CXX=clang++-4.0"
+        - MATRIX_EVAL="CC=clang-4.0 CXX=clang++-4.0 PATH=/usr/local/bin:/usr/bin:$PATH"
 
     # Clang 5
     - os: linux
@@ -181,7 +166,7 @@ matrix:
             - clang-5.0
             - cmake
       env:
-        - MATRIX_EVAL="CC=clang-5.0 CXX=clang++-5.0"
+        - MATRIX_EVAL="CC=clang-5.0 CXX=clang++-5.0 PATH=/usr/local/bin:/usr/bin:$PATH"
 
     # Clang 6
     - os: linux
@@ -198,7 +183,7 @@ matrix:
             - clang-6.0
             - cmake
       env:
-        - MATRIX_EVAL="CC=clang-6.0 CXX=clang++-6.0"
+        - MATRIX_EVAL="CC=clang-6.0 CXX=clang++-6.0 PATH=/usr/local/bin:/usr/bin:$PATH"
 
     # Clang 7
     - os: linux
@@ -215,7 +200,7 @@ matrix:
             - clang-7
             - cmake
       env:
-        - MATRIX_EVAL="CC=clang-7 CXX=clang++-7"
+        - MATRIX_EVAL="CC=clang-7 CXX=clang++-7 PATH=/usr/local/bin:/usr/bin:$PATH"
 
     # Clang 8
     - os: linux
@@ -232,7 +217,7 @@ matrix:
             - clang-8
             - cmake
       env:
-        - MATRIX_EVAL="CC=clang-8 CXX=clang++-8"
+        - MATRIX_EVAL="CC=clang-8 CXX=clang++-8 PATH=/usr/local/bin:/usr/bin:$PATH"
 
     # Clang 9
     - os: linux
@@ -249,7 +234,7 @@ matrix:
             - clang-9
             - cmake
       env:
-        - MATRIX_EVAL="CC=clang-9 CXX=clang++-9"
+        - MATRIX_EVAL="CC=clang-9 CXX=clang++-9 PATH=/usr/local/bin:/usr/bin:$PATH"
 
     # Clang 10
     - os: linux
@@ -266,7 +251,7 @@ matrix:
             - clang-10
             - cmake
       env:
-        - MATRIX_EVAL="CC=clang-10 CXX=clang++-10"
+        - MATRIX_EVAL="CC=clang-10 CXX=clang++-10 PATH=/usr/local/bin:/usr/bin:$PATH"
 
     # Clang 11
     - os: linux
@@ -280,10 +265,10 @@ matrix:
             - sourceline: "deb https://apt.kitware.com/ubuntu/ xenial main"
               key_url: "https://apt.kitware.com/keys/kitware-archive-latest.asc"
           packages:
-            - clang-10
+            - clang-11
             - cmake
       env:
-        - MATRIX_EVAL="CC=clang-11 CXX=clang++-11"
+        - MATRIX_EVAL="CC=clang-11 CXX=clang++-11 PATH=/usr/local/bin:/usr/bin:$PATH"
 
     # osx image list https://docs.travis-ci.com/user/reference/osx/#macos-version
     # Xcode 9.4 Clang

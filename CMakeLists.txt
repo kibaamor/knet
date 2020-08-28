@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.15)
 
-project(knet VERSION 1.0.0)
+project(knet VERSION 1.0.1)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)

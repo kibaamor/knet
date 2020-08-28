@@ -58,6 +58,9 @@ vcpkg install knet
 ### 从源代码编译安装
 
 ```bash
+# 克隆源代码
+git clone https://github.com/KibaAmor/knet.git # 或者 https://gitee.com/kibaamor/knet
+
 # 进入项目目录
 cd knet
 

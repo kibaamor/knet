@@ -1,8 +1,8 @@
 #include "echo_conn.h"
 #include <iostream>
-#include <kconnector.h>
-#include <kworker.h>
-#include <kutils.h>
+#include <knet/kconnector.h>
+#include <knet/kworker.h>
+#include <knet/kutils.h>
 
 int main(int argc, char** argv)
 {

@@ -1,5 +1,5 @@
-#include "../include/kconn.h"
-#include "../include/kconn_factory.h"
+#include "../include/knet/kconn.h"
+#include "../include/knet/kconn_factory.h"
 #include "internal/ksocket.h"
 
 namespace knet {

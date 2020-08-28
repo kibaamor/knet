@@ -1,9 +1,5 @@
 language: cpp
 
-os: linux
-dist: xenial
-compiler: gcc
-
 notifications:
   email: false
   slack:
@@ -25,8 +21,8 @@ addons:
       name: "KibaAmor/knet"
       description: "A cross platform lock-free and timer-supported(hearbeat etc.) C++11 network library."
     notification_email: kibaamor@gmail.com
-    build_command_prepend: "cmake -DCMAKE_BUILD_TYPE=DEBUG ."
-    build_command: "make"
+    build_command_prepend: "(rm -rf $TRAVIS_BUILD_DIR/build ; mkdir $TRAVIS_BUILD_DIR/build ; cd $TRAVIS_BUILD_DIR/build ; cmake -DCMAKE_BUILD_TYPE=Release $TRAVIS_BUILD_DIR)"
+    build_command: "make -C $TRAVIS_BUILD_DIR/build"
     branch_pattern: coverity_scan
 
 script:

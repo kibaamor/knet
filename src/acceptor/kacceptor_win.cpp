@@ -154,8 +154,6 @@ void acceptor::impl::stop()
 
 bool acceptor::impl::on_pollevent(void* key, void* evt)
 {
-    (void)key;
-
     const auto e = static_cast<OVERLAPPED_ENTRY*>(evt);
     accept_io* io = CONTAINING_RECORD(e->lpOverlapped, accept_io, ol);
 
@@ -166,8 +164,7 @@ bool acceptor::impl::on_pollevent(void* key, void* evt)
     io->rs = INVALID_RAWSOCKET;
     _ios->recycle(io);
 
-    auto ret = ::setsockopt(rs, SOL_SOCKET, SO_UPDATE_ACCEPT_CONTEXT, (char*)&_rs, sizeof(_rs));
-    (void)ret; // ignore
+    ::setsockopt(rs, SOL_SOCKET, SO_UPDATE_ACCEPT_CONTEXT, (char*)&_rs, sizeof(_rs));
     _wkr.add_work(rs);
 
     return true;

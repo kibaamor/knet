@@ -37,10 +37,10 @@ protected:
     bool set_sockbuf_size(size_t size);
 
 private:
-    virtual void do_on_connected() {}
-    virtual void do_on_disconnect() {}
+    virtual void do_on_connected() { }
+    virtual void do_on_disconnect() { }
     virtual size_t do_on_recv_data(char* data, size_t size) = 0;
-    virtual void do_on_timer(int64_t /*absms*/, const userdata& /*ud*/) {}
+    virtual void do_on_timer(int64_t absms, const userdata& ud) { }
 
 private:
     conn_factory& _cf;

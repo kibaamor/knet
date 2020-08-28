@@ -20,10 +20,10 @@ async_worker::~async_worker()
 void async_worker::add_work(rawsocket_t rs)
 {
     for (size_t i = 0, N = _infos.size(); i < N; ++i) {
-        auto& info = _infos[_index];
+        auto& inf = _infos[_index];
         _index = (_index + 1) % N;
 
-        auto wq = static_cast<workqueue_t*>(info.q);
+        auto wq = static_cast<workqueue_t*>(inf.q);
         if (wq->push(rs))
             return;
     }
@@ -37,11 +37,11 @@ bool async_worker::start(size_t thread_num)
 
     _infos.resize(thread_num);
     for (size_t i = 0; i < thread_num; ++i) {
-        auto& info = _infos[i];
-        info.gener = connid_gener(static_cast<connid_t>(i), static_cast<connid_t>(thread_num));
-        info.aw = this;
-        info.q = new workqueue_t();
-        info.t = new std::thread(&worker_thread, &info);
+        auto& inf = _infos[i];
+        inf.gener = connid_gener(static_cast<connid_t>(i), static_cast<connid_t>(thread_num));
+        inf.aw = this;
+        inf.q = new workqueue_t();
+        inf.t = new std::thread(&worker_thread, &inf);
     }
 
     if (!do_start()) {
@@ -59,15 +59,15 @@ void async_worker::stop()
 
     do_stop();
 
-    for (auto& info : _infos)
-        info.r = false;
+    for (auto& inf : _infos)
+        inf.r = false;
 
-    for (auto& info : _infos) {
-        auto q = static_cast<workqueue_t*>(info.q);
+    for (auto& inf : _infos) {
+        auto q = static_cast<workqueue_t*>(inf.q);
 
-        info.t->join();
+        inf.t->join();
         kassert(q->is_empty());
-        delete info.t;
+        delete inf.t;
         delete q;
     }
     _infos.clear();

@@ -50,7 +50,6 @@ rawsocket_t create_rawsocket(int domain, bool nonblock)
     constexpr int type = SOCK_STREAM;
 #ifdef _WIN32
 
-    (void)nonblock;
     auto rs = WSASocketW(domain, type, 0, nullptr, 0, WSA_FLAG_OVERLAPPED);
 
     if (INVALID_RAWSOCKET != rs) {

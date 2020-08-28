@@ -15,7 +15,7 @@ public:
 #ifdef _WIN32
 
         WSADATA wsadata;
-        (void)::WSAStartup(MAKEWORD(2, 2), &wsadata);
+        ::WSAStartup(MAKEWORD(2, 2), &wsadata);
 
 #else
 
@@ -38,8 +38,7 @@ public:
                 rt.rlim_cur = OPEN_MAX;
 #endif
 
-            ret = setrlimit(RLIMIT_NOFILE, &rt);
-            (void)ret;
+            setrlimit(RLIMIT_NOFILE, &rt);
 
 #ifdef KNET_DEBUG
             en = errno;
@@ -126,7 +125,7 @@ void sleep_ms(int64_t ms)
     struct timespec ts;
     ts.tv_sec = ms / 1000;
     ts.tv_nsec = (ms - ts.tv_sec * 1000) * 1000ul * 1000ul;
-    (void)::nanosleep(&ts, nullptr);
+    ::nanosleep(&ts, nullptr);
 #endif
 }
 

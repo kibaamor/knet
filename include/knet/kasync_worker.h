@@ -21,7 +21,7 @@ private:
         return new worker(cf);
     }
     virtual bool do_start() { return true; }
-    virtual void do_stop() {}
+    virtual void do_stop() { }
 
 private:
     struct info {

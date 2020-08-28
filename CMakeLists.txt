@@ -21,11 +21,18 @@ message("CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX}")
 message("KNET_BUILD_EXAMPLE: ${KNET_BUILD_EXAMPLE}")
 message("KNET_BUILD_TEST: ${KNET_BUILD_TEST}")
 
+set(gcc_like_cxx "$<CXX_COMPILER_ID:ARMClang,AppleClang,Clang,GNU>")
+set(msvc_cxx "$<CXX_COMPILER_ID:MSVC>")
+set(debug_like_build "$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>")
+set(gcc_debug_like "$<AND:${gcc_like_cxx},${debug_like_build}>")
+
 add_library(${PROJECT_NAME}_compiler_flags INTERFACE)
 target_compile_features(${PROJECT_NAME}_compiler_flags INTERFACE cxx_std_11)
 target_compile_options(${PROJECT_NAME}_compiler_flags INTERFACE
-    "$<$<CXX_COMPILER_ID:ARMClang,AppleClang,Clang,GNU>:$<BUILD_INTERFACE:-Wall;-Wextra;-Wshadow;-Wformat=2;-Wunused>>"
-    "$<$<CXX_COMPILER_ID:MSVC>:$<BUILD_INTERFACE:-W4>>"
+    "$<${gcc_like_cxx}:$<BUILD_INTERFACE:-Wall;-Wextra;-Wno-unused-function;-Wno-unused-parameter;-Wno-format-nonliteral;-Wshadow;-Wformat=2>>"
+    "$<${msvc_cxx}:$<BUILD_INTERFACE:-W4>>"
+    # https://developers.redhat.com/blog/2018/03/21/compiler-and-linker-flags-gcc/
+    "$<${gcc_debug_like}:$<BUILD_INTERFACE:-D_FORTIFY_SOURCE=2;-D_GLIBCXX_ASSERTIONS;-fasynchronous-unwind-tables;-fstack-protector-all>>"
     "$<$<PLATFORM_ID:Windows>:$<BUILD_INTERFACE:-DUNICODE;-D_UNICODE>>"
 )
 

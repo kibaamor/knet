@@ -2,6 +2,32 @@
 #include "internal/kinternal.h"
 #include <cstring>
 
+namespace {
+
+union saun {
+    void* v;
+    sockaddr_in* sa;
+    sockaddr_in6* sa6;
+
+    saun(void* v_)
+        : v(v_)
+    {
+    }
+};
+
+union csaun {
+    const void* v;
+    const sockaddr_in* sa;
+    const sockaddr_in6* sa6;
+
+    csaun(const void* v_)
+        : v(v_)
+    {
+    }
+};
+
+} // namespace
+
 namespace knet {
 
 bool address::resolve_all(const std::string& node_name, const std::string& service_name,
@@ -78,16 +104,17 @@ bool address::resolve_one(const std::string& node_name, const std::string& servi
 bool address::pton(family_t fa, const std::string& addr, uint16_t port)
 {
     memset(&_addr, 0, sizeof(_addr));
+    saun tmp(_addr);
 
     if (family_t::Ipv4 == fa) {
-        auto& addr4 = *reinterpret_cast<sockaddr_in*>(_addr);
+        auto& addr4 = *tmp.sa;
         addr4.sin_family = AF_INET;
         addr4.sin_port = htons(port);
         auto sa = reinterpret_cast<void*>(&addr4.sin_addr);
 
         return 1 == ::inet_pton(addr4.sin_family, addr.c_str(), sa);
     } else if (family_t::Ipv6 == fa) {
-        auto& addr6 = *reinterpret_cast<sockaddr_in6*>(_addr);
+        auto& addr6 = *tmp.sa6;
         addr6.sin6_family = AF_INET6;
         addr6.sin6_port = htons(port);
         auto sa = reinterpret_cast<void*>(&addr6.sin6_addr);
@@ -105,11 +132,12 @@ bool address::ntop(std::string& addr, uint16_t& port) const
 {
     addr.clear();
     port = 0;
+    csaun tmp(_addr);
 
     const auto fa = get_family();
     if (family_t::Ipv4 == fa) {
         char buf[INET_ADDRSTRLEN] = {};
-        const auto& addr4 = reinterpret_cast<const sockaddr_in&>(_addr);
+        const auto& addr4 = *tmp.sa;
         auto csa = static_cast<const void*>(&addr4.sin_addr);
         auto sa = const_cast<void*>(csa);
 
@@ -120,7 +148,7 @@ bool address::ntop(std::string& addr, uint16_t& port) const
         port = ntohs(addr4.sin_port);
     } else if (family_t::Ipv6 == fa) {
         char buf[INET6_ADDRSTRLEN] = {};
-        const auto& addr6 = reinterpret_cast<const sockaddr_in6&>(_addr);
+        const auto& addr6 = *tmp.sa6;
         auto csa = static_cast<const void*>(&addr6.sin6_addr);
         auto sa = const_cast<void*>(csa);
 

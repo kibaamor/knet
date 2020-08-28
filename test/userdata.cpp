@@ -1,25 +1,11 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include "doctest.h"
-#include <knet/knetfwd.h>
-#include <knet/kutils.h>
 #include <knet/kuserdata.h>
 #include <cfloat>
-#include <iostream>
 
 TEST_SUITE_BEGIN("userdata");
 
 using namespace knet;
-
-TEST_CASE("time")
-{
-    auto now = now_ms();
-    std::cout << "localtime:" << tm2str<>(ms2tm(now, true)) << std::endl;
-    std::cout << "gmtime:" << tm2str<>(ms2tm(now, false)) << std::endl;
-    std::cout << "localtime:" << tm2str<64>(ms2tm(now, true)) << std::endl;
-    std::cout << "gmtime:" << tm2str<64>(ms2tm(now, false)) << std::endl;
-    std::cout << tm2str<64>(ms2tm(now, true), "localtime: %Y/%m/%d %H:%M:%S") << std::endl;
-    std::cout << tm2str<64>(ms2tm(now, false), "gmtime: %Y/%m/%d %H:%M:%S") << std::endl;
-}
 
 TEST_CASE("pointer")
 {

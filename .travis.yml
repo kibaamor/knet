@@ -31,8 +31,8 @@ addons:
       name: "KibaAmor/knet"
       description: "A cross platform lock-free and timer-supported(hearbeat etc.) C++11 network library."
     notification_email: kibaamor@gmail.com
-    build_command_prepend: "(export CC=gcc-9 CXX=g++-9 PATH=/usr/local/bin:/usr/bin:$PATH; rm -rf $TRAVIS_BUILD_DIR/build ; mkdir $TRAVIS_BUILD_DIR/build ; cd $TRAVIS_BUILD_DIR/build ; cmake -DCMAKE_BUILD_TYPE=Release $TRAVIS_BUILD_DIR)"
-    build_command: "(export CC=gcc-9 CXX=g++-9 PATH=/usr/local/bin:/usr/bin:$PATH; make -C $TRAVIS_BUILD_DIR/build)"
+    build_command_prepend: "(export CC=gcc-9 CXX=g++-9 PATH=/usr/local/bin:/usr/bin:$PATH; cmake --version ; rm -rf $TRAVIS_BUILD_DIR/build ; mkdir $TRAVIS_BUILD_DIR/build ; cd $TRAVIS_BUILD_DIR/build ; cmake -DCMAKE_BUILD_TYPE=Release $TRAVIS_BUILD_DIR)"
+    build_command: "make -C $TRAVIS_BUILD_DIR/build"
     branch_pattern: coverity_scan
 
 script:

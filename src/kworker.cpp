@@ -1,4 +1,4 @@
-#include "../include/kworker.h"
+#include "../include/knet/kworker.h"
 #include "internal/kpoller.h"
 #include "internal/kinternal.h"
 #include "internal/ksocket.h"

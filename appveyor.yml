@@ -1,4 +1,4 @@
-version: '{build}'
+version: "{build}"
 
 image:
   - Visual Studio 2015
@@ -11,10 +11,12 @@ matrix:
 platform:
   - Win32
   - x64
-  
+
 configuration:
   - Debug
   - Release
+  - MinSizeRel
+  - RelWithDebInfo
 
 before_build:
   - cmd: cmake --version

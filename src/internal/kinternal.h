@@ -1,5 +1,5 @@
 #pragma once
-#include "../include/knetfwd.h"
+#include "../../include/knet/knetfwd.h"
 #include <cstring>
 
 #ifdef _WIN32
@@ -100,7 +100,7 @@ bool set_rawsocket_cloexec(rawsocket_t rs);
 void kdebug_impl(const std::string& log, const char* file, int line);
 #define kdebug(log) kdebug_impl(log, __FILE__, __LINE__)
 #else
-#define kdebug(log)
+#define kdebug(log) ((void)0)
 #endif
 
 } // namespace knet

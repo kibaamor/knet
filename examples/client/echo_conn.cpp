@@ -1,5 +1,5 @@
 #include "echo_conn.h"
-#include <kutils.h>
+#include <knet/kutils.h>
 #include <iostream>
 #include <cassert>
 #include <algorithm>
@@ -80,7 +80,7 @@ size_t cecho_conn::do_on_recv_data(char* data, size_t size)
     return static_cast<size_t>(len);
 }
 
-void cecho_conn::do_on_timer(int64_t absms, const userdata& ud)
+void cecho_conn::do_on_timer(int64_t absms, const userdata& /*ud*/)
 {
     auto& mgr = echo_mgr::get_instance();
 

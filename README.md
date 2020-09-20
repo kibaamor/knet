@@ -10,6 +10,7 @@ A cross platform lock-free and timer-supported C++11 network library.
 [![Coverity](https://img.shields.io/coverity/scan/20462?label=Coverity&style=flat-square)](https://scan.coverity.com/projects/kibaamor-knet)
 [![License](https://img.shields.io/github/license/kibaamor/knet?label=License&style=flat-square)](./LICENSE)
 [![Standard](https://img.shields.io/badge/C++-11-blue.svg?style=flat-square)](https://github.com/kibaamor/knet)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FKibaAmor%2Fknet.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FKibaAmor%2Fknet?ref=badge_shield)
 
 ## Table of Contents
 
@@ -27,6 +28,7 @@ A cross platform lock-free and timer-supported C++11 network library.
       - [Echo Server](#echo-server)
     - [Echo Client](#echo-client)
     - [Code Quality](#code-quality)
+  - [License](#license)
 
 --------
 
@@ -85,10 +87,10 @@ In fact, both *connecting to server* and *accepting connection from client* are 
 
 ```text
    producer                       consumer
-┌───────────┐                  ┌──────────────┐   
-│ connector │    ——————————>   │    worker    │            
-│           │      socket      │              │   
-│ acceptor  │    ——————————>   │ async_worker │       
+┌───────────┐                  ┌──────────────┐
+│ connector │    ——————————>   │    worker    │
+│           │      socket      │              │
+│ acceptor  │    ——————————>   │ async_worker │
 └───────────┘                  └──────────────┘
 ```
 
@@ -106,9 +108,9 @@ In fact, both *connecting to server* and *accepting connection from client* are 
 #### Protocol
 
 ```txt
-┌─────────────────────────────┬──────┐ 
-│ total package size(4 bytes) │ data │ 
-└─────────────────────────────┴──────┘ 
+┌─────────────────────────────┬──────┐
+│ total package size(4 bytes) │ data │
+└─────────────────────────────┴──────┘
 ```
 
 4 bytes package header and data follow.
@@ -136,3 +138,7 @@ The client provides two types:
 ### Code Quality
 
 [![Code quality status](https://codescene.io/projects/7651/status.svg)](https://codescene.io/projects/7651/jobs/latest-successful/results)
+
+## License
+
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FKibaAmor%2Fknet.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2FKibaAmor%2Fknet?ref=badge_large)

@@ -1,5 +1,5 @@
-#include "../include/kconn_factory.h"
-#include "../include/kutils.h"
+#include "../include/knet/kconn_factory.h"
+#include "../include/knet/kutils.h"
 #include <set>
 #include <map>
 

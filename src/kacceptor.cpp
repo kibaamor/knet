@@ -1,4 +1,4 @@
-#include "../include/kacceptor.h"
+#include "../include/knet/kacceptor.h"
 
 #ifdef _WIN32
 #include "acceptor/kacceptor_win.h"

@@ -1,36 +1,22 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include "doctest.h"
-#include <knetfwd.h>
-#include <kutils.h>
-#include <kuserdata.h>
+#include <knet/kuserdata.h>
 #include <cfloat>
-#include <iostream>
 
 TEST_SUITE_BEGIN("userdata");
 
 using namespace knet;
 
-TEST_CASE("time")
-{
-    auto now = now_ms();
-    std::cout << "localtime:" << tm2str<>(ms2tm(now, true)) << std::endl;
-    std::cout << "gmtime:" << tm2str<>(ms2tm(now, false)) << std::endl;
-    std::cout << "localtime:" << tm2str<64>(ms2tm(now, true)) << std::endl;
-    std::cout << "gmtime:" << tm2str<64>(ms2tm(now, false)) << std::endl;
-    std::cout << tm2str<64>(ms2tm(now, true), "localtime: %Y/%m/%d %H:%M:%S") << std::endl;
-    std::cout << tm2str<64>(ms2tm(now, false), "gmtime: %Y/%m/%d %H:%M:%S") << std::endl;
-}
-
 TEST_CASE("pointer")
 {
-#define KNET_TEST_POINTER_HELPER(TYPE, NAME)            \
-    SUBCASE(NAME)                                       \
-    {                                                   \
-        TYPE v;                                         \
-        auto pv = &v;                                   \
-        userdata ud(pv);                                \
-        CHECK(userdata::pointer == ud.type);            \
-        CHECK(ud.data.ptr == pv);                       \
+#define KNET_TEST_POINTER_HELPER(TYPE, NAME) \
+    SUBCASE(NAME)                            \
+    {                                        \
+        TYPE v;                              \
+        auto pv = &v;                        \
+        userdata ud(pv);                     \
+        CHECK(userdata::pointer == ud.type); \
+        CHECK(ud.data.ptr == pv);            \
     }
 
     KNET_TEST_POINTER_HELPER(std::vector<int>, "std::vector<int>");
@@ -50,13 +36,13 @@ TEST_CASE("pointer")
 
 TEST_CASE("floatpoint")
 {
-#define KNET_TEST_FLOATPOINT_HELPER(TYPE, NAME, VALUE)                  \
-    SUBCASE(NAME)                                                       \
-    {                                                                   \
-        TYPE v = VALUE;                                                 \
-        userdata ud(v);                                                 \
-        CHECK(userdata::floatpoint == ud.type);                         \
-        CHECK(ud.data.f64 == static_cast<decltype(ud.data.f64)>(v));    \
+#define KNET_TEST_FLOATPOINT_HELPER(TYPE, NAME, VALUE)               \
+    SUBCASE(NAME)                                                    \
+    {                                                                \
+        TYPE v = VALUE;                                              \
+        userdata ud(v);                                              \
+        CHECK(userdata::floatpoint == ud.type);                      \
+        CHECK(ud.data.f64 == static_cast<decltype(ud.data.f64)>(v)); \
     }
     KNET_TEST_FLOATPOINT_HELPER(float, "float", 123.456f);
     KNET_TEST_FLOATPOINT_HELPER(float, "float min", FLT_MIN);
@@ -68,13 +54,13 @@ TEST_CASE("floatpoint")
 
 TEST_CASE("integral")
 {
-#define KNET_TEST_INTERGRAL_HELPER(TYPE, NAME, VALUE)                   \
-    SUBCASE(NAME)                                                       \
-    {                                                                   \
-        TYPE v = VALUE;                                                 \
-        userdata ud(v);                                                 \
-        CHECK(userdata::integral == ud.type);                           \
-        CHECK(ud.data.i64 == static_cast<decltype(ud.data.i64)>(v));    \
+#define KNET_TEST_INTERGRAL_HELPER(TYPE, NAME, VALUE)                \
+    SUBCASE(NAME)                                                    \
+    {                                                                \
+        TYPE v = VALUE;                                              \
+        userdata ud(v);                                              \
+        CHECK(userdata::integral == ud.type);                        \
+        CHECK(ud.data.i64 == static_cast<decltype(ud.data.i64)>(v)); \
     }
 
     KNET_TEST_INTERGRAL_HELPER(bool, "bool", true);

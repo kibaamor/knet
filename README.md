@@ -1,69 +1,82 @@
-# **knet** [中文版](./README_zh.md)
+# **knet**
 
-|                                                                   Linux Build Status                                                                   |                                                                             Windows Build Status                                                                             |                                                                       Coverity Scan Build Status                                                                       |                                                   License                                                    |
-| :----------------------------------------------------------------------------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :----------------------------------------------------------------------------------------------------------: |
-| [![Linux Build Status](https://img.shields.io/travis/kibaamor/knet/master?label=Linux%20build&style=flat-square)](https://travis-ci.org/KibaAmor/knet) | [![Windows Build Status](https://img.shields.io/appveyor/build/kibaamor/knet/master?label=Windows%20build&style=flat-square)](https://ci.appveyor.com/project/KibaAmor/knet) | [![Coverity Scan Build Status](https://img.shields.io/coverity/scan/20462?label=Coverity%20build&style=flat-square)](https://scan.coverity.com/projects/kibaamor-knet) | [![License](https://img.shields.io/github/license/kibaamor/knet?label=License&style=flat-square)](./LICENSE) |
+[中文版](./README_zh.md)
 
-A cross platform lock-free and timer-supported(heartbeat etc.) C++11 network library.
+A cross platform lock-free and timer-supported C++11 network library.
 
-Table of Contents
-=================
+[![Travis CI](https://img.shields.io/travis/kibaamor/knet/master?label=Linux&style=flat-square)](https://travis-ci.org/KibaAmor/knet)
+[![Travis CI](https://img.shields.io/travis/kibaamor/knet/master?label=OSX&style=flat-square)](https://travis-ci.org/KibaAmor/knet)
+[![AppVeyor](https://img.shields.io/appveyor/build/kibaamor/knet/master?label=Windows&style=flat-square)](https://ci.appveyor.com/project/KibaAmor/knet)
+[![Coverity](https://img.shields.io/coverity/scan/20462?label=Coverity&style=flat-square)](https://scan.coverity.com/projects/kibaamor-knet)
+[![License](https://img.shields.io/github/license/kibaamor/knet?label=License&style=flat-square)](./LICENSE)
+[![Standard](https://img.shields.io/badge/C++-11-blue.svg?style=flat-square)](https://github.com/kibaamor/knet)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FKibaAmor%2Fknet.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FKibaAmor%2Fknet?ref=badge_shield)
 
-   * [Highlights](#highlights)
-   * [Environment](#environment)
-   * [How To Use](#how-to-use)
-      * [Compile](#compile)
-      * [Test](#test)
-   * [Core Concept](#core-concept)
-   * [Examples](#examples)
-      * [Echo Server and Client](#echo-server-and-client)
-         * [Protocol](#protocol)
-         * [Echo Server](#echo-server)
-      * [Echo Client](#echo-client)
-   * [Code Quality](#code-quality)
+## Table of Contents
+
+- [**knet**](#knet)
+  - [Table of Contents](#table-of-contents)
+  - [Highlights](#highlights)
+  - [Environment](#environment)
+  - [How To Use](#how-to-use)
+    - [vcpkg](#vcpkg)
+    - [Build from source](#build-from-source)
+  - [Core Concept](#core-concept)
+  - [Examples](#examples)
+    - [Echo Server and Client](#echo-server-and-client)
+      - [Protocol](#protocol)
+      - [Echo Server](#echo-server)
+    - [Echo Client](#echo-client)
+    - [Code Quality](#code-quality)
+  - [License](#license)
+
+--------
 
 ## Highlights
 
-* Support Windows, Linux, MacOS, FreeBSD, OpenBSD
-* Support Synchronous and Asynchronous processing connections
-* Support network package defragment
-* Less code and no third party dependency
-* Lockfree, connection work on same fixed thread
-* Timer support, such as: hearbeat check etc.
+- Support Windows, Linux, MacOS, FreeBSD, OpenBSD
+- Support Synchronous and Asynchronous processing connections
+- Support network package defragment
+- Less code and no third party dependency
+- Lockfree, connection work on same fixed thread
+- Timer support, such as: hearbeat check etc.
 
 ## Environment
 
-* CMake 3.1 or higher
-* [Clang 3.3](http://clang.llvm.org/cxx_status.html) or higher (If you build with Clang)
-* Visual Studio 2015 or higher(Windows)
-* [Gcc 4.9](https://gcc.gnu.org/gcc-5/changes.html#libstdcxx) or higher(Linux)
-* [Xcode 8.0](https://stackoverflow.com/questions/28094794/why-does-apple-clang-disallow-c11-thread-local-when-official-clang-supports) or higher(MacOS)
+- CMake 3.15 or higher
+- [Clang 3.8](http://clang.llvm.org/cxx_status.html) or higher (If you build with Clang)
+- Visual Studio 2015 or higher(Windows)
+- [G++ 5](https://gcc.gnu.org/gcc-5/changes.html#libstdcxx) or higher(Linux)
+- [Xcode 9.4](https://stackoverflow.com/questions/28094794/why-does-apple-clang-disallow-c11-thread-local-when-official-clang-supports) or higher(MacOS)
 
 ## How To Use
 
-below command working on Windows and Linux
-
-### Compile
+### [vcpkg](https://github.com/microsoft/vcpkg)
 
 ```bash
+vcpkg install knet
+```
+
+### Build from source
+
+```bash
+# clone source code
+git clone https://github.com/KibaAmor/knet.git # or https://gitee.com/kibaamor/knet.git
+
 # enter source code root directory
 cd knet
 
 # generate project
 cmake . -B build
 
-# build RELASE
+# build Release
 cmake --build build --config Release
-```
 
-### Test
+# run tests
+(cd build && ctest --output-on-failure)
 
-```bash
-# enter build directory(under source code root directory)
-cd build
-
-# test
-ctest -C Release
+# install
+(cd build && sudo make install)
 ```
 
 ## Core Concept
@@ -74,17 +87,17 @@ In fact, both *connecting to server* and *accepting connection from client* are 
 
 ```text
    producer                       consumer
-┌───────────┐                  ┌──────────────┐   
-│ connector │    ——————————>   │    worker    │            
-│           │      socket      │              │   
-│ acceptor  │    ——————————>   │ async_worker │       
+┌───────────┐                  ┌──────────────┐
+│ connector │    ——————————>   │    worker    │
+│           │      socket      │              │
+│ acceptor  │    ——————————>   │ async_worker │
 └───────────┘                  └──────────────┘
 ```
 
-* [connector](./src/kconnector.cpp) connect to server
-* [acceptor](./src/kacceptor.cpp) accept connection from client
-* [worker](./src/kworker.cpp) synchronous processing connections
-* [async_worker](./src/kworker.cpp) asynchronous processing connections
+- [connector](./src/kconnector.cpp) connect to server
+- [acceptor](./src/kacceptor.cpp) accept connection from client
+- [worker](./src/kworker.cpp) synchronous processing connections
+- [async_worker](./src/kworker.cpp) asynchronous processing connections
 
 ## Examples
 
@@ -95,9 +108,9 @@ In fact, both *connecting to server* and *accepting connection from client* are 
 #### Protocol
 
 ```txt
-┌─────────────────────────────┬──────┐ 
-│ total package size(4 bytes) │ data │ 
-└─────────────────────────────┴──────┘ 
+┌─────────────────────────────┬──────┐
+│ total package size(4 bytes) │ data │
+└─────────────────────────────┴──────┘
 ```
 
 4 bytes package header and data follow.
@@ -109,8 +122,8 @@ A timer is also set to check whether a client message is received within the spe
 
 The server provides two types:
 
-* Synchronous Echo Server[examples/server/sync_server.cpp](./examples/server/sync_server.cpp)
-* Asynchronous Echo Server[examples/server/async_server.cpp](./examples/server/async_server.cpp)
+- Synchronous Echo Server[examples/server/sync_server.cpp](./examples/server/sync_server.cpp)
+- Asynchronous Echo Server[examples/server/async_server.cpp](./examples/server/async_server.cpp)
 
 ### Echo Client
 
@@ -119,9 +132,13 @@ When the network package returned by the server is received, the data envelope i
 
 The client provides two types:
 
-* Synchronous Echo Client[examples/client/sync_client.cpp](./examples/client/sync_client.cpp)
-* Asynchronous Echo Client[examples/client/async_client.cpp](./examples/client/async_client.cpp)
+- Synchronous Echo Client[examples/client/sync_client.cpp](./examples/client/sync_client.cpp)
+- Asynchronous Echo Client[examples/client/async_client.cpp](./examples/client/async_client.cpp)
 
 ### Code Quality
 
 [![Code quality status](https://codescene.io/projects/7651/status.svg)](https://codescene.io/projects/7651/jobs/latest-successful/results)
+
+## License
+
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FKibaAmor%2Fknet.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2FKibaAmor%2Fknet?ref=badge_large)

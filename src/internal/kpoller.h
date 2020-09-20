@@ -1,5 +1,5 @@
 #pragma once
-#include "knetfwd.h"
+#include "../../include/knet/knetfwd.h"
 
 namespace knet {
 

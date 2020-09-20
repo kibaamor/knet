@@ -1,9 +1,5 @@
 language: cpp
 
-os: linux
-dist: xenial
-compiler: gcc
-
 notifications:
   email: false
   slack:
@@ -19,14 +15,22 @@ env:
 before_install:
   - echo -n | openssl s_client -connect scan.coverity.com:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' | sudo tee -a /etc/ssl/certs/ca-certificates.crt
 
+os: linux
+dist: xenial
 addons:
+  apt:
+    sources:
+      - sourceline: "deb https://apt.kitware.com/ubuntu/ xenial main"
+        key_url: "https://apt.kitware.com/keys/kitware-archive-latest.asc"
+    packages:
+      - cmake
   coverity_scan:
     project:
       name: "KibaAmor/knet"
       description: "A cross platform lock-free and timer-supported(hearbeat etc.) C++11 network library."
     notification_email: kibaamor@gmail.com
-    build_command_prepend: "cmake -DCMAKE_BUILD_TYPE=DEBUG ."
-    build_command: "make"
+    build_command_prepend: "(export PATH=/usr/local/bin:/usr/bin:$PATH; cmake --version ; rm -rf $TRAVIS_BUILD_DIR/build ; mkdir $TRAVIS_BUILD_DIR/build ; cd $TRAVIS_BUILD_DIR/build ; cmake -DCMAKE_BUILD_TYPE=Release $TRAVIS_BUILD_DIR)"
+    build_command: "make -C $TRAVIS_BUILD_DIR/build"
     branch_pattern: coverity_scan
 
 script:

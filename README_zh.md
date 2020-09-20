@@ -10,6 +10,7 @@
 [![Coverity](https://img.shields.io/coverity/scan/20462?label=Coverity&style=flat-square)](https://scan.coverity.com/projects/kibaamor-knet)
 [![License](https://img.shields.io/github/license/kibaamor/knet?label=License&style=flat-square)](./LICENSE)
 [![Standard](https://img.shields.io/badge/C++-11-blue.svg?style=flat-square)](https://github.com/kibaamor/knet)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FKibaAmor%2Fknet.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FKibaAmor%2Fknet?ref=badge_shield)
 
 ## 目录
 
@@ -27,6 +28,7 @@
       - [echo服务器](#echo服务器)
     - [echo客户端](#echo客户端)
     - [代码质量](#代码质量)
+  - [授权](#授权)
 
 --------
 
@@ -85,10 +87,10 @@ knet的核心概念是：`socket的生产-消费`。
 
 ```text
    producer                       consumer
-┌───────────┐                  ┌──────────────┐   
-│ connector │    ——————————>   │    worker    │            
-│           │      socket      │              │   
-│ acceptor  │    ——————————>   │ async_worker │       
+┌───────────┐                  ┌──────────────┐
+│ connector │    ——————————>   │    worker    │
+│           │      socket      │              │
+│ acceptor  │    ——————————>   │ async_worker │
 └───────────┘                  └──────────────┘
 ```
 
@@ -130,3 +132,7 @@ echo服务器将接收到的数据原封不动的发回给客户端。
 ### 代码质量
 
 [![代码质量状态](https://codescene.io/projects/7651/status.svg)](https://codescene.io/projects/7651/jobs/latest-successful/results)
+
+## 授权
+
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FKibaAmor%2Fknet.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2FKibaAmor%2Fknet?ref=badge_large)

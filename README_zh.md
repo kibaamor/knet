@@ -4,8 +4,8 @@
 
 一个跨平台的无锁且支持定时器的C++11网络库。
 
-[![Travis CI](https://img.shields.io/travis/kibaamor/knet/master?label=Linux&style=flat-square)](https://travis-ci.org/KibaAmor/knet)
-[![Travis CI](https://img.shields.io/travis/kibaamor/knet/master?label=OSX&style=flat-square)](https://travis-ci.org/KibaAmor/knet)
+[![Travis CI](https://img.shields.io/travis/kibaamor/knet/master?label=Linux&style=flat-square)](https://www.travis-ci.com/github/KibaAmor/knet)
+[![Travis CI](https://img.shields.io/travis/kibaamor/knet/master?label=OSX&style=flat-square)](https://www.travis-ci.com/github/KibaAmor/knet)
 [![AppVeyor](https://img.shields.io/appveyor/build/kibaamor/knet/master?label=Windows&style=flat-square)](https://ci.appveyor.com/project/KibaAmor/knet)
 [![Coverity](https://img.shields.io/coverity/scan/20462?label=Coverity&style=flat-square)](https://scan.coverity.com/projects/kibaamor-knet)
 [![License](https://img.shields.io/github/license/kibaamor/knet?label=License&style=flat-square)](./LICENSE)

@@ -11,7 +11,7 @@ public:
 private:
     void do_on_connected() override;
     size_t do_on_recv_data(char* data, size_t size) override;
-    void do_on_timer(int64_t absms, const knet::userdata& ud) override;
+    void do_on_timer(int64_t ms, const knet::userdata& ud) override;
 
     void set_idle_timer();
 
@@ -29,7 +29,7 @@ private:
     void do_destroy_conn(conn* c) override;
 };
 
-class secho_conn_factory_concretor : public conn_factory_concretor {
+class secho_conn_factory_concreator : public conn_factory_concreator {
     conn_factory* do_concrete_factory(connid_gener gener) override
     {
         return new secho_conn_factory(gener);

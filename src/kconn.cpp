@@ -30,16 +30,16 @@ size_t conn::on_recv_data(char* data, size_t size)
     return do_on_recv_data(data, size);
 }
 
-void conn::on_timer(int64_t absms, const userdata& ud)
+void conn::on_timer(int64_t ms, const userdata& ud)
 {
-    do_on_timer(absms, ud);
+    do_on_timer(ms, ud);
 }
 
-timerid_t conn::add_timer(int64_t absms, const userdata& ud)
+timerid_t conn::add_timer(int64_t ms, const userdata& ud)
 {
     if (is_disconnecting())
         return INVALID_TIMERID;
-    return _cf.add_timer(get_connid(), absms, ud);
+    return _cf.add_timer(get_connid(), ms, ud);
 }
 
 void conn::del_timer(timerid_t tid)

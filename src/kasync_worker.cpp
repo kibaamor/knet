@@ -7,7 +7,7 @@ namespace knet {
 
 using workqueue_t = spsc_queue<rawsocket_t, 1024>;
 
-async_worker::async_worker(conn_factory_concretor& cfc)
+async_worker::async_worker(conn_factory_concreator& cfc)
     : _cfc(cfc)
 {
 }

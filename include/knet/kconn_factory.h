@@ -60,17 +60,17 @@ private:
     std::unique_ptr<timer> _timer;
 };
 
-class conn_factory_concreator {
+class conn_factory_creator {
 public:
-    virtual ~conn_factory_concreator() = default;
+    virtual ~conn_factory_creator() = default;
 
-    conn_factory* concrete_factory(connid_gener gener)
+    conn_factory* create_factory(connid_gener gener)
     {
-        return do_concrete_factory(gener);
+        return do_create_factory(gener);
     }
 
 private:
-    virtual conn_factory* do_concrete_factory(connid_gener gener) = 0;
+    virtual conn_factory* do_create_factory(connid_gener gener) = 0;
 };
 
 } // namespace knet

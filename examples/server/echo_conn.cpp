@@ -70,12 +70,12 @@ size_t secho_conn::do_on_recv_data(char* data, size_t size)
     return size;
 }
 
-void secho_conn::do_on_timer(int64_t absms, const knet::userdata& /*ud*/)
+void secho_conn::do_on_timer(int64_t ms, const knet::userdata& /*ud*/)
 {
     auto& mgr = echo_mgr::get_instance();
 
     if (mgr.get_enable_log())
-        std::cout << get_connid() << " on timer: " << absms
+        std::cout << get_connid() << " on timer: " << ms
                   << ", last_recv ms: " << _last_recv_ms << std::endl;
 
     const auto nowms = knet::now_ms();

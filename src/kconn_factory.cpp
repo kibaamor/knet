@@ -43,10 +43,10 @@ public:
     {
     }
 
-    timerid_t add_timer(connid_t cid, int64_t absms, const userdata& ud)
+    timerid_t add_timer(connid_t cid, int64_t ms, const userdata& ud)
     {
         auto tid = (_next_tid++) & TIMERID_BIT_MASK;
-        tid |= (absms << TIMERID_BIT_COUNT);
+        tid |= (ms << TIMERID_BIT_COUNT);
         _timer2add.emplace(timer_key(tid, cid), ud);
         return tid;
     }
@@ -65,8 +65,8 @@ public:
         }
 
         if (!_timers.empty()) {
-            const auto absms = now_ms();
-            const timerid_t base_tid = (absms << TIMERID_BIT_COUNT) | TIMERID_BIT_MASK;
+            const auto ms = now_ms();
+            const timerid_t base_tid = (ms << TIMERID_BIT_COUNT) | TIMERID_BIT_MASK;
 
             for (auto iter = _timers.begin(); iter != _timers.end();) {
                 const auto& tk = iter->first;
@@ -132,9 +132,9 @@ conn* conn_factory::get_conn(connid_t cid) const
     return iter != _conns.end() ? iter->second : nullptr;
 }
 
-timerid_t conn_factory::add_timer(connid_t cid, int64_t absms, const userdata& ud)
+timerid_t conn_factory::add_timer(connid_t cid, int64_t ms, const userdata& ud)
 {
-    return _timer->add_timer(cid, absms, ud);
+    return _timer->add_timer(cid, ms, ud);
 }
 
 void conn_factory::del_timer(connid_t cid, timerid_t tid)
@@ -142,11 +142,11 @@ void conn_factory::del_timer(connid_t cid, timerid_t tid)
     _timer->del_timer(cid, tid);
 }
 
-void conn_factory::on_timer(connid_t cid, int64_t absms, const userdata& ud)
+void conn_factory::on_timer(connid_t cid, int64_t ms, const userdata& ud)
 {
     auto c = get_conn(cid);
     if (nullptr != c)
-        c->on_timer(absms, ud);
+        c->on_timer(ms, ud);
 }
 
 } // namespace knet

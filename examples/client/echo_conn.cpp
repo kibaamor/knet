@@ -80,12 +80,12 @@ size_t cecho_conn::do_on_recv_data(char* data, size_t size)
     return static_cast<size_t>(len);
 }
 
-void cecho_conn::do_on_timer(int64_t absms, const userdata& /*ud*/)
+void cecho_conn::do_on_timer(int64_t ms, const userdata& /*ud*/)
 {
     auto& mgr = echo_mgr::get_instance();
 
     if (mgr.get_enable_log())
-        std::cout << get_connid() << " on timer: " << absms << std::endl;
+        std::cout << get_connid() << " on timer: " << ms << std::endl;
 
     if (!send_package()) {
         disconnect();

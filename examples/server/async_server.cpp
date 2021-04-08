@@ -30,7 +30,7 @@ int main(int argc, char** argv)
     }
 
     // create worker
-    secho_conn_factory_concretor cfc;
+    secho_conn_factory_creator cfc;
     async_worker wkr(cfc);
     if (!wkr.start(thread_num)) {
         std::cerr << "async_worker::start failed" << std::endl;

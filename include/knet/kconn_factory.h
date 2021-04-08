@@ -39,7 +39,7 @@ public:
     void destroy_conn(conn* c);
 
     conn* get_conn(connid_t cid) const;
-    timerid_t add_timer(connid_t cid, int64_t absms, const userdata& ud);
+    timerid_t add_timer(connid_t cid, int64_t ms, const userdata& ud);
     void del_timer(connid_t cid, timerid_t tid);
 
     connid_t get_next_connid() { return _gener.gen(); }
@@ -50,7 +50,7 @@ private:
     virtual void do_update() { }
 
 private:
-    void on_timer(connid_t cid, int64_t absms, const userdata& ud);
+    void on_timer(connid_t cid, int64_t ms, const userdata& ud);
 
 private:
     connid_gener _gener;
@@ -60,17 +60,17 @@ private:
     std::unique_ptr<timer> _timer;
 };
 
-class conn_factory_concretor {
+class conn_factory_creator {
 public:
-    virtual ~conn_factory_concretor() = default;
+    virtual ~conn_factory_creator() = default;
 
-    conn_factory* concrete_factory(connid_gener gener)
+    conn_factory* create_factory(connid_gener gener)
     {
-        return do_concrete_factory(gener);
+        return do_create_factory(gener);
     }
 
 private:
-    virtual conn_factory* do_concrete_factory(connid_gener gener) = 0;
+    virtual conn_factory* do_create_factory(connid_gener gener) = 0;
 };
 
 } // namespace knet

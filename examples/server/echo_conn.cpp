@@ -66,6 +66,7 @@ size_t secho_conn::do_on_recv_data(char* data, size_t size)
     }
 
     mgr.add_total_send(size);
+    mgr.inc_total_recv();
 
     return size;
 }

@@ -77,6 +77,11 @@ size_t cecho_conn::do_on_recv_data(char* data, size_t size)
         return 0;
     }
 
+    _recv_buf_size += len;
+    if (_recv_buf_size == _send_buf_size && _send_buf_size == _used_buf_size)
+        generate_packages();
+
+
     return static_cast<size_t>(len);
 }
 
@@ -141,9 +146,6 @@ bool cecho_conn::send_package()
     auto& mgr = echo_mgr::get_instance();
     mgr.add_total_send(send_size);
 
-    if (_send_buf_size == _used_buf_size)
-        generate_packages();
-
     return true;
 }
 
@@ -169,7 +171,7 @@ int32_t cecho_conn::check_package(char* data, size_t size)
 
     _next_recv_pkg_id++;
     auto& mgr = echo_mgr::get_instance();
-    mgr.inc_total_recv_pkg_num();
+    mgr.inc_total_recv();
 
     return pkg->size;
 }

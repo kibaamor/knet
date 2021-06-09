@@ -27,8 +27,8 @@ void echo_mgr::update(int64_t delta_ms)
 
         const auto total_send_mb = get_total_send() / 1024 / 1024;
         zero_total_send();
-        const auto total_recv_pkg_num = get_total_recv_pkg_num();
-        zero_total_recv_pkg_num();
+        const auto total_recv_pkg_num = get_total_recv();
+        zero_total_recv();
 
         auto send_mb = total_send_mb;
         auto recv_pkg_num = total_recv_pkg_num;
@@ -41,6 +41,7 @@ void echo_mgr::update(int64_t delta_ms)
         if (_is_server) {
             std::cout << "connection: " << get_conn_num()
                       << ", send: " << send_mb << " MB/S"
+                      << ", recv call: " << recv_pkg_num << " Call/S"
                       << std::endl;
         } else {
             std::cout << "connection: " << get_conn_num()

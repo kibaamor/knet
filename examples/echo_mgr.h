@@ -55,9 +55,9 @@ public:
     void add_total_send(int64_t n) { _total_send.fetch_add(n); }
     void zero_total_send() { _total_send.store(0); }
 
-    int64_t get_total_recv_pkg_num() const { return _total_recv_pkg_num.load(); }
-    void inc_total_recv_pkg_num() { _total_recv_pkg_num.fetch_add(1); }
-    void zero_total_recv_pkg_num() { _total_recv_pkg_num.store(0); }
+    int64_t get_total_recv() const { return _total_recv.load(); }
+    void inc_total_recv() { _total_recv.fetch_add(1); }
+    void zero_total_recv() { _total_recv.store(0); }
 
     void set_disconnect_all() { _disconnect_all = true; }
     bool get_disconnect_all() const { return _disconnect_all; }
@@ -79,7 +79,7 @@ private:
 
     std::atomic<int64_t> _conn_num = { 0 };
     std::atomic<int64_t> _total_send = { 0 };
-    std::atomic<int64_t> _total_recv_pkg_num = { 0 };
+    std::atomic<int64_t> _total_recv = { 0 };
 
     bool _disconnect_all = false;
     std::thread* _t = nullptr;

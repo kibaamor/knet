@@ -21,6 +21,7 @@ private:
     char _buf[128 * 1024] = {};
     uint32_t _used_buf_size = 0;
     uint32_t _send_buf_size = 0;
+    uint32_t _recv_buf_size = 0;
 
     uint32_t _next_send_pkg_id = 0;
     uint32_t _next_recv_pkg_id = 0;

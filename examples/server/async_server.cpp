@@ -12,7 +12,7 @@ int main(int argc, char** argv)
     // parse command line
     const char* port = argc > 2 ? argv[2] : "8888";
     const auto max_idle_ms = argc > 2 ? std::atoi(argv[2]) : 996;
-    const auto thread_num = argc > 3 ? std::atoi(argv[3]) : 8;
+    const auto thread_num = argc > 3 ? std::atoi(argv[3]) : 16;
 
     // log parameter info
     std::cout << "Hi, KNet(Async Server)" << std::endl
@@ -56,6 +56,7 @@ int main(int argc, char** argv)
 
     // check console input
     auto& mgr = echo_mgr::get_instance();
+    mgr.set_is_server(true);
     mgr.check_console_input();
     mgr.set_max_idle_ms(max_idle_ms);
     mgr.set_enable_log(false);

@@ -51,6 +51,7 @@ int main(int argc, char** argv)
 
     // check console input
     auto& mgr = echo_mgr::get_instance();
+    mgr.set_is_server(true);
     mgr.check_console_input();
     mgr.set_max_idle_ms(max_idle_ms);
     mgr.set_enable_log(true);

@@ -81,7 +81,6 @@ size_t cecho_conn::do_on_recv_data(char* data, size_t size)
     if (_recv_buf_size == _send_buf_size && _send_buf_size == _used_buf_size)
         generate_packages();
 
-
     return static_cast<size_t>(len);
 }
 
@@ -102,15 +101,16 @@ void cecho_conn::do_on_timer(int64_t ms, const userdata& /*ud*/)
 
 void cecho_conn::generate_packages()
 {
-    assert(_send_buf_size == _used_buf_size);
+    assert(_recv_buf_size == _send_buf_size && _send_buf_size == _used_buf_size);
 
     _send_buf_size = 0;
+    _used_buf_size = 0;
+    _recv_buf_size = 0;
 
     constexpr uint32_t min_pkg_size = get_min_pkg_size();
     constexpr uint32_t max_pkg_size = 0xffff;
     constexpr uint32_t max_buf_size = sizeof(_buf);
 
-    _used_buf_size = 0;
     while (_used_buf_size + min_pkg_size < max_buf_size) {
         const auto unused_buf_size = max_buf_size - _used_buf_size;
 

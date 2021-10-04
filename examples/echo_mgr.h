@@ -2,6 +2,7 @@
 #include <cstdint>
 #include <atomic>
 #include <thread>
+#include <knet/kutils.h>
 
 #pragma pack(push)
 #pragma pack(1)
@@ -27,60 +28,47 @@ struct echo_package {
 };
 #pragma pack(pop)
 
-class echo_mgr {
-public:
-    static echo_mgr& get_instance();
+struct echo_mgr {
+    bool is_server = true;
+    uint32_t max_delay_ms = 0;
+    uint32_t max_idle_ms = 0;
+    uint32_t random_disconnect = 100;
+    uint32_t sockbuf_size = 128 * 1024;
 
-public:
+    std::atomic_bool can_log = { false };
+    std::atomic_bool disconnect_all = { false };
+
+    std::atomic_llong inst_num = { 0 };
+    std::atomic_llong conn_num = { 0 };
+    std::atomic_llong total_send = { 0 };
+    std::atomic_llong total_recv = { 0 };
+
+    ~echo_mgr()
+    {
+        disconnect_all = true;
+        if (nullptr != _t) {
+            _t->join();
+            delete _t;
+        }
+    }
+
     void update(int64_t delta_ms);
-
-    void set_is_server(bool b) { _is_server = b; }
-    bool get_is_server() const { return _is_server; }
-
-    void set_enable_log(bool b) { _enable_log = b; }
-    bool get_enable_log() const { return _enable_log; }
-
-    int64_t get_delay_ms() const;
-    int64_t get_max_delay_ms() const { return _max_delay_ms; }
-    void set_max_delay_ms(int64_t ms) { _max_delay_ms = ms; }
-
-    int64_t get_max_idle_ms() const { return _max_idle_ms; }
-    void set_max_idle_ms(int64_t ms) { _max_idle_ms = ms; }
-
-    int64_t get_conn_num() const { return _conn_num.load(); }
-    void inc_conn_num() { _conn_num.fetch_add(1); }
-    void dec_conn_num() { _conn_num.fetch_sub(1); }
-
-    int64_t get_total_send() const { return _total_send.load(); }
-    void add_total_send(int64_t n) { _total_send.fetch_add(n); }
-    void zero_total_send() { _total_send.store(0); }
-
-    int64_t get_total_recv() const { return _total_recv.load(); }
-    void inc_total_recv() { _total_recv.fetch_add(1); }
-    void zero_total_recv() { _total_recv.store(0); }
-
-    void set_disconnect_all() { _disconnect_all = true; }
-    bool get_disconnect_all() const { return _disconnect_all; }
-
     void check_console_input();
 
-private:
-    echo_mgr() {}
-    ~echo_mgr();
+    int64_t get_rand_delay_ms() const { return knet::u32rand_between(0, max_delay_ms); }
 
 private:
     int64_t _total_ms = 0;
-
-    bool _is_server = true;
-    bool _enable_log = false;
-
-    int64_t _max_delay_ms = 0;
-    int64_t _max_idle_ms = 0;
-
-    std::atomic<int64_t> _conn_num = { 0 };
-    std::atomic<int64_t> _total_send = { 0 };
-    std::atomic<int64_t> _total_recv = { 0 };
-
-    bool _disconnect_all = false;
     std::thread* _t = nullptr;
 };
+
+template <typename T>
+echo_mgr& operator<<(echo_mgr& m, T&& v)
+{
+    if (m.can_log) {
+        std::cout << std::forward<T>(v);
+    }
+    return m;
+}
+
+extern echo_mgr mgr;

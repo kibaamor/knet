@@ -1,4 +1,4 @@
-#include "echo_conn.h"
+#include "secho_conn.h"
 #include <iostream>
 #include <knet/kacceptor.h>
 #include <knet/kasync_worker.h>
@@ -21,17 +21,15 @@ int main(int argc, char** argv)
               << "thread_num: " << thread_num << std::endl;
 
     // parse ip address
-    const auto ip = "";
-    const auto fa = family_t::Ipv4;
     address addr;
-    if (!address::resolve_one(ip, port, fa, addr)) {
-        std::cerr << "resolve address " << ip << ":" << port << " failed!" << std::endl;
+    if (!address::resolve_one("", port, family_t::Ipv4, addr)) {
+        std::cerr << "resolve address :" << port << " failed!" << std::endl;
         return -1;
     }
 
     // create worker
-    secho_conn_factory_creator cfc;
-    async_worker wkr(cfc);
+    echo_conn_factory<secho_conn> cf;
+    async_worker wkr(cf);
     if (!wkr.start(thread_num)) {
         std::cerr << "async_worker::start failed" << std::endl;
         return -1;
@@ -55,11 +53,10 @@ int main(int argc, char** argv)
     std::cout << "listening at " << sockAddr << std::endl;
 
     // check console input
-    auto& mgr = echo_mgr::get_instance();
-    mgr.set_is_server(true);
+    mgr.is_server = true;
+    mgr.max_idle_ms = max_idle_ms;
+    mgr.can_log = false;
     mgr.check_console_input();
-    mgr.set_max_idle_ms(max_idle_ms);
-    mgr.set_enable_log(false);
 
     auto last_ms = now_ms();
     while (true) {
@@ -69,11 +66,8 @@ int main(int argc, char** argv)
 
         acc.update();
 
-        const auto conn_num = mgr.get_conn_num();
-        if (mgr.get_disconnect_all()) {
-            if (0 == conn_num)
-                break;
-        }
+        if (mgr.disconnect_all && 0 == mgr.inst_num)
+            break;
 
         mgr.update(delta_ms);
 

@@ -46,7 +46,7 @@ public:
 
 private:
     virtual conn* do_create_conn() = 0;
-    virtual void do_destroy_conn(conn* c) = 0;
+    virtual void do_destroy_conn(conn* c) { delete c; }
     virtual void do_update() { }
 
 private:

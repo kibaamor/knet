@@ -85,10 +85,8 @@ bool address::pton(family_t fa, const std::string& addr, uint16_t port)
         addr6->sin6_family = AF_INET6;
         addr6->sin6_port = htons(port);
         return 1 == ::inet_pton(addr6->sin6_family, addr.c_str(), &addr6->sin6_addr);
-    } else {
-        return false;
     }
-    return true;
+    return false;
 }
 
 bool address::ntop(std::string& addr, uint16_t& port) const

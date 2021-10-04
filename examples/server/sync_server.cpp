@@ -1,4 +1,4 @@
-#include "echo_conn.h"
+#include "secho_conn.h"
 #include <iostream>
 #include <knet/kacceptor.h>
 #include <knet/kworker.h>
@@ -31,7 +31,7 @@ int main(int argc, char** argv)
     }
 
     // create worker
-    secho_conn_factory cf;
+    echo_conn_factory<secho_conn> cf;
     worker wkr(cf);
 
     // create acceptor
@@ -50,11 +50,10 @@ int main(int argc, char** argv)
     std::cout << "listening at " << sockAddr << std::endl;
 
     // check console input
-    auto& mgr = echo_mgr::get_instance();
-    mgr.set_is_server(true);
+    mgr.is_server = true;
+    mgr.max_idle_ms = max_idle_ms;
+    mgr.can_log = true;
     mgr.check_console_input();
-    mgr.set_max_idle_ms(max_idle_ms);
-    mgr.set_enable_log(true);
 
     auto last_ms = now_ms();
     while (true) {
@@ -65,11 +64,8 @@ int main(int argc, char** argv)
         acc.update();
         wkr.update();
 
-        const auto conn_num = mgr.get_conn_num();
-        if (mgr.get_disconnect_all()) {
-            if (0 == conn_num)
-                break;
-        }
+        if (mgr.disconnect_all && 0 == mgr.inst_num)
+            break;
 
         mgr.update(delta_ms);
 

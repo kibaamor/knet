@@ -1,4 +1,4 @@
-#include "echo_conn.h"
+#include "cecho_conn.h"
 #include <iostream>
 #include <knet/kconnector.h>
 #include <knet/kworker.h>
@@ -23,26 +23,24 @@ int main(int argc, char** argv)
               << "max_delay_ms: " << max_delay_ms << std::endl;
 
     // parse ip address
-    const auto fa = family_t::Ipv4;
     address addr;
-    if (!address::resolve_one(ip, port, fa, addr)) {
+    if (!address::resolve_one(ip, port, family_t::Ipv4, addr)) {
         std::cerr << "resolve address " << ip << ":" << port << " failed!" << std::endl;
         return -1;
     }
 
     // create worker
-    cecho_conn_factory cf;
+    echo_conn_factory<cecho_conn> cf;
     worker wkr(cf);
 
     // create connector
     connector cnctor(wkr);
 
     // check console input
-    auto& mgr = echo_mgr::get_instance();
-    mgr.set_is_server(false);
+    mgr.is_server = false;
+    mgr.max_delay_ms = max_delay_ms;
+    mgr.can_log = true;
     mgr.check_console_input();
-    mgr.set_max_delay_ms(max_delay_ms);
-    mgr.set_enable_log(true);
 
     auto last_ms = now_ms();
     while (true) {
@@ -52,11 +50,11 @@ int main(int argc, char** argv)
 
         wkr.update();
 
-        const auto conn_num = mgr.get_conn_num();
-        if (mgr.get_disconnect_all()) {
-            if (0 == conn_num)
+        const auto inst_num = mgr.inst_num.load();
+        if (mgr.disconnect_all) {
+            if (0 == inst_num)
                 break;
-        } else if (conn_num < client_num) {
+        } else if (inst_num < client_num) {
             if (!cnctor.connect(addr))
                 std::cerr << "connect failed! address: " << addr << std::endl;
         }

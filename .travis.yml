@@ -121,8 +121,9 @@ before_install:
   - |
     if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
       CMAKE_VERSION="3.15.5-0kitware1"
-      curl -sSL "https://apt.kitware.com/keys/kitware-archive-latest.asc" | sudo apt-key add -
-      echo "deb https://apt.kitware.com/ubuntu/ bionic main" | sudo tee -a ${TRAVIS_ROOT}/etc/apt/sources.list >/dev/null
+
+      curl -sSL "https://apt.kitware.com/keys/kitware-archive-latest.asc" | gpg --dearmor - | sudo tee /usr/share/keyrings/kitware-archive-keyring.gpg >/dev/null
+      echo "deb [signed-by=/usr/share/keyrings/kitware-archive-keyring.gpg] https://apt.kitware.com/ubuntu/ bionic main" | sudo tee -a ${TRAVIS_ROOT}/etc/apt/sources.list >/dev/null
       sudo apt-get -q update
       sudo apt-get -yq install cmake=$CMAKE_VERSION cmake-data=$CMAKE_VERSION
 

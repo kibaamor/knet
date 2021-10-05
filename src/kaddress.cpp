@@ -98,14 +98,16 @@ bool address::ntop(std::string& addr, uint16_t& port) const
     const auto fa = get_family();
     if (fa == family_t::Ipv4) {
         const auto addr4 = reinterpret_cast<const sockaddr_in*>(_addr);
-        if (!::inet_ntop(AF_INET, &addr4->sin_addr, buf, INET_ADDRSTRLEN))
+        auto sa = const_cast<void*>(static_cast<const void*>(&addr4->sin_addr));
+        if (!::inet_ntop(AF_INET, sa, buf, INET_ADDRSTRLEN))
             return false;
 
         addr = buf;
         port = ::ntohs(addr4->sin_port);
     } else if (fa == family_t::Ipv6) {
-        const auto addr6 = reinterpret_cast<const sockaddr_in6*>(_addr);
-        if (!::inet_ntop(AF_INET6, &addr6->sin6_port, buf, INET6_ADDRSTRLEN))
+        auto addr6 = reinterpret_cast<const sockaddr_in6*>(_addr);
+        auto sa = const_cast<void*>(static_cast<const void*>(&addr6->sin6_addr));
+        if (!::inet_ntop(AF_INET6, sa, buf, INET6_ADDRSTRLEN))
             return false;
 
         addr = buf;

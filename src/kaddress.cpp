@@ -103,7 +103,7 @@ bool address::ntop(std::string& addr, uint16_t& port) const
             return false;
 
         addr = buf;
-        port = ::ntohs(addr4->sin_port);
+        port = ntohs(addr4->sin_port);
     } else if (fa == family_t::Ipv6) {
         auto addr6 = reinterpret_cast<const sockaddr_in6*>(_addr);
         auto sa = const_cast<void*>(static_cast<const void*>(&addr6->sin6_addr));
@@ -111,7 +111,7 @@ bool address::ntop(std::string& addr, uint16_t& port) const
             return false;
 
         addr = buf;
-        port = ::ntohs(addr6->sin6_port);
+        port = ntohs(addr6->sin6_port);
     } else {
         return false;
     }

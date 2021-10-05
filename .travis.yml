@@ -11,12 +11,12 @@ notifications:
 matrix:
   # GCC 5
   - os: linux
-    dist: xenial
+    dist: bionic
     addons:
       apt:
         sources:
           - ubuntu-toolchain-r-test
-          - sourceline: "deb https://apt.kitware.com/ubuntu/ xenial main"
+          - sourceline: "deb https://apt.kitware.com/ubuntu/ bionic main"
             key_url: "https://apt.kitware.com/keys/kitware-archive-latest.asc"
         packages:
           - g++-5
@@ -26,12 +26,12 @@ matrix:
 
   # GCC6
   - os: linux
-    dist: xenial
+    dist: bionic
     addons:
       apt:
         sources:
           - ubuntu-toolchain-r-test
-          - sourceline: "deb https://apt.kitware.com/ubuntu/ xenial main"
+          - sourceline: "deb https://apt.kitware.com/ubuntu/ bionic main"
             key_url: "https://apt.kitware.com/keys/kitware-archive-latest.asc"
         packages:
           - g++-6
@@ -41,12 +41,12 @@ matrix:
 
   # GCC7
   - os: linux
-    dist: xenial
+    dist: bionic
     addons:
       apt:
         sources:
           - ubuntu-toolchain-r-test
-          - sourceline: "deb https://apt.kitware.com/ubuntu/ xenial main"
+          - sourceline: "deb https://apt.kitware.com/ubuntu/ bionic main"
             key_url: "https://apt.kitware.com/keys/kitware-archive-latest.asc"
         packages:
           - g++-7
@@ -56,12 +56,12 @@ matrix:
 
   # GCC8
   - os: linux
-    dist: xenial
+    dist: bionic
     addons:
       apt:
         sources:
           - ubuntu-toolchain-r-test
-          - sourceline: "deb https://apt.kitware.com/ubuntu/ xenial main"
+          - sourceline: "deb https://apt.kitware.com/ubuntu/ bionic main"
             key_url: "https://apt.kitware.com/keys/kitware-archive-latest.asc"
         packages:
           - g++-8
@@ -71,12 +71,12 @@ matrix:
 
   # GCC9
   - os: linux
-    dist: xenial
+    dist: bionic
     addons:
       apt:
         sources:
           - ubuntu-toolchain-r-test
-          - sourceline: "deb https://apt.kitware.com/ubuntu/ xenial main"
+          - sourceline: "deb https://apt.kitware.com/ubuntu/ bionic main"
             key_url: "https://apt.kitware.com/keys/kitware-archive-latest.asc"
         packages:
           - g++-9
@@ -86,12 +86,12 @@ matrix:
 
   # GCC10
   - os: linux
-    dist: xenial
+    dist: bionic
     addons:
       apt:
         sources:
           - ubuntu-toolchain-r-test
-          - sourceline: "deb https://apt.kitware.com/ubuntu/ xenial main"
+          - sourceline: "deb https://apt.kitware.com/ubuntu/ bionic main"
             key_url: "https://apt.kitware.com/keys/kitware-archive-latest.asc"
         packages:
           - g++-10
@@ -101,12 +101,12 @@ matrix:
 
   # GCC11
   - os: linux
-    dist: xenial
+    dist: bionic
     addons:
       apt:
         sources:
           - ubuntu-toolchain-r-test
-          - sourceline: "deb https://apt.kitware.com/ubuntu/ xenial main"
+          - sourceline: "deb https://apt.kitware.com/ubuntu/ bionic main"
             key_url: "https://apt.kitware.com/keys/kitware-archive-latest.asc"
         packages:
           - g++-11
@@ -114,67 +114,16 @@ matrix:
     env:
       - MATRIX_EVAL="CC=gcc-11 CXX=g++-11 PATH=/usr/local/bin:/usr/bin:$PATH"
 
-  # Clang 3.8
+  # Clang 5.0
   - os: linux
-    dist: xenial
+    dist: bionic
     addons:
       apt:
         sources:
           - ubuntu-toolchain-r-test
-          - sourceline: "deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial-3.8 main"
+          - sourceline: "deb https://apt.llvm.org/bionic/ llvm-toolchain-bionic-5.0 main"
             key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
-          - sourceline: "deb https://apt.kitware.com/ubuntu/ xenial main"
-            key_url: "https://apt.kitware.com/keys/kitware-archive-latest.asc"
-        packages:
-          - clang-3.8
-          - cmake
-    env:
-      - MATRIX_EVAL="CC=clang-3.8 CXX=clang++-3.8 PATH=/usr/local/bin:/usr/bin:$PATH"
-
-  # Clang 3.9
-  - os: linux
-    dist: xenial
-    addons:
-      apt:
-        sources:
-          - ubuntu-toolchain-r-test
-          - sourceline: "deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial-3.9 main"
-            key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
-          - sourceline: "deb https://apt.kitware.com/ubuntu/ xenial main"
-            key_url: "https://apt.kitware.com/keys/kitware-archive-latest.asc"
-        packages:
-          - clang-3.9
-          - cmake
-    env:
-      - MATRIX_EVAL="CC=clang-3.9 CXX=clang++-3.9 PATH=/usr/local/bin:/usr/bin:$PATH"
-
-  # Clang 4
-  - os: linux
-    dist: xenial
-    addons:
-      apt:
-        sources:
-          - ubuntu-toolchain-r-test
-          - sourceline: "deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial-4.0 main"
-            key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
-          - sourceline: "deb https://apt.kitware.com/ubuntu/ xenial main"
-            key_url: "https://apt.kitware.com/keys/kitware-archive-latest.asc"
-        packages:
-          - clang-4.0
-          - cmake
-    env:
-      - MATRIX_EVAL="CC=clang-4.0 CXX=clang++-4.0 PATH=/usr/local/bin:/usr/bin:$PATH"
-
-  # Clang 5
-  - os: linux
-    dist: xenial
-    addons:
-      apt:
-        sources:
-          - ubuntu-toolchain-r-test
-          - sourceline: "deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial-5.0 main"
-            key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
-          - sourceline: "deb https://apt.kitware.com/ubuntu/ xenial main"
+          - sourceline: "deb https://apt.kitware.com/ubuntu/ bionic main"
             key_url: "https://apt.kitware.com/keys/kitware-archive-latest.asc"
         packages:
           - clang-5.0
@@ -182,16 +131,16 @@ matrix:
     env:
       - MATRIX_EVAL="CC=clang-5.0 CXX=clang++-5.0 PATH=/usr/local/bin:/usr/bin:$PATH"
 
-  # Clang 6
+  # Clang 6.0
   - os: linux
-    dist: xenial
+    dist: bionic
     addons:
       apt:
         sources:
           - ubuntu-toolchain-r-test
-          - sourceline: "deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial-6.0 main"
+          - sourceline: "deb https://apt.llvm.org/bionic/ llvm-toolchain-bionic-6.0 main"
             key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
-          - sourceline: "deb https://apt.kitware.com/ubuntu/ xenial main"
+          - sourceline: "deb https://apt.kitware.com/ubuntu/ bionic main"
             key_url: "https://apt.kitware.com/keys/kitware-archive-latest.asc"
         packages:
           - clang-6.0
@@ -201,14 +150,14 @@ matrix:
 
   # Clang 7
   - os: linux
-    dist: xenial
+    dist: bionic
     addons:
       apt:
         sources:
           - ubuntu-toolchain-r-test
-          - sourceline: "deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial-7 main"
+          - sourceline: "deb https://apt.llvm.org/bionic/ llvm-toolchain-bionic-7 main"
             key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
-          - sourceline: "deb https://apt.kitware.com/ubuntu/ xenial main"
+          - sourceline: "deb https://apt.kitware.com/ubuntu/ bionic main"
             key_url: "https://apt.kitware.com/keys/kitware-archive-latest.asc"
         packages:
           - clang-7
@@ -218,14 +167,14 @@ matrix:
 
   # Clang 8
   - os: linux
-    dist: xenial
+    dist: bionic
     addons:
       apt:
         sources:
           - ubuntu-toolchain-r-test
-          - sourceline: "deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial-8 main"
+          - sourceline: "deb https://apt.llvm.org/bionic/ llvm-toolchain-bionic-8 main"
             key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
-          - sourceline: "deb https://apt.kitware.com/ubuntu/ xenial main"
+          - sourceline: "deb https://apt.kitware.com/ubuntu/ bionic main"
             key_url: "https://apt.kitware.com/keys/kitware-archive-latest.asc"
         packages:
           - clang-8
@@ -235,14 +184,14 @@ matrix:
 
   # Clang 9
   - os: linux
-    dist: xenial
+    dist: bionic
     addons:
       apt:
         sources:
           - ubuntu-toolchain-r-test
-          - sourceline: "deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial-9 main"
+          - sourceline: "deb https://apt.llvm.org/bionic/ llvm-toolchain-bionic-9 main"
             key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
-          - sourceline: "deb https://apt.kitware.com/ubuntu/ xenial main"
+          - sourceline: "deb https://apt.kitware.com/ubuntu/ bionic main"
             key_url: "https://apt.kitware.com/keys/kitware-archive-latest.asc"
         packages:
           - clang-9
@@ -252,14 +201,14 @@ matrix:
 
   # Clang 10
   - os: linux
-    dist: xenial
+    dist: bionic
     addons:
       apt:
         sources:
           - ubuntu-toolchain-r-test
-          - sourceline: "deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial-10 main"
+          - sourceline: "deb https://apt.llvm.org/bionic/ llvm-toolchain-bionic-10 main"
             key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
-          - sourceline: "deb https://apt.kitware.com/ubuntu/ xenial main"
+          - sourceline: "deb https://apt.kitware.com/ubuntu/ bionic main"
             key_url: "https://apt.kitware.com/keys/kitware-archive-latest.asc"
         packages:
           - clang-10
@@ -269,14 +218,14 @@ matrix:
 
   # Clang 11
   - os: linux
-    dist: xenial
+    dist: bionic
     addons:
       apt:
         sources:
           - ubuntu-toolchain-r-test
-          - sourceline: "deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial-11 main"
+          - sourceline: "deb https://apt.llvm.org/bionic/ llvm-toolchain-bionic-11 main"
             key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
-          - sourceline: "deb https://apt.kitware.com/ubuntu/ xenial main"
+          - sourceline: "deb https://apt.kitware.com/ubuntu/ bionic main"
             key_url: "https://apt.kitware.com/keys/kitware-archive-latest.asc"
         packages:
           - clang-11
@@ -286,20 +235,37 @@ matrix:
 
   # Clang 12
   - os: linux
-    dist: xenial
+    dist: bionic
     addons:
       apt:
         sources:
           - ubuntu-toolchain-r-test
-          - sourceline: "deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial-12 main"
+          - sourceline: "deb https://apt.llvm.org/bionic/ llvm-toolchain-bionic-12 main"
             key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
-          - sourceline: "deb https://apt.kitware.com/ubuntu/ xenial main"
+          - sourceline: "deb https://apt.kitware.com/ubuntu/ bionic main"
             key_url: "https://apt.kitware.com/keys/kitware-archive-latest.asc"
         packages:
           - clang-12
           - cmake
     env:
       - MATRIX_EVAL="CC=clang-12 CXX=clang++-12 PATH=/usr/local/bin:/usr/bin:$PATH"
+
+  # Clang 13
+  - os: linux
+    dist: bionic
+    addons:
+      apt:
+        sources:
+          - ubuntu-toolchain-r-test
+          - sourceline: "deb https://apt.llvm.org/bionic/ llvm-toolchain-bionic-13 main"
+            key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
+          - sourceline: "deb https://apt.kitware.com/ubuntu/ bionic main"
+            key_url: "https://apt.kitware.com/keys/kitware-archive-latest.asc"
+        packages:
+          - clang-13
+          - cmake
+    env:
+      - MATRIX_EVAL="CC=clang-13 CXX=clang++-13 PATH=/usr/local/bin:/usr/bin:$PATH"
 
   # osx image list https://docs.travis-ci.com/user/reference/osx/#macos-version
   # Xcode 9.4 Clang
@@ -325,6 +291,9 @@ matrix:
     osx_image: xcode12.5
     env:
       - MATRIX_EVAL="CC=clang CXX=clang++"
+
+  # FreeBSD
+  - os: freebsd
 
 before_script:
   - eval "${MATRIX_EVAL}"

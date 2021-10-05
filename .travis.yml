@@ -1,319 +1,154 @@
 language: cpp
 
-notifications:
-  email: false
-  slack:
-    on_success: change
-    on_failure: always
-    rooms:
-      secure: cKpsO84xSlLMDB/PELTUasVGzRlGtipNSEaTHIQbH66XZKgSlmYl1HhqWtSVU2W3rGfja0/a22ytAh75bg0Z0DcjbOI3+Hbrw27J12iHWvQ6jvBgFvOMagYzTvMfhkV2MRiTmCfzT73VDMSbjpRN3TmYhm8/GPtKV+eE6Y9CRMFippLYyJrePleFFMcsXVLshY27sDE8ZikvDmy7Juud1E6GtBTg8M7TP/h0254dJgXR8ZmMRdSLByxG4P1jmjWYCeuKcopS5yKqST4E1MWWI6vyARTtnB0luAyUoR0lm+7YCnN/N5w5/+a0iRTXrj3f5AdH/X3VHvUAJ8IEeRTzaHKipf/NTl6BG4NrYMh5TqIiIfLr8JhdKCLdHDNmXYNHizXgmULFO//TVshOWt0NPEQj7rsQoyuPZiBmTuM15bukOBDObje55Ln7mL6TZVhFcb7UrPFz3o5DFO5tZQDYNAy+IsEBmSidDzlGN6owwwP0emZjVVHrPTk75AxZwUYsqvGVb07yi0WsawLJz3MnvN3RRsyYvrjhQ3E1yniTqDYJhPLcprx2UW7iyTbUgF+ZfKUUt+GQ0AXElXZnmkzbOpOgusT4iqcopUlTQAiSa40FW9jhnEU2vJpd96RO7QozZrIVcXO3bCQb6zIW1mNJ6qCun8EuJdr0O/OmVOlVj+k=
-
 matrix:
   # GCC 5
   - os: linux
     dist: bionic
-    addons:
-      apt:
-        sources:
-          - ubuntu-toolchain-r-test
-          - sourceline: "deb https://apt.kitware.com/ubuntu/ bionic main"
-            key_url: "https://apt.kitware.com/keys/kitware-archive-latest.asc"
-        update: true
-        packages:
-          - g++-5
-          - cmake
     env:
-      - MATRIX_EVAL="CC=gcc-5 CXX=g++-5 PATH=/usr/local/bin:/usr/bin:$PATH"
+      - GCC_VERSION=5
 
   # GCC6
   - os: linux
     dist: bionic
-    addons:
-      apt:
-        sources:
-          - ubuntu-toolchain-r-test
-          - sourceline: "deb https://apt.kitware.com/ubuntu/ bionic main"
-            key_url: "https://apt.kitware.com/keys/kitware-archive-latest.asc"
-        update: true
-        packages:
-          - g++-6
-          - cmake
     env:
-      - MATRIX_EVAL="CC=gcc-6 CXX=g++-6 PATH=/usr/local/bin:/usr/bin:$PATH"
+      - GCC_VERSION=6
 
   # GCC7
   - os: linux
     dist: bionic
-    addons:
-      apt:
-        sources:
-          - ubuntu-toolchain-r-test
-          - sourceline: "deb https://apt.kitware.com/ubuntu/ bionic main"
-            key_url: "https://apt.kitware.com/keys/kitware-archive-latest.asc"
-        update: true
-        packages:
-          - g++-7
-          - cmake
     env:
-      - MATRIX_EVAL="CC=gcc-7 CXX=g++-7 PATH=/usr/local/bin:/usr/bin:$PATH"
+      - GCC_VERSION=7
 
   # GCC8
   - os: linux
     dist: bionic
-    addons:
-      apt:
-        sources:
-          - ubuntu-toolchain-r-test
-          - sourceline: "deb https://apt.kitware.com/ubuntu/ bionic main"
-            key_url: "https://apt.kitware.com/keys/kitware-archive-latest.asc"
-        update: true
-        packages:
-          - g++-8
-          - cmake
     env:
-      - MATRIX_EVAL="CC=gcc-8 CXX=g++-8 PATH=/usr/local/bin:/usr/bin:$PATH"
+      - GCC_VERSION=8
 
   # GCC9
   - os: linux
     dist: bionic
-    addons:
-      apt:
-        sources:
-          - ubuntu-toolchain-r-test
-          - sourceline: "deb https://apt.kitware.com/ubuntu/ bionic main"
-            key_url: "https://apt.kitware.com/keys/kitware-archive-latest.asc"
-        update: true
-        packages:
-          - g++-9
-          - cmake
     env:
-      - MATRIX_EVAL="CC=gcc-9 CXX=g++-9 PATH=/usr/local/bin:/usr/bin:$PATH"
+      - GCC_VERSION=9
 
   # GCC10
   - os: linux
     dist: bionic
-    addons:
-      apt:
-        sources:
-          - ubuntu-toolchain-r-test
-          - sourceline: "deb https://apt.kitware.com/ubuntu/ bionic main"
-            key_url: "https://apt.kitware.com/keys/kitware-archive-latest.asc"
-        update: true
-        packages:
-          - g++-10
-          - cmake
     env:
-      - MATRIX_EVAL="CC=gcc-10 CXX=g++-10 PATH=/usr/local/bin:/usr/bin:$PATH"
+      - GCC_VERSION=10
 
   # GCC11
   - os: linux
     dist: bionic
-    addons:
-      apt:
-        sources:
-          - ubuntu-toolchain-r-test
-          - sourceline: "deb https://apt.kitware.com/ubuntu/ bionic main"
-            key_url: "https://apt.kitware.com/keys/kitware-archive-latest.asc"
-        update: true
-        packages:
-          - g++-11
-          - cmake
     env:
-      - MATRIX_EVAL="CC=gcc-11 CXX=g++-11 PATH=/usr/local/bin:/usr/bin:$PATH"
+      - GCC_VERSION=11
 
   # Clang 5.0
   - os: linux
     dist: bionic
-    addons:
-      apt:
-        sources:
-          - ubuntu-toolchain-r-test
-          - sourceline: "deb https://apt.llvm.org/bionic/ llvm-toolchain-bionic-5.0 main"
-            key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
-          - sourceline: "deb https://apt.kitware.com/ubuntu/ bionic main"
-            key_url: "https://apt.kitware.com/keys/kitware-archive-latest.asc"
-        update: true
-        packages:
-          - clang-5.0
-          - cmake
     env:
-      - MATRIX_EVAL="CC=clang-5.0 CXX=clang++-5.0 PATH=/usr/local/bin:/usr/bin:$PATH"
+      - CLANG_VERSION=5.0
 
   # Clang 6.0
   - os: linux
     dist: bionic
-    addons:
-      apt:
-        sources:
-          - ubuntu-toolchain-r-test
-          - sourceline: "deb https://apt.llvm.org/bionic/ llvm-toolchain-bionic-6.0 main"
-            key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
-          - sourceline: "deb https://apt.kitware.com/ubuntu/ bionic main"
-            key_url: "https://apt.kitware.com/keys/kitware-archive-latest.asc"
-        update: true
-        packages:
-          - clang-6.0
-          - cmake
     env:
-      - MATRIX_EVAL="CC=clang-6.0 CXX=clang++-6.0 PATH=/usr/local/bin:/usr/bin:$PATH"
+      - CLANG_VERSION=6.0
 
   # Clang 7
   - os: linux
     dist: bionic
-    addons:
-      apt:
-        sources:
-          - ubuntu-toolchain-r-test
-          - sourceline: "deb https://apt.llvm.org/bionic/ llvm-toolchain-bionic-7 main"
-            key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
-          - sourceline: "deb https://apt.kitware.com/ubuntu/ bionic main"
-            key_url: "https://apt.kitware.com/keys/kitware-archive-latest.asc"
-        update: true
-        packages:
-          - clang-7
-          - cmake
     env:
-      - MATRIX_EVAL="CC=clang-7 CXX=clang++-7 PATH=/usr/local/bin:/usr/bin:$PATH"
+      - CLANG_VERSION=7
 
   # Clang 8
   - os: linux
     dist: bionic
-    addons:
-      apt:
-        sources:
-          - ubuntu-toolchain-r-test
-          - sourceline: "deb https://apt.llvm.org/bionic/ llvm-toolchain-bionic-8 main"
-            key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
-          - sourceline: "deb https://apt.kitware.com/ubuntu/ bionic main"
-            key_url: "https://apt.kitware.com/keys/kitware-archive-latest.asc"
-        update: true
-        packages:
-          - clang-8
-          - cmake
     env:
-      - MATRIX_EVAL="CC=clang-8 CXX=clang++-8 PATH=/usr/local/bin:/usr/bin:$PATH"
+      - CLANG_VERSION=8
 
   # Clang 9
   - os: linux
     dist: bionic
-    addons:
-      apt:
-        sources:
-          - ubuntu-toolchain-r-test
-          - sourceline: "deb https://apt.llvm.org/bionic/ llvm-toolchain-bionic-9 main"
-            key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
-          - sourceline: "deb https://apt.kitware.com/ubuntu/ bionic main"
-            key_url: "https://apt.kitware.com/keys/kitware-archive-latest.asc"
-        update: true
-        packages:
-          - clang-9
-          - cmake
     env:
-      - MATRIX_EVAL="CC=clang-9 CXX=clang++-9 PATH=/usr/local/bin:/usr/bin:$PATH"
+      - CLANG_VERSION=9
 
   # Clang 10
   - os: linux
     dist: bionic
-    addons:
-      apt:
-        sources:
-          - ubuntu-toolchain-r-test
-          - sourceline: "deb https://apt.llvm.org/bionic/ llvm-toolchain-bionic-10 main"
-            key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
-          - sourceline: "deb https://apt.kitware.com/ubuntu/ bionic main"
-            key_url: "https://apt.kitware.com/keys/kitware-archive-latest.asc"
-        update: true
-        packages:
-          - clang-10
-          - cmake
     env:
-      - MATRIX_EVAL="CC=clang-10 CXX=clang++-10 PATH=/usr/local/bin:/usr/bin:$PATH"
+      - CLANG_VERSION=10
 
   # Clang 11
   - os: linux
     dist: bionic
-    addons:
-      apt:
-        sources:
-          - ubuntu-toolchain-r-test
-          - sourceline: "deb https://apt.llvm.org/bionic/ llvm-toolchain-bionic-11 main"
-            key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
-          - sourceline: "deb https://apt.kitware.com/ubuntu/ bionic main"
-            key_url: "https://apt.kitware.com/keys/kitware-archive-latest.asc"
-        update: true
-        packages:
-          - clang-11
-          - cmake
     env:
-      - MATRIX_EVAL="CC=clang-11 CXX=clang++-11 PATH=/usr/local/bin:/usr/bin:$PATH"
+      - CLANG_VERSION=11
 
   # Clang 12
   - os: linux
     dist: bionic
-    addons:
-      apt:
-        sources:
-          - ubuntu-toolchain-r-test
-          - sourceline: "deb https://apt.llvm.org/bionic/ llvm-toolchain-bionic-12 main"
-            key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
-          - sourceline: "deb https://apt.kitware.com/ubuntu/ bionic main"
-            key_url: "https://apt.kitware.com/keys/kitware-archive-latest.asc"
-        update: true
-        packages:
-          - clang-12
-          - cmake
     env:
-      - MATRIX_EVAL="CC=clang-12 CXX=clang++-12 PATH=/usr/local/bin:/usr/bin:$PATH"
+      - CLANG_VERSION=12
 
   # Clang 13
   - os: linux
     dist: bionic
-    addons:
-      apt:
-        sources:
-          - ubuntu-toolchain-r-test
-          - sourceline: "deb https://apt.llvm.org/bionic/ llvm-toolchain-bionic-13 main"
-            key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
-          - sourceline: "deb https://apt.kitware.com/ubuntu/ bionic main"
-            key_url: "https://apt.kitware.com/keys/kitware-archive-latest.asc"
-        update: true
-        packages:
-          - clang-13
-          - cmake
     env:
-      - MATRIX_EVAL="CC=clang-13 CXX=clang++-13 PATH=/usr/local/bin:/usr/bin:$PATH"
+      - CLANG_VERSION=13
 
   # osx image list https://docs.travis-ci.com/user/reference/osx/#macos-version
   # Xcode 9.4 Clang
   - os: osx
     osx_image: xcode9.4
-    env:
-      - MATRIX_EVAL="CC=clang CXX=clang++"
 
   # Xcode 10.3 Clang
   - os: osx
     osx_image: xcode10.3
-    env:
-      - MATRIX_EVAL="CC=clang CXX=clang++"
 
   # Xcode 11.6 Clang
   - os: osx
     osx_image: xcode11.6
-    env:
-      - MATRIX_EVAL="CC=clang CXX=clang++"
 
   # Xcode 12.5 Clang
   - os: osx
     osx_image: xcode12.5
-    env:
-      - MATRIX_EVAL="CC=clang CXX=clang++"
 
   # FreeBSD
   - os: freebsd
 
+before_install:
+  - |
+    if [[ "$TRAVIS_OS_NAME" == "linux" ]; then
+      SUDO=sudo -E
+      APT=$SUDO apt-get -yq --no-install-suggests --no-install-recommends
+      CMAKE_VERSION="3.15.5-0kitware1"
+
+      curl -sSL "https://apt.kitware.com/keys/kitware-archive-latest.asc" | $SUDO apt-key add -
+      echo "deb https://apt.kitware.com/ubuntu/ bionic main" | sudo tee -a ${TRAVIS_ROOT}/etc/apt/sources.list >/dev/null
+      $APT update
+      $APT install cmake=$CMAKE_VERSION cmake-data=$CMAKE_VERSION
+
+      if [[ "$GCC_VERSION" != "" ]; then
+        $SUDO add-apt-repository -y ppa:ubuntu-toolchain-r/test
+        $APT update
+        $APT install g++-$GCC_VERSION
+        export MATRIX_EVAL="CC=gcc-$GCC_VERSION CXX=g++-$GCC_VERSION PATH=/usr/local/bin:/usr/bin:$PATH"
+      fi
+
+      if [[ "$CLANG_VERSION" != "" ]]; then
+        curl -sSL "https://apt.llvm.org/llvm-snapshot.gpg.key" | $SUDO apt-key add -
+        echo "deb https://apt.llvm.org/bionic/ llvm-toolchain-bionic-$CLANG_VERSION main" | sudo tee -a ${TRAVIS_ROOT}/etc/apt/sources.list >/dev/null
+        $APT update
+        $APT install clang-$CLANG_VERSION
+        export MATRIX_EVAL="CC=clang-$CLANG_VERSION CXX=clang++-$CLANG_VERSION PATH=/usr/local/bin:/usr/bin:$PATH"
+      fi
+    fi
+
 before_script:
   - eval "${MATRIX_EVAL}"
   - printenv
+  - ${CC} --version
   - ${CXX} --version
   - cmake --version
 

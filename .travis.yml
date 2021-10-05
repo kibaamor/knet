@@ -1,123 +1,71 @@
 language: cpp
 
-matrix:
-  # GCC 5
-  - os: linux
-    dist: bionic
-    env:
-      - GCC_VERSION=5
+jobs:
+  include:
+    - os: linux
+      dist: bionic
+      env: GCC_VERSION=5
+    - os: linux
+      dist: bionic
+      env: GCC_VERSION=6
+    - os: linux
+      dist: bionic
+      env: GCC_VERSION=7
+    - os: linux
+      dist: bionic
+      env: GCC_VERSION=8
+    - os: linux
+      dist: bionic
+      env: GCC_VERSION=9
+    - os: linux
+      dist: bionic
+      env: GCC_VERSION=10
+    - os: linux
+      dist: bionic
+      env: GCC_VERSION=11
 
-  # GCC6
-  - os: linux
-    dist: bionic
-    env:
-      - GCC_VERSION=6
+    - os: linux
+      dist: bionic
+      env: CLANG_VERSION=5.0
+    - os: linux
+      dist: bionic
+      env: CLANG_VERSION=6.0
+    - os: linux
+      dist: bionic
+      env: CLANG_VERSION=7
+    - os: linux
+      dist: bionic
+      env: CLANG_VERSION=8
+    - os: linux
+      dist: bionic
+      env: CLANG_VERSION=9
+    - os: linux
+      dist: bionic
+      env: CLANG_VERSION=10
+    - os: linux
+      dist: bionic
+      env: CLANG_VERSION=11
+    - os: linux
+      dist: bionic
+      env: CLANG_VERSION=12
+    - os: linux
+      dist: bionic
+      env: CLANG_VERSION=13
 
-  # GCC7
-  - os: linux
-    dist: bionic
-    env:
-      - GCC_VERSION=7
+    # osx image list https://docs.travis-ci.com/user/reference/osx/#macos-version
+    - os: osx
+      osx_image: xcode9.4
+    - os: osx
+      osx_image: xcode10.3
+    - os: osx
+      osx_image: xcode11.6
+    - os: osx
+      osx_image: xcode12.5
 
-  # GCC8
-  - os: linux
-    dist: bionic
-    env:
-      - GCC_VERSION=8
+    # FreeBSD
+    - os: freebsd
 
-  # GCC9
-  - os: linux
-    dist: bionic
-    env:
-      - GCC_VERSION=9
-
-  # GCC10
-  - os: linux
-    dist: bionic
-    env:
-      - GCC_VERSION=10
-
-  # GCC11
-  - os: linux
-    dist: bionic
-    env:
-      - GCC_VERSION=11
-
-  # Clang 5.0
-  - os: linux
-    dist: bionic
-    env:
-      - CLANG_VERSION=5.0
-
-  # Clang 6.0
-  - os: linux
-    dist: bionic
-    env:
-      - CLANG_VERSION=6.0
-
-  # Clang 7
-  - os: linux
-    dist: bionic
-    env:
-      - CLANG_VERSION=7
-
-  # Clang 8
-  - os: linux
-    dist: bionic
-    env:
-      - CLANG_VERSION=8
-
-  # Clang 9
-  - os: linux
-    dist: bionic
-    env:
-      - CLANG_VERSION=9
-
-  # Clang 10
-  - os: linux
-    dist: bionic
-    env:
-      - CLANG_VERSION=10
-
-  # Clang 11
-  - os: linux
-    dist: bionic
-    env:
-      - CLANG_VERSION=11
-
-  # Clang 12
-  - os: linux
-    dist: bionic
-    env:
-      - CLANG_VERSION=12
-
-  # Clang 13
-  - os: linux
-    dist: bionic
-    env:
-      - CLANG_VERSION=13
-
-  # osx image list https://docs.travis-ci.com/user/reference/osx/#macos-version
-  # Xcode 9.4 Clang
-  - os: osx
-    osx_image: xcode9.4
-
-  # Xcode 10.3 Clang
-  - os: osx
-    osx_image: xcode10.3
-
-  # Xcode 11.6 Clang
-  - os: osx
-    osx_image: xcode11.6
-
-  # Xcode 12.5 Clang
-  - os: osx
-    osx_image: xcode12.5
-
-  # FreeBSD
-  - os: freebsd
-
-before_install:
+install:
   - |
     if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
       CMAKE_URL="https://cmake.org/files/v3.15/cmake-3.15.7-Linux-x86_64.sh"
@@ -144,8 +92,11 @@ before_install:
     fi
 
 before_script:
-  - cat /tmp/knet.env
-  - source /tmp/knet.env
+  - |
+    if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
+      cat /tmp/knet.env
+      source /tmp/knet.env
+    fi
   - printenv
   - ${CC} --version
   - ${CXX} --version

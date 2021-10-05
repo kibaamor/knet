@@ -120,27 +120,24 @@ matrix:
 before_install:
   - |
     if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
-      SUDO=sudo -E
-      APT=$SUDO apt-get -yq --no-install-suggests --no-install-recommends
       CMAKE_VERSION="3.15.5-0kitware1"
-
-      curl -sSL "https://apt.kitware.com/keys/kitware-archive-latest.asc" | $SUDO apt-key add -
+      curl -sSL "https://apt.kitware.com/keys/kitware-archive-latest.asc" | sudo apt-key add -
       echo "deb https://apt.kitware.com/ubuntu/ bionic main" | sudo tee -a ${TRAVIS_ROOT}/etc/apt/sources.list >/dev/null
-      $APT update
-      $APT install cmake=$CMAKE_VERSION cmake-data=$CMAKE_VERSION
+      sudo apt-get -q update
+      sudo apt-get -yq install cmake=$CMAKE_VERSION cmake-data=$CMAKE_VERSION
 
       if [[ "$GCC_VERSION" != "" ]]; then
-        $SUDO add-apt-repository -y ppa:ubuntu-toolchain-r/test
-        $APT update
-        $APT install g++-$GCC_VERSION
+        sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+        sudo apt-get -q update
+        sudo apt-get -yq install g++-$GCC_VERSION
         export MATRIX_EVAL="CC=gcc-$GCC_VERSION CXX=g++-$GCC_VERSION PATH=/usr/local/bin:/usr/bin:$PATH"
       fi
 
       if [[ "$CLANG_VERSION" != "" ]]; then
-        curl -sSL "https://apt.llvm.org/llvm-snapshot.gpg.key" | $SUDO apt-key add -
+        curl -sSL "https://apt.llvm.org/llvm-snapshot.gpg.key" | sudo apt-key add -
         echo "deb https://apt.llvm.org/bionic/ llvm-toolchain-bionic-$CLANG_VERSION main" | sudo tee -a ${TRAVIS_ROOT}/etc/apt/sources.list >/dev/null
-        $APT update
-        $APT install clang-$CLANG_VERSION
+        sudo apt-get -q update
+        sudo apt-get -yq install clang-$CLANG_VERSION
         export MATRIX_EVAL="CC=clang-$CLANG_VERSION CXX=clang++-$CLANG_VERSION PATH=/usr/local/bin:/usr/bin:$PATH"
       fi
     fi

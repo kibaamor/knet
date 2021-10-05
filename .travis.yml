@@ -84,6 +84,36 @@ matrix:
     env:
       - MATRIX_EVAL="CC=gcc-9 CXX=g++-9 PATH=/usr/local/bin:/usr/bin:$PATH"
 
+  # GCC10
+  - os: linux
+    dist: xenial
+    addons:
+      apt:
+        sources:
+          - ubuntu-toolchain-r-test
+          - sourceline: "deb https://apt.kitware.com/ubuntu/ xenial main"
+            key_url: "https://apt.kitware.com/keys/kitware-archive-latest.asc"
+        packages:
+          - g++-10
+          - cmake
+    env:
+      - MATRIX_EVAL="CC=gcc-10 CXX=g++-10 PATH=/usr/local/bin:/usr/bin:$PATH"
+
+  # GCC11
+  - os: linux
+    dist: xenial
+    addons:
+      apt:
+        sources:
+          - ubuntu-toolchain-r-test
+          - sourceline: "deb https://apt.kitware.com/ubuntu/ xenial main"
+            key_url: "https://apt.kitware.com/keys/kitware-archive-latest.asc"
+        packages:
+          - g++-11
+          - cmake
+    env:
+      - MATRIX_EVAL="CC=gcc-11 CXX=g++-11 PATH=/usr/local/bin:/usr/bin:$PATH"
+
   # Clang 3.8
   - os: linux
     dist: xenial
@@ -254,6 +284,23 @@ matrix:
     env:
       - MATRIX_EVAL="CC=clang-11 CXX=clang++-11 PATH=/usr/local/bin:/usr/bin:$PATH"
 
+  # Clang 12
+  - os: linux
+    dist: xenial
+    addons:
+      apt:
+        sources:
+          - ubuntu-toolchain-r-test
+          - sourceline: "deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial-12 main"
+            key_url: "https://apt.llvm.org/llvm-snapshot.gpg.key"
+          - sourceline: "deb https://apt.kitware.com/ubuntu/ xenial main"
+            key_url: "https://apt.kitware.com/keys/kitware-archive-latest.asc"
+        packages:
+          - clang-12
+          - cmake
+    env:
+      - MATRIX_EVAL="CC=clang-12 CXX=clang++-12 PATH=/usr/local/bin:/usr/bin:$PATH"
+
   # osx image list https://docs.travis-ci.com/user/reference/osx/#macos-version
   # Xcode 9.4 Clang
   - os: osx
@@ -267,15 +314,15 @@ matrix:
     env:
       - MATRIX_EVAL="CC=clang CXX=clang++"
 
-  # Xcode 11.5 Clang
+  # Xcode 11.6 Clang
   - os: osx
-    osx_image: xcode11.5
+    osx_image: xcode11.6
     env:
       - MATRIX_EVAL="CC=clang CXX=clang++"
 
-  # Xcode 12(Universal) Clang
+  # Xcode 12.5 Clang
   - os: osx
-    osx_image: xcode12u
+    osx_image: xcode12.5
     env:
       - MATRIX_EVAL="CC=clang CXX=clang++"
 

@@ -119,7 +119,7 @@ matrix:
 
 before_install:
   - |
-    if [[ "$TRAVIS_OS_NAME" == "linux" ]; then
+    if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
       SUDO=sudo -E
       APT=$SUDO apt-get -yq --no-install-suggests --no-install-recommends
       CMAKE_VERSION="3.15.5-0kitware1"
@@ -129,7 +129,7 @@ before_install:
       $APT update
       $APT install cmake=$CMAKE_VERSION cmake-data=$CMAKE_VERSION
 
-      if [[ "$GCC_VERSION" != "" ]; then
+      if [[ "$GCC_VERSION" != "" ]]; then
         $SUDO add-apt-repository -y ppa:ubuntu-toolchain-r/test
         $APT update
         $APT install g++-$GCC_VERSION

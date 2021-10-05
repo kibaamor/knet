@@ -2,6 +2,7 @@
 #include <cstdint>
 #include <atomic>
 #include <thread>
+#include <iostream>
 #include <knet/kutils.h>
 
 #pragma pack(push)

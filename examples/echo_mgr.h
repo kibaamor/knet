@@ -28,7 +28,7 @@ struct echo_mgr final {
     bool is_server = true;
     uint32_t max_delay_ms = 0;
     uint32_t max_idle_ms = 0;
-    uint32_t random_disconnect = 100;
+    uint32_t random_disconnect = 10000;
     uint32_t sockbuf_size = 128 * 1024;
 
     std::atomic_bool can_log = { false };

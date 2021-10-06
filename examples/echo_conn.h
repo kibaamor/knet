@@ -40,19 +40,19 @@ protected:
         }
         mgr << get_connid() << " " << sockAddr << " <----> " << peerAddr << " on_connected\n";
 
+        if (mgr.disconnect_all) {
+            disconnect();
+            return;
+        }
+
         if (mgr.random_disconnect > 0 && 0 == u32rand_between(0, mgr.random_disconnect)) {
-            mgr << "random disconnect at do_on_connected\n";
+            mgr << get_connid() << " random disconnect at do_on_connected\n";
             disconnect();
             return;
         }
 
         if (!set_sockbuf_size(mgr.sockbuf_size))
             std::cerr << get_connid() << " set_sockbuf_size failed!\n";
-
-        if (mgr.disconnect_all) {
-            disconnect();
-            return;
-        }
     }
 
     void do_on_disconnect() override
@@ -69,8 +69,16 @@ protected:
     {
         mgr << get_connid() << " on_recv_data, size: " << size << "\n";
 
-        if (mgr.disconnect_all)
+        if (mgr.disconnect_all) {
             disconnect();
+            return size;
+        }
+
+        if (mgr.random_disconnect > 0 && 0 == u32rand_between(0, mgr.random_disconnect)) {
+            mgr << get_connid() << " random disconnect at do_on_recv_data\n";
+            disconnect();
+            return size;
+        }
 
         return size;
     }

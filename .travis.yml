@@ -56,84 +56,57 @@ jobs:
     - os: osx
       osx_image: xcode9.4
     - os: osx
-      osx_image: xcode10
-    - os: osx
-      osx_image: xcode10.1
-    - os: osx
-      osx_image: xcode10.2
-    - os: osx
       osx_image: xcode10.3
-    - os: osx
-      osx_image: xcode11
-    - os: osx
-      osx_image: xcode11.1
-    - os: osx
-      osx_image: xcode11.2
-    - os: osx
-      osx_image: xcode11.3
-    - os: osx
-      osx_image: xcode11.4
-    - os: osx
-      osx_image: xcode11.5
     - os: osx
       osx_image: xcode11.6
     - os: osx
-      osx_image: xcode12
-    - os: osx
-      osx_image: xcode12u
-    - os: osx
-      osx_image: xcode12.2
-    - os: osx
-      osx_image: xcode12.3
-    - os: osx
-      osx_image: xcode12.4
-    - os: osx
       osx_image: xcode12.5
 
-    - os: osx
-      osx_image: xcode12.5
-      env: GCC_VERSION=5
-    - os: osx
-      osx_image: xcode12.5
-      env: GCC_VERSION=6
-    - os: osx
-      osx_image: xcode12.5
-      env: GCC_VERSION=7
-    - os: osx
-      osx_image: xcode12.5
-      env: GCC_VERSION=8
-    - os: osx
-      osx_image: xcode12.5
-      env: GCC_VERSION=9
-    - os: osx
-      osx_image: xcode12.5
-      env: GCC_VERSION=10
-    - os: osx
-      osx_image: xcode12.5
-      env: GCC_VERSION=11
+    # - os: osx
+    #   osx_image: xcode12.5
+    #   env: GCC_VERSION=5
+    # - os: osx
+    #   osx_image: xcode12.5
+    #   env: GCC_VERSION=6
+    # - os: osx
+    #   osx_image: xcode12.5
+    #   env: GCC_VERSION=7
+    # - os: osx
+    #   osx_image: xcode12.5
+    #   env: GCC_VERSION=8
+    # - os: osx
+    #   osx_image: xcode12.5
+    #   env: GCC_VERSION=9
+    # - os: osx
+    #   osx_image: xcode12.5
+    #   env: GCC_VERSION=10
+    # - os: osx
+    #   osx_image: xcode12.5
+    #   env: GCC_VERSION=11
 
+    - os: freebsd
     # https://www.freshports.org/
-    - os: freebsd
-      env: GCC_VERSION=8
-    - os: freebsd
-      env: GCC_VERSION=10
-    - os: freebsd
-      env: GCC_VERSION=11
+    # - os: freebsd
+    #   env: GCC_VERSION=8
+    # - os: freebsd
+    #   env: GCC_VERSION=10
+    # - os: freebsd
+    #   env: GCC_VERSION=11
 
-    - os: freebsd
-      env: CLANG_VERSION=70
-    - os: freebsd
-      env: CLANG_VERSION=80
-    - os: freebsd
-      env: CLANG_VERSION=90
-    - os: freebsd
-      env: CLANG_VERSION=10
-    - os: freebsd
-      env: CLANG_VERSION=11
-    - os: freebsd
-      env: CLANG_VERSION=12
-    - os: freebsd
-      env: CLANG_VERSION=13
+    # - os: freebsd
+    #   env: CLANG_VERSION=70
+    # - os: freebsd
+    #   env: CLANG_VERSION=80
+    # - os: freebsd
+    #   env: CLANG_VERSION=90
+    # - os: freebsd
+    #   env: CLANG_VERSION=10
+    # - os: freebsd
+    #   env: CLANG_VERSION=11
+    # - os: freebsd
+    #   env: CLANG_VERSION=12
+    # - os: freebsd
+    #   env: CLANG_VERSION=13
 
 ubuntu_prepare: &ubuntu_prepare
   if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then

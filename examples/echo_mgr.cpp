@@ -5,6 +5,15 @@
 
 echo_mgr mgr;
 
+echo_mgr::~echo_mgr()
+{
+    disconnect_all = true;
+    if (nullptr != _t) {
+        _t->join();
+        delete _t;
+    }
+}
+
 void echo_mgr::update(int64_t delta_ms)
 {
     _total_ms += delta_ms;

@@ -8,17 +8,12 @@
 #pragma pack(push)
 #pragma pack(1)
 struct echo_package {
-    uint32_t size; // total package size
+    uint32_t size; // total package size (include header size)
     uint32_t id; // package id
 
     static constexpr uint32_t get_hdr_size()
     {
         return sizeof(size) + sizeof(id);
-    }
-
-    char* get_data()
-    {
-        return reinterpret_cast<char*>(this) + echo_package::get_hdr_size();
     }
 
     uint32_t& last_u32()
@@ -29,7 +24,7 @@ struct echo_package {
 };
 #pragma pack(pop)
 
-struct echo_mgr {
+struct echo_mgr final {
     bool is_server = true;
     uint32_t max_delay_ms = 0;
     uint32_t max_idle_ms = 0;
@@ -44,15 +39,7 @@ struct echo_mgr {
     std::atomic_llong total_send = { 0 };
     std::atomic_llong total_recv = { 0 };
 
-    ~echo_mgr()
-    {
-        disconnect_all = true;
-        if (nullptr != _t) {
-            _t->join();
-            delete _t;
-        }
-    }
-
+    ~echo_mgr();
     void update(int64_t delta_ms);
     void check_console_input();
 

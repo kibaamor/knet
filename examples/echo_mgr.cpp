@@ -40,6 +40,7 @@ void echo_mgr::update(int64_t delta_ms)
     } else {
         std::cout << ", recv: " << recv_num << " Pkg/S\n";
     }
+    std::cout.flush();
 }
 
 void echo_mgr::check_console_input()
@@ -60,5 +61,5 @@ void echo_mgr::check_console_input()
         }
     },
         this);
-    std::cout << "enter \"exit\" to exit program\n";
+    std::cout << "enter \"exit\" to exit program" << std::endl;
 }

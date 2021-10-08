@@ -8,6 +8,7 @@
 #pragma pack(push)
 #pragma pack(1)
 struct echo_package {
+    // assume that we have same endian between sender and receiver
     uint32_t size; // total package size (include header size)
     uint32_t id; // package id
 

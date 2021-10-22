@@ -6,12 +6,12 @@
 namespace knet {
 
 struct socket::impl::sockbuf {
-    int used_size = 0;
+    size_t used_size = 0;
     char chunk[SOCKET_RWBUF_SIZE] = {};
 
     char* unused_ptr() { return chunk + used_size; }
-    int unused_size() const { return sizeof(chunk) - used_size; }
-    void discard_used(int num)
+    size_t unused_size() const { return sizeof(chunk) - used_size; }
+    void discard_used(size_t num)
     {
         kassert(used_size >= num);
         used_size -= num;
@@ -22,7 +22,7 @@ struct socket::impl::sockbuf {
 
     bool try_write(rawsocket_t rs)
     {
-        int size = 0;
+        size_t size = 0;
         int ret = 0;
         while (size < used_size) {
 #ifdef SO_NOSIGPIPE
@@ -70,7 +70,7 @@ struct socket::impl::sockbuf {
 
     bool check_can_write(const buffer* buf, size_t num) const
     {
-        int total_size = 0;
+        size_t total_size = 0;
         for (size_t i = 0; i < num; ++i) {
             auto b = buf + i;
             kassert(b->size > 0 && nullptr != b->data);
@@ -244,7 +244,7 @@ bool socket::impl::handle_can_write()
 bool socket::impl::handle_read()
 {
     const auto max_size = _rb->used_size;
-    int size = 0;
+    size_t size = 0;
     {
         const auto ptr = _rb->chunk;
         scoped_call_flag s(_f);

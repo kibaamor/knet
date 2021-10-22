@@ -23,9 +23,9 @@ constexpr int SOCKET_RWBUF_SIZE = 256 * 1024;
 
 struct buffer {
     const void* data;
-    int size;
+    size_t size;
 
-    explicit buffer(const void* d = nullptr, int s = 0)
+    explicit buffer(const void* d = nullptr, size_t s = 0)
         : data(d)
         , size(s)
     {

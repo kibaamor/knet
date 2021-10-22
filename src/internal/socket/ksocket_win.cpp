@@ -7,14 +7,15 @@ namespace knet {
 
 struct sockbuf_base {
     WSAOVERLAPPED ol = {}; // must be the first member to use CONTAINING_RECORD
-    int used_size = 0;
+    size_t used_size = 0;
     bool cancel = false;
 };
 
 struct socket::impl::sockbuf : sockbuf_base {
     char chunk[SOCKET_RWBUF_SIZE] = {};
+
     char* unused_ptr() { return chunk + used_size; }
-    int unused_size() const { return sizeof(chunk) - used_size; }
+    size_t unused_size() const { return sizeof(chunk) - used_size; }
 
     bool post_read(rawsocket_t rs)
     {
@@ -54,7 +55,7 @@ struct socket::impl::sockbuf : sockbuf_base {
 
     bool check_can_write(const buffer* buf, size_t num) const
     {
-        int total_size = 0;
+        size_t total_size = 0;
         for (size_t i = 0; i < num; ++i) {
             auto b = buf + i;
             kassert(b->size > 0 && nullptr != b->data);

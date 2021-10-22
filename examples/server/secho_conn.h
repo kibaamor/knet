@@ -50,8 +50,9 @@ private:
 
     void set_idle_timer()
     {
-        if (mgr.max_idle_ms > 0)
+        if (mgr.max_idle_ms > 0) {
             add_timer(knet::now_ms() + mgr.max_idle_ms, 0);
+        }
     }
 
 private:

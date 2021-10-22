@@ -1,5 +1,5 @@
 #include "../include/knet/kconnector.h"
-#include "internal/kinternal.h"
+#include "internal/ksocket_utils.h"
 
 namespace knet {
 
@@ -13,12 +13,11 @@ connector::~connector() = default;
 bool connector::connect(const address& addr)
 {
     auto rs = create_rawsocket(addr.get_rawfamily(), false);
-    if (INVALID_RAWSOCKET == rs)
+    if (INVALID_RAWSOCKET == rs) {
         return false;
+    }
 
-    const auto sa = addr.as_ptr<sockaddr>();
-    const auto salen = addr.get_socklen();
-    if (RAWSOCKET_ERROR == ::connect(rs, sa, salen)) {
+    if (RAWSOCKET_ERROR == ::connect(rs, addr.as_ptr<sockaddr>(), addr.get_socklen())) {
         kdebug("connect() failed");
         close_rawsocket(rs);
         return false;

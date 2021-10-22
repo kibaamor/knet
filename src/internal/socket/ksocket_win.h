@@ -1,8 +1,10 @@
 #pragma once
-#include "../internal/ksocket.h"
-#include "../internal/kflag.h"
+#include "../ksocket.h"
+#include "../kflag.h"
 
 namespace knet {
+
+class conn;
 
 class socket::impl {
 public:

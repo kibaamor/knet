@@ -1,5 +1,5 @@
 #include "../include/knet/kaddress.h"
-#include "internal/kinternal.h"
+#include "internal/kplatform.h"
 #include <cstring>
 
 namespace knet {
@@ -8,7 +8,7 @@ bool address::resolve_all(const std::string& node_name, const std::string& servi
     family_t fa, std::vector<address>& addrs)
 {
     struct addrinfo hints;
-    ::memset(&hints, 0, sizeof(hints));
+    memset(&hints, 0, sizeof(hints));
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_protocol = IPPROTO_TCP;
     hints.ai_family = get_rawfamily_by_family(fa);
@@ -21,7 +21,7 @@ bool address::resolve_all(const std::string& node_name, const std::string& servi
 
     struct addrinfo* result = nullptr;
     do {
-        const auto ret = ::getaddrinfo(nn, service_name.c_str(), &hints, &result);
+        const auto ret = getaddrinfo(nn, service_name.c_str(), &hints, &result);
         if (ret == EAI_AGAIN) {
             continue;
         } else if (0 != ret) {
@@ -32,11 +32,11 @@ bool address::resolve_all(const std::string& node_name, const std::string& servi
     for (auto rp = result; nullptr != rp; rp = rp->ai_next) {
         if (sizeof(address::_addr) >= rp->ai_addrlen) {
             addrs.emplace_back();
-            ::memcpy(addrs.back()._addr, rp->ai_addr, rp->ai_addrlen);
+            memcpy(addrs.back()._addr, rp->ai_addr, rp->ai_addrlen);
         }
     }
 
-    ::freeaddrinfo(result);
+    freeaddrinfo(result);
 
     return true;
 }
@@ -79,12 +79,12 @@ bool address::pton(family_t fa, const std::string& addr, uint16_t port)
         auto addr4 = reinterpret_cast<sockaddr_in*>(_addr);
         addr4->sin_family = AF_INET;
         addr4->sin_port = htons(port);
-        return 1 == ::inet_pton(addr4->sin_family, addr.c_str(), &addr4->sin_addr);
+        return 1 == inet_pton(addr4->sin_family, addr.c_str(), &addr4->sin_addr);
     } else if (family_t::Ipv6 == fa) {
         auto addr6 = reinterpret_cast<sockaddr_in6*>(_addr);
         addr6->sin6_family = AF_INET6;
         addr6->sin6_port = htons(port);
-        return 1 == ::inet_pton(addr6->sin6_family, addr.c_str(), &addr6->sin6_addr);
+        return 1 == inet_pton(addr6->sin6_family, addr.c_str(), &addr6->sin6_addr);
     }
     return false;
 }
@@ -99,16 +99,18 @@ bool address::ntop(std::string& addr, uint16_t& port) const
     if (fa == family_t::Ipv4) {
         const auto addr4 = reinterpret_cast<const sockaddr_in*>(_addr);
         auto sa = const_cast<void*>(static_cast<const void*>(&addr4->sin_addr));
-        if (!::inet_ntop(AF_INET, sa, buf, INET_ADDRSTRLEN))
+        if (!inet_ntop(AF_INET, sa, buf, INET_ADDRSTRLEN)) {
             return false;
+        }
 
         addr = buf;
         port = ntohs(addr4->sin_port);
     } else if (fa == family_t::Ipv6) {
         auto addr6 = reinterpret_cast<const sockaddr_in6*>(_addr);
         auto sa = const_cast<void*>(static_cast<const void*>(&addr6->sin6_addr));
-        if (!::inet_ntop(AF_INET6, sa, buf, INET6_ADDRSTRLEN))
+        if (!inet_ntop(AF_INET6, sa, buf, INET6_ADDRSTRLEN)) {
             return false;
+        }
 
         addr = buf;
         port = ntohs(addr6->sin6_port);
@@ -139,8 +141,9 @@ std::string address::to_string() const
 {
     std::string addr;
     uint16_t port = 0;
-    if (!ntop(addr, port))
+    if (!ntop(addr, port)) {
         return "ntop() failed!";
+    }
     return addr + ":" + std::to_string(port);
 }
 

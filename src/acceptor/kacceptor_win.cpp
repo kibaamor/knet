@@ -1,4 +1,5 @@
 #include "kacceptor_win.h"
+#include "../internal/ksocket_utils.h"
 #include <array>
 
 namespace {
@@ -33,19 +34,21 @@ struct accept_io {
     bool post(rawsocket_t srv_rs, int family)
     {
         rs = create_rawsocket(family, true);
-        if (INVALID_RAWSOCKET == rs)
+        if (INVALID_RAWSOCKET == rs) {
             return false;
+        }
 
         memset(&ol, 0, sizeof(ol));
 
         const auto accept_ex = get_accept_ex(rs);
-        if (nullptr == accept_ex)
+        if (nullptr == accept_ex) {
             return false;
+        }
 
         DWORD dw = 0;
         constexpr auto size = sizeof(SOCKADDR_STORAGE) + 16;
         if (!accept_ex(srv_rs, rs, buf, 0, size, size, &dw, &ol)
-            && ERROR_IO_PENDING != ::WSAGetLastError()) {
+            && ERROR_IO_PENDING != WSAGetLastError()) {
             close_rawsocket(rs);
             return false;
         }
@@ -63,16 +66,18 @@ public:
     pending_ios()
     {
         for (size_t i = 0, N = _ios.size(); i < N; ++i) {
-            if (N != i + 1)
+            if (N != i + 1) {
                 _ios[i].next = &_ios[i + 1];
+            }
         }
         _free_ios = &_ios[0];
     }
 
     ~pending_ios()
     {
-        for (auto& io : _ios)
+        for (auto& io : _ios) {
             io.clear();
+        }
         _free_ios = nullptr;
     }
 
@@ -85,8 +90,9 @@ public:
     void post_all(rawsocket_t srv_rs, int family)
     {
         for (; nullptr != _free_ios; _free_ios = _free_ios->next) {
-            if (!_free_ios->post(srv_rs, family))
+            if (!_free_ios->post(srv_rs, family)) {
                 return;
+            }
         }
     }
 
@@ -113,27 +119,26 @@ void acceptor::impl::update()
 
 bool acceptor::impl::start(const address& addr)
 {
-    if (INVALID_RAWSOCKET != _rs)
+    if (INVALID_RAWSOCKET != _rs) {
         return false;
+    }
 
     _family = addr.get_rawfamily();
     _rs = create_rawsocket(_family, true);
-    if (INVALID_RAWSOCKET == _rs)
+    if (INVALID_RAWSOCKET == _rs) {
         return false;
+    }
 
-    int on = 1;
-    if (!set_rawsocket_opt(_rs, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on))) {
-        kdebug("set_rawsocket_opt(SO_REUSEADDR) failed!");
+    if (!set_rawsocket_reuseaddr(_rs)) {
+        kdebug("set_rawsocket_reuseaddr() failed!");
         close_rawsocket(_rs);
         return false;
     }
 
     _plr.reset(new poller(*this));
 
-    const auto sa = addr.as_ptr<sockaddr>();
-    const auto salen = addr.get_socklen();
-    if (RAWSOCKET_ERROR == ::bind(_rs, sa, salen)
-        || RAWSOCKET_ERROR == ::listen(_rs, SOMAXCONN)
+    if (RAWSOCKET_ERROR == bind(_rs, addr.as_ptr<sockaddr>(), addr.get_socklen())
+        || RAWSOCKET_ERROR == listen(_rs, SOMAXCONN)
         || !_plr->add(_rs, this)) {
         close_rawsocket(_rs);
         return false;
@@ -157,14 +162,20 @@ bool acceptor::impl::on_pollevent(void* key, void* evt)
     const auto e = static_cast<OVERLAPPED_ENTRY*>(evt);
     accept_io* io = CONTAINING_RECORD(e->lpOverlapped, accept_io, ol);
 
-    if (INVALID_RAWSOCKET == io->rs)
+    if (INVALID_RAWSOCKET == io->rs) {
         return false;
+    }
 
     auto rs = io->rs;
     io->rs = INVALID_RAWSOCKET;
     _ios->recycle(io);
 
-    ::setsockopt(rs, SOL_SOCKET, SO_UPDATE_ACCEPT_CONTEXT, (char*)&_rs, sizeof(_rs));
+    if (!set_rawsocket_opt(rs, SOL_SOCKET, SO_UPDATE_ACCEPT_CONTEXT, &_rs, sizeof(_rs))) {
+        kdebug("set_rawsocket_opt(SO_UPDATE_ACCEPT_CONTEXT) failed!");
+        close_rawsocket(_rs);
+        return false;
+    }
+
     _wkr.add_work(rs);
 
     return true;

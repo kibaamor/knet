@@ -1,4 +1,5 @@
 #include "../include/knet/kacceptor.h"
+#include "internal/ksocket_utils.h"
 
 #ifdef _WIN32
 #include "acceptor/kacceptor_win.h"

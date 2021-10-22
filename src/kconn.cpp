@@ -37,15 +37,17 @@ void conn::on_timer(int64_t ms, const userdata& ud)
 
 timerid_t conn::add_timer(int64_t ms, const userdata& ud)
 {
-    if (is_disconnecting())
+    if (is_disconnecting()) {
         return INVALID_TIMERID;
+    }
     return _cf.add_timer(get_connid(), ms, ud);
 }
 
 void conn::del_timer(timerid_t tid)
 {
-    if (INVALID_TIMERID != tid)
+    if (INVALID_TIMERID != tid) {
         _cf.del_timer(get_connid(), tid);
+    }
 }
 
 bool conn::send_data(buffer* buf, size_t num)
@@ -55,8 +57,9 @@ bool conn::send_data(buffer* buf, size_t num)
 
 void conn::disconnect()
 {
-    if (!is_disconnecting())
+    if (!is_disconnecting()) {
         _s->close();
+    }
 }
 
 bool conn::is_disconnecting() const

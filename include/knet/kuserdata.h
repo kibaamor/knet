@@ -27,8 +27,7 @@ struct userdata final {
         data.ptr = v;
     }
 
-    template <typename T,
-        typename std::enable_if<std::is_floating_point<T>::value, int>::type = 0>
+    template <typename T, typename std::enable_if<std::is_floating_point<T>::value, int>::type = 0>
     // cppcheck-suppress noExplicitConstructor
     userdata(T v)
         : type(floatpoint)
@@ -36,8 +35,7 @@ struct userdata final {
         data.f64 = static_cast<double>(v);
     }
 
-    template <typename T,
-        typename std::enable_if<std::is_integral<T>::value, int>::type = 0>
+    template <typename T, typename std::enable_if<std::is_integral<T>::value, int>::type = 0>
     // cppcheck-suppress noExplicitConstructor
     userdata(T v)
         : type(integral)

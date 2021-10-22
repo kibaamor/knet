@@ -1,7 +1,7 @@
 #pragma once
 #include "../../include/knet/kacceptor.h"
-#include "../internal/kinternal.h"
 #include "../internal/kpoller.h"
+#include "../internal/kplatform.h"
 
 namespace knet {
 

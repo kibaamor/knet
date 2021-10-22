@@ -1,6 +1,5 @@
 #pragma once
 #include "knetfwd.h"
-#include <ctime>
 
 namespace knet {
 
@@ -22,7 +21,7 @@ template <unsigned int N = 32>
 inline std::string tm2str(const struct tm& t, const char* fmt = "%Y/%m/%d %H:%M:%S")
 {
     char buf[N] = {};
-    const auto len = ::strftime(buf, sizeof(buf), fmt, &t);
+    const auto len = strftime(buf, sizeof(buf), fmt, &t);
     return len > 0 ? std::string(buf, buf + len) : std::string();
 }
 

@@ -32,8 +32,9 @@ public:
     {
         const auto cur_wpos = _wpos.load(std::memory_order_acquire);
         const auto next_wpos = (cur_wpos + 1) % N;
-        if (next_wpos == _rpos.load(std::memory_order_acquire))
+        if (next_wpos == _rpos.load(std::memory_order_acquire)) {
             return false;
+        }
         _ring[cur_wpos] = val;
         _wpos.store(next_wpos, std::memory_order_release);
         return true;
@@ -42,8 +43,9 @@ public:
     bool pop(T& val)
     {
         const auto rpos = _rpos.load(std::memory_order_acquire);
-        if (rpos == _wpos.load(std::memory_order_acquire))
+        if (rpos == _wpos.load(std::memory_order_acquire)) {
             return false;
+        }
         val = _ring[rpos];
         _rpos.store((rpos + 1) % N, std::memory_order_release);
         return true;

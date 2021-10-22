@@ -44,7 +44,7 @@ source_group("srcs\\extra" FILES ${EXTRA_SRC_LIST})
 add_library(${PROJECT_NAME} STATIC ${HDR_LIST} ${SRC_LIST} ${EXTRA_SRC_LIST})
 
 if (WIN32)
-    target_link_libraries(${PROJECT_NAME} PRIVATE 
+    target_link_libraries(${PROJECT_NAME} PRIVATE
         ${PROJECT_NAME}_compiler_flags ws2_32)
 else()
     find_package(Threads REQUIRED)
@@ -54,9 +54,16 @@ endif()
 
 target_compile_definitions(${PROJECT_NAME}
     PRIVATE
-        $<$<CONFIG:Debug>:KNET_DEBUG>
-        $<$<CONFIG:RelWithDebInfo>:KNET_DEBUG>
+        $<$<CONFIG:Debug>:KNET_ENABLE_ASSERT>
+        $<$<CONFIG:RelWithDebInfo>:KNET_ENABLE_ASSERT>
 )
+
+if (KNET_ENABLE_DEBUG_LOG)
+    target_compile_definitions(${PROJECT_NAME}
+        PRIVATE
+            KNET_ENABLE_DEBUG_LOG
+    )
+endif()
 
 install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/
     DESTINATION include

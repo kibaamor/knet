@@ -1,18 +1,18 @@
 #include "kpoller.h"
 
 #if defined(_WIN32)
-#include "../poller/kpoller_iocp.h"
-#elif defined(__linux__)
-#include "../poller/kpoller_epoll.h"
+#include "poller/kpoller_iocp.h"
+#elif defined(__APPLE__)
+#include "poller/kpoller_kqueue.h"
 #else
-#include "../poller/kpoller_kqueue.h"
+#include "poller/kpoller_epoll.h"
 #endif
 
 namespace knet {
 
-poller::poller(poller_client& clt)
+poller::poller(poller_client& client)
 {
-    _impl.reset(new impl(clt));
+    _impl.reset(new impl(client));
 }
 
 poller::~poller() = default;

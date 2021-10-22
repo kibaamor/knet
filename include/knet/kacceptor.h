@@ -1,6 +1,5 @@
 #pragma once
 #include "kworker.h"
-#include "kaddress.h"
 
 namespace knet {
 

@@ -1,6 +1,6 @@
 #include "../include/knet/kworker.h"
 #include "internal/kpoller.h"
-#include "internal/kinternal.h"
+#include "internal/kplatform.h"
 #include "internal/ksocket.h"
 
 namespace knet {
@@ -16,8 +16,9 @@ public:
     void add_work(rawsocket_t rs)
     {
         std::unique_ptr<socket> s(new socket(rs));
-        if (s->init(*_plr, _cf))
+        if (s->init(*_plr, _cf)) {
             s.release();
+        }
     }
     void update()
     {

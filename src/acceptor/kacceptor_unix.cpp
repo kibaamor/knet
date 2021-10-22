@@ -1,4 +1,5 @@
 #include "kacceptor_unix.h"
+#include "../internal/ksocket_utils.h"
 
 namespace knet {
 
@@ -19,27 +20,26 @@ void acceptor::impl::update()
 
 bool acceptor::impl::start(const address& addr)
 {
-    if (INVALID_RAWSOCKET != _rs)
+    if (INVALID_RAWSOCKET != _rs) {
         return false;
+    }
 
     _family = addr.get_rawfamily();
     _rs = create_rawsocket(_family, true);
-    if (INVALID_RAWSOCKET == _rs)
+    if (INVALID_RAWSOCKET == _rs) {
         return false;
+    }
 
-    int on = 1;
-    if (!set_rawsocket_opt(_rs, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on))) {
-        kdebug("set_rawsocket_opt(SO_REUSEADDR) failed!");
+    if (!set_rawsocket_reuseaddr(_rs)) {
+        kdebug("set_rawsocket_reuseaddr() failed!");
         close_rawsocket(_rs);
         return false;
     }
 
     _plr.reset(new poller(*this));
 
-    const auto sa = addr.as_ptr<sockaddr>();
-    const auto salen = addr.get_socklen();
-    if (RAWSOCKET_ERROR == ::bind(_rs, sa, salen)
-        || RAWSOCKET_ERROR == ::listen(_rs, SOMAXCONN)
+    if (RAWSOCKET_ERROR == bind(_rs, addr.as_ptr<sockaddr>(), addr.get_socklen())
+        || RAWSOCKET_ERROR == listen(_rs, SOMAXCONN)
         || !_plr->add(_rs, this)) {
         close_rawsocket(_rs);
         return false;
@@ -56,48 +56,37 @@ void acceptor::impl::stop()
 
 bool acceptor::impl::on_pollevent(void* key, void* evt)
 {
-#ifdef __linux__
     while (true) {
-        auto rs = ::accept4(_rs, nullptr, 0, SOCK_NONBLOCK | SOCK_CLOEXEC);
+#ifdef __APPLE__
+        auto rs = TEMP_FAILURE_RETRY(accept(_rs, nullptr, 0));
         if (INVALID_RAWSOCKET == rs) {
-            if (EINTR == errno)
-                continue;
-
-            if (EAGAIN != errno)
-                kdebug("accept4() failed!");
-            break;
-        }
-
-        _wkr.add_work(rs);
-    }
-#else
-    while (true) {
-        auto rs = ::accept(_rs, nullptr, 0);
-        if (INVALID_RAWSOCKET == rs) {
-            if (EINTR == errno)
-                continue;
-
-            if (EAGAIN != errno)
+            if (EAGAIN != errno && EWOULDBLOCK != errno) {
                 kdebug("accept() failed!");
+            }
             break;
         }
-
         if (!set_rawsocket_nonblock(rs)) {
             kdebug("set_rawsocket_nonblock() failed!");
             close_rawsocket(rs);
             continue;
         }
-
         if (!set_rawsocket_cloexec(rs)) {
             kdebug("set_rawsocket_cloexec() failed!");
             close_rawsocket(rs);
             continue;
         }
-
+#else
+        auto rs = TEMP_FAILURE_RETRY(accept4(_rs, nullptr, 0, SOCK_NONBLOCK | SOCK_CLOEXEC));
+        if (INVALID_RAWSOCKET == rs) {
+            if (EAGAIN != errno && EWOULDBLOCK != errno) {
+                kdebug("accept4() failed!");
+            }
+            break;
+        }
+#endif
         _wkr.add_work(rs);
     }
-#endif
     return true;
-} // namespace knet
+}
 
 } // namespace knet

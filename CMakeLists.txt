@@ -14,12 +14,17 @@ if (NOT CMAKE_BUILD_TYPE)
 endif()
 message("CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
 
+option(KNET_ENABLE_DEBUG_LOG "Show debug log" ON)
 option(KNET_BUILD_EXAMPLE "Build exmaple" ON)
 option(KNET_BUILD_TEST "Build test" ON)
 
 message("CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX}")
+message("KNET_ENABLE_DEBUG_LOG: ${KNET_ENABLE_DEBUG_LOG}")
 message("KNET_BUILD_EXAMPLE: ${KNET_BUILD_EXAMPLE}")
 message("KNET_BUILD_TEST: ${KNET_BUILD_TEST}")
+
+#######################################################################################
+# common compiler flags
 
 set(gcc_like_cxx "$<CXX_COMPILER_ID:ARMClang,AppleClang,Clang,GNU>")
 set(msvc_cxx "$<CXX_COMPILER_ID:MSVC>")
@@ -36,6 +41,9 @@ target_compile_options(${PROJECT_NAME}_compiler_flags INTERFACE
     "$<$<PLATFORM_ID:Windows>:$<BUILD_INTERFACE:-DUNICODE;-D_UNICODE>>"
 )
 
+#######################################################################################
+# subprojects
+
 add_subdirectory(src)
 
 if (KNET_BUILD_EXAMPLE)
@@ -46,6 +54,9 @@ if (KNET_BUILD_TEST)
     include(CTest)
     add_subdirectory(test)
 endif()
+
+#######################################################################################
+# installation
 
 include(InstallRequiredSystemLibraries)
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")

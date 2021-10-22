@@ -52,11 +52,13 @@ int main(int argc, char** argv)
 
         const auto inst_num = mgr.inst_num.load();
         if (mgr.disconnect_all) {
-            if (0 == inst_num)
+            if (0 == inst_num) {
                 break;
+            }
         } else if (inst_num < client_num) {
-            if (!cnctor.connect(addr))
+            if (!cnctor.connect(addr)) {
                 std::cerr << "connect failed! address: " << addr << std::endl;
+            }
         }
 
         mgr.update(delta_ms);

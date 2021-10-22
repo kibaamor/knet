@@ -50,8 +50,9 @@ size_t cecho_conn::do_on_recv_data(char* data, size_t size)
     mgr.total_recv += 1;
 
     _recv_buf_size += len;
-    if (_recv_buf_size == _send_buf_size && _send_buf_size == _used_buf_size)
+    if (_recv_buf_size == _send_buf_size && _send_buf_size == _used_buf_size) {
         generate_packages();
+    }
 
     return static_cast<size_t>(len);
 }
@@ -86,8 +87,9 @@ void cecho_conn::generate_packages()
 bool cecho_conn::send_package()
 {
     assert(_send_buf_size <= _used_buf_size);
-    if (_send_buf_size == _used_buf_size)
+    if (_send_buf_size == _used_buf_size) {
         return true;
+    }
 
     const auto send_size = u32rand_between(1, _used_buf_size - _send_buf_size);
     buffer buf(_buf + _send_buf_size, send_size);
@@ -106,8 +108,9 @@ int32_t cecho_conn::check_package(char* data, size_t size)
     constexpr uint32_t min_pkg_size = get_min_pkg_size();
     const auto pkg = reinterpret_cast<echo_package*>(data);
 
-    if (size < min_pkg_size || pkg->size > size)
+    if (size < min_pkg_size || pkg->size > size) {
         return 0;
+    }
 
     if (pkg->id != pkg->last_u32()) {
         std::cerr << "package integrity check failed! id:"

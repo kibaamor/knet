@@ -25,6 +25,7 @@ public:
     void del_timer(timerid_t tid);
 
     bool send_data(buffer* buf, size_t num);
+
     void disconnect();
     bool is_disconnecting() const;
 
@@ -36,9 +37,9 @@ public:
 protected:
     bool set_sockbuf_size(size_t size);
 
-    virtual void do_on_connected() { }
-    virtual void do_on_disconnect() { }
-    virtual void do_on_timer(int64_t ms, const userdata& ud) { }
+    virtual void do_on_connected() {}
+    virtual void do_on_disconnect() {}
+    virtual void do_on_timer(int64_t ms, const userdata& ud) {}
     virtual size_t do_on_recv_data(char* data, size_t size) = 0;
 
 private:

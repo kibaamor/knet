@@ -64,8 +64,9 @@ int main(int argc, char** argv)
         acc.update();
         wkr.update();
 
-        if (mgr.disconnect_all && 0 == mgr.inst_num)
+        if (mgr.disconnect_all && 0 == mgr.inst_num) {
             break;
+        }
 
         mgr.update(delta_ms);
 

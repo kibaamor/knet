@@ -20,8 +20,9 @@ public:
     bool send_data(buffer* buf, size_t num)
     {
         if (conn::send_data(buf, num)) {
-            for (size_t i = 0; i < num; ++i)
+            for (size_t i = 0; i < num; ++i) {
                 mgr.total_send += buf[i].size;
+            }
             return true;
         }
         return false;
@@ -46,13 +47,14 @@ protected:
         }
 
         if (mgr.random_disconnect > 0 && 0 == u32rand_between(0, mgr.random_disconnect)) {
-            mgr << get_connid() << " random disconnect at do_on_connected\n";
+            std::cerr << get_connid() << " random disconnect at do_on_connected\n";
             disconnect();
             return;
         }
 
-        if (!set_sockbuf_size(mgr.sockbuf_size))
+        if (!set_sockbuf_size(mgr.sockbuf_size)) {
             std::cerr << get_connid() << " set_sockbuf_size failed!\n";
+        }
     }
 
     void do_on_disconnect() override
@@ -75,7 +77,7 @@ protected:
         }
 
         if (mgr.random_disconnect > 0 && 0 == u32rand_between(0, mgr.random_disconnect)) {
-            mgr << get_connid() << " random disconnect at do_on_recv_data\n";
+            std::cerr << get_connid() << " random disconnect at do_on_recv_data\n";
             disconnect();
             return size;
         }

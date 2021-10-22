@@ -1,6 +1,5 @@
 #pragma once
 #include "kconn.h"
-#include <unordered_map>
 
 namespace knet {
 
@@ -41,18 +40,17 @@ public:
     conn* get_conn(connid_t cid) const;
     timerid_t add_timer(connid_t cid, int64_t ms, const userdata& ud);
     void del_timer(connid_t cid, timerid_t tid);
+    void on_timer(connid_t cid, int64_t ms, const userdata& ud);
 
     connid_t get_next_connid() { return _gener.gen(); }
 
-private:
+protected:
     virtual conn* do_create_conn() = 0;
     virtual void do_destroy_conn(conn* c) { delete c; }
-    virtual void do_update() { }
+    virtual void do_update() {}
+    virtual void do_on_timer(conn* c, int64_t ms, const userdata& ud) {}
 
-private:
-    void on_timer(connid_t cid, int64_t ms, const userdata& ud);
-
-private:
+protected:
     connid_gener _gener;
     std::unordered_map<connid_t, conn*> _conns;
 
@@ -69,7 +67,7 @@ public:
         return do_create_factory(gener);
     }
 
-private:
+protected:
     virtual conn_factory* do_create_factory(connid_gener gener) = 0;
 };
 

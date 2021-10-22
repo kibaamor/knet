@@ -1,7 +1,5 @@
 #pragma once
 #include "knetfwd.h"
-#include <iostream>
-#include <vector>
 
 namespace knet {
 

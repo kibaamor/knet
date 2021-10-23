@@ -1,5 +1,7 @@
 #pragma once
 #include "../../include/knet/knetfwd.h"
+#include "kplatform.h"
+#include <unordered_set>
 
 namespace knet {
 
@@ -18,8 +20,20 @@ public:
     void poll();
 
 private:
-    class impl;
-    std::unique_ptr<impl> _impl;
+    poller_client& _client;
+
+#if defined(_WIN32)
+    HANDLE _h = nullptr;
+    std::array<OVERLAPPED_ENTRY, POLL_EVENT_NUM> _events = {};
+#elif defined(__APPLE__)
+    int _kq = -1;
+    std::array<struct kevent, POLL_EVENT_NUM> _events = {};
+    std::unordered_set<void*> _ignores;
+    struct timespec _ts = {};
+#else
+    int _ep = -1;
+    std::array<struct epoll_event, POLL_EVENT_NUM> _events = {};
+#endif
 };
 
 } // namespace knet

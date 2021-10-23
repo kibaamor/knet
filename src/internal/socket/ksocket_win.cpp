@@ -2,77 +2,9 @@
 #include "../kpoller.h"
 #include "../ksocket_utils.h"
 #include "../../../include/knet/kconn_factory.h"
+#include <algorithm>
 
 namespace knet {
-
-struct sockbuf_base {
-    WSAOVERLAPPED ol = {}; // must be the first member to use CONTAINING_RECORD
-    size_t used_size = 0;
-    bool cancel = false;
-};
-
-struct socket::impl::sockbuf : sockbuf_base {
-    char chunk[SOCKET_RWBUF_SIZE] = {};
-
-    char* unused_ptr() { return chunk + used_size; }
-    size_t unused_size() const { return sizeof(chunk) - used_size; }
-
-    bool post_read(rawsocket_t rs)
-    {
-        memset(&ol, 0, sizeof(ol));
-
-        WSABUF buf;
-        buf.buf = unused_ptr();
-        buf.len = static_cast<ULONG>(unused_size());
-
-        DWORD dw = 0;
-        DWORD flag = 0;
-        return SOCKET_ERROR != WSARecv(rs, &buf, 1, &dw, &flag, &ol, nullptr)
-            || ERROR_IO_PENDING == WSAGetLastError();
-    }
-
-    bool post_write(rawsocket_t rs)
-    {
-        memset(&ol, 0, sizeof(ol));
-
-        WSABUF buf;
-        buf.buf = chunk;
-        buf.len = static_cast<ULONG>(used_size);
-
-        DWORD dw = 0;
-        return SOCKET_ERROR != WSASend(rs, &buf, 1, &dw, 0, &ol, nullptr)
-            || ERROR_IO_PENDING == WSAGetLastError();
-    }
-
-    void discard_used(size_t num)
-    {
-        kassert(used_size >= num);
-        used_size -= num;
-        if (used_size > 0) {
-            memmove(chunk, chunk + num, used_size);
-        }
-    }
-
-    bool check_can_write(const buffer* buf, size_t num) const
-    {
-        size_t total_size = 0;
-        for (size_t i = 0; i < num; ++i) {
-            auto b = buf + i;
-            kassert(b->size > 0 && nullptr != b->data);
-            total_size += b->size;
-        }
-        return total_size < unused_size();
-    }
-
-    void write(const buffer* buf, size_t num)
-    {
-        for (size_t i = 0; i < num; ++i) {
-            auto b = buf + i;
-            memcpy(unused_ptr(), b->data, b->size);
-            used_size += b->size;
-        }
-    }
-};
 
 socket::impl::impl(socket& s, rawsocket_t rs)
     : _s(s)
@@ -159,7 +91,7 @@ bool socket::impl::handle_pollevent(void* evt)
             _f.unmark_write();
         }
 
-        if (0 == size || buf->cancel) {
+        if (!size || buf->cancel) {
             ret = false;
             break;
         }
@@ -238,7 +170,7 @@ bool socket::impl::handle_read(size_t size)
         scoped_call_flag s(_f);
         do {
             const auto t = _c->on_recv_data(ptr + size, max_size - size);
-            if (0 == t || _f.is_close()) {
+            if (!t || _f.is_close()) {
                 break;
             }
             size += t;
@@ -248,11 +180,9 @@ bool socket::impl::handle_read(size_t size)
     if (_f.is_close()) {
         return false;
     }
-
-    if (size > max_size) {
-        size = max_size;
+    if (size > 0) {
+        _rb->discard_used((std::min)(size, max_size));
     }
-    _rb->discard_used(size);
 
     return true;
 }

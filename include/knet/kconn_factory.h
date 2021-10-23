@@ -36,8 +36,8 @@ public:
 
     conn* create_conn();
     void destroy_conn(conn* c);
-
     conn* get_conn(connid_t cid) const;
+
     timerid_t add_timer(connid_t cid, int64_t ms, const userdata& ud);
     void del_timer(connid_t cid, timerid_t tid);
     void on_timer(connid_t cid, int64_t ms, const userdata& ud);
@@ -47,8 +47,8 @@ public:
 protected:
     virtual conn* do_create_conn() = 0;
     virtual void do_destroy_conn(conn* c) { delete c; }
-    virtual void do_update() {}
-    virtual void do_on_timer(conn* c, int64_t ms, const userdata& ud) {}
+    virtual void do_update() { }
+    virtual void do_on_timer(conn* c, int64_t ms, const userdata& ud) { }
 
 protected:
     connid_gener _gener;

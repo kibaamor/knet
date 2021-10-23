@@ -47,7 +47,7 @@ static_assert(std::is_same<rawsocket_t, SOCKET>::value, "rawsocket_t and SOCKET 
 #include <sys/ioctl.h>
 #include <netdb.h>
 
-#define __debugbreak __builtin_trap
+#define __debugbreak() __builtin_trap()
 #define WSAGetLastError() errno
 
 #ifdef __APPLE__

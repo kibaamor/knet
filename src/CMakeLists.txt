@@ -5,18 +5,10 @@ configure_file(
 
 if (WIN32)
     set(knet_platform_postfix "win")
-    set(knet_poller_postfix "iocp")
 else ()
     set(knet_platform_postfix "unix")
-
-    if (CMAKE_SYSTEM_NAME MATCHES "Linux")
-        set(knet_poller_postfix "epoll")
-    else ()
-        set(knet_poller_postfix "kqueue")
-    endif ()
 endif()
 message("knet_platform_postfix: ${knet_platform_postfix}")
-message("knet_poller_postfix: ${knet_poller_postfix}")
 
 #######################################################################################
 
@@ -34,10 +26,9 @@ file(GLOB SRC_LIST
 source_group("srcs" FILES ${SRC_LIST})
 
 file(GLOB_RECURSE EXTRA_SRC_LIST
+    "${PROJECT_SOURCE_DIR}/src/internal/socket/ksockbuf.h"
     "${PROJECT_SOURCE_DIR}/src/*${knet_platform_postfix}.h"
     "${PROJECT_SOURCE_DIR}/src/*${knet_platform_postfix}.cpp"
-    "${PROJECT_SOURCE_DIR}/src/*${knet_poller_postfix}.h"
-    "${PROJECT_SOURCE_DIR}/src/*${knet_poller_postfix}.cpp"
 )
 source_group("srcs\\extra" FILES ${EXTRA_SRC_LIST})
 

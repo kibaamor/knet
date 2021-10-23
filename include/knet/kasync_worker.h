@@ -9,14 +9,13 @@ public:
     ~async_worker() override;
 
     void add_work(rawsocket_t rs) override;
-
     bool start(size_t thread_num);
     void stop();
 
 protected:
     virtual worker* do_create_worker(conn_factory& cf) { return new worker(cf); }
     virtual bool do_start() { return true; }
-    virtual void do_stop() {}
+    virtual void do_stop() { }
 
     struct info {
         bool r = true;

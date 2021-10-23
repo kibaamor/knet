@@ -1,6 +1,7 @@
 #pragma once
 #include "../ksocket.h"
 #include "../kflag.h"
+#include "ksockbuf.h"
 
 namespace knet {
 
@@ -12,7 +13,6 @@ public:
     ~impl();
 
     bool init(poller& plr, conn_factory& cf);
-
     bool write(buffer* buf, size_t num);
     void close();
     bool is_closing() const { return _f.is_close(); }
@@ -34,7 +34,6 @@ private:
     flag _f;
     conn* _c = nullptr;
 
-    struct sockbuf;
     std::unique_ptr<sockbuf> _rb;
     std::unique_ptr<sockbuf> _wb;
 };

@@ -148,7 +148,7 @@ void conn_factory::del_timer(connid_t cid, timerid_t tid)
 void conn_factory::on_timer(connid_t cid, int64_t ms, const userdata& ud)
 {
     auto c = get_conn(cid);
-    if (nullptr != c) {
+    if (c) {
         c->on_timer(ms, ud);
         do_on_timer(c, ms, ud);
     }

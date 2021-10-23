@@ -8,7 +8,7 @@ echo_mgr mgr;
 echo_mgr::~echo_mgr()
 {
     disconnect_all = true;
-    if (nullptr != _t) {
+    if (_t) {
         _t->join();
         delete _t;
     }
@@ -45,8 +45,9 @@ void echo_mgr::update(int64_t delta_ms)
 
 void echo_mgr::check_console_input()
 {
-    if (nullptr != _t)
+    if (_t) {
         return;
+    }
 
     _t = new std::thread([](echo_mgr* m) {
         std::string s;

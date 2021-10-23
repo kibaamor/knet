@@ -22,14 +22,14 @@ bool address::resolve_all(const std::string& node_name, const std::string& servi
     struct addrinfo* result = nullptr;
     do {
         const auto ret = getaddrinfo(nn, service_name.c_str(), &hints, &result);
-        if (ret == EAI_AGAIN) {
+        if (EAI_AGAIN == ret) {
             continue;
-        } else if (0 != ret) {
+        } else if (ret) {
             return false;
         }
     } while (false);
 
-    for (auto rp = result; nullptr != rp; rp = rp->ai_next) {
+    for (auto rp = result; rp; rp = rp->ai_next) {
         if (sizeof(address::_addr) >= rp->ai_addrlen) {
             addrs.emplace_back();
             memcpy(addrs.back()._addr, rp->ai_addr, rp->ai_addrlen);

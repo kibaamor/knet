@@ -20,7 +20,7 @@ rawsocket_t create_rawsocket(int domain, bool nonblock)
     }
     return rs;
 
-#else
+#else // !_WIN32
 
     rawsocket_t rs = INVALID_RAWSOCKET;
 
@@ -36,7 +36,7 @@ rawsocket_t create_rawsocket(int domain, bool nonblock)
             kdebug("socket() failed!");
             return rs;
         }
-#endif
+#endif // SOCK_NONBLOCK && SOCK_CLOEXEC
         rs = socket(domain, type, 0);
         if (INVALID_RAWSOCKET == rs) {
             kdebug("socket() failed!");
@@ -63,10 +63,10 @@ rawsocket_t create_rawsocket(int domain, bool nonblock)
             close_rawsocket(rs);
         }
     }
-#endif
+#endif // SO_NOSIGPIPE
 
     return rs;
-#endif
+#endif // _WIN32
 }
 
 } // namespace knet

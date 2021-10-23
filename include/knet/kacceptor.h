@@ -9,10 +9,8 @@ public:
     ~acceptor();
 
     void update();
-
     bool start(const address& addr);
     void stop();
-
     bool get_sockaddr(address& addr) const;
 
 private:

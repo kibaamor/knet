@@ -11,6 +11,7 @@ constexpr timerid_t INVALID_TIMERID = 0;
 
 class conn_factory;
 class socket;
+
 class conn {
 public:
     explicit conn(conn_factory& cf);
@@ -20,9 +21,9 @@ public:
     void on_disconnect();
     size_t on_recv_data(char* data, size_t size);
 
-    void on_timer(int64_t ms, const userdata& ud);
     timerid_t add_timer(int64_t ms, const userdata& ud);
     void del_timer(timerid_t tid);
+    void on_timer(int64_t ms, const userdata& ud);
 
     bool send_data(buffer* buf, size_t num);
 
@@ -37,9 +38,9 @@ public:
 protected:
     bool set_sockbuf_size(size_t size);
 
-    virtual void do_on_connected() {}
-    virtual void do_on_disconnect() {}
-    virtual void do_on_timer(int64_t ms, const userdata& ud) {}
+    virtual void do_on_connected() { }
+    virtual void do_on_disconnect() { }
+    virtual void do_on_timer(int64_t ms, const userdata& ud) { }
     virtual size_t do_on_recv_data(char* data, size_t size) = 0;
 
 private:

@@ -2,98 +2,16 @@
 #include "../kpoller.h"
 #include "../ksocket_utils.h"
 #include "../../../include/knet/kconn_factory.h"
+#include <algorithm>
 
 namespace knet {
-
-struct socket::impl::sockbuf {
-    size_t used_size = 0;
-    char chunk[SOCKET_RWBUF_SIZE] = {};
-
-    char* unused_ptr() { return chunk + used_size; }
-    size_t unused_size() const { return sizeof(chunk) - used_size; }
-    void discard_used(size_t num)
-    {
-        kassert(used_size >= num);
-        used_size -= num;
-        if (used_size > 0) {
-            memmove(chunk, chunk + num, used_size);
-        }
-    }
-
-    bool try_write(rawsocket_t rs)
-    {
-        size_t size = 0;
-        int ret = 0;
-        while (size < used_size) {
-#ifdef SO_NOSIGPIPE
-            ret = TEMP_FAILURE_RETRY(write(rs, chunk + size, used_size - size));
-#else
-            ret = TEMP_FAILURE_RETRY(send(rs, chunk + size, used_size - size, MSG_NOSIGNAL));
-#endif
-            if (RAWSOCKET_ERROR == ret) {
-                if (EAGAIN == errno || EWOULDBLOCK == errno) {
-                    break;
-                }
-                return false;
-            }
-            if (0 == ret) {
-                return false;
-            }
-            size += ret;
-        }
-
-        if (size > 0) {
-            discard_used(size);
-        }
-
-        return true;
-    }
-
-    bool try_read(rawsocket_t rs)
-    {
-        int ret = 0;
-        while (unused_size() > 0) {
-            ret = TEMP_FAILURE_RETRY(read(rs, unused_ptr(), unused_size()));
-            if (RAWSOCKET_ERROR == ret) {
-                if (EAGAIN == errno || EWOULDBLOCK == errno) {
-                    break;
-                }
-                return false;
-            }
-            if (0 == ret) {
-                return false;
-            }
-            used_size += ret;
-        }
-        return true;
-    }
-
-    bool check_can_write(const buffer* buf, size_t num) const
-    {
-        size_t total_size = 0;
-        for (size_t i = 0; i < num; ++i) {
-            auto b = buf + i;
-            kassert(b->size > 0 && nullptr != b->data);
-            total_size += b->size;
-        }
-        return total_size < unused_size();
-    }
-
-    void write(const buffer* buf, size_t num)
-    {
-        for (size_t i = 0; i < num; ++i) {
-            auto b = buf + i;
-            memcpy(unused_ptr(), b->data, b->size);
-            used_size += b->size;
-        }
-    }
-}; // namespace knet
 
 socket::impl::impl(socket& s, rawsocket_t rs)
     : _s(s)
     , _rs(rs)
 {
 }
+
 socket::impl::~impl()
 {
     kassert(INVALID_RAWSOCKET == _rs);
@@ -135,14 +53,8 @@ bool socket::impl::write(buffer* buf, size_t num)
     if (!buf || !num || is_closing() || !_wb->check_can_write(buf, num)) {
         return false;
     }
-
     _wb->write(buf, num);
-
-    if (_wb->used_size && _f.is_write()) {
-        return try_write();
-    }
-
-    return true;
+    return try_write();
 }
 
 void socket::impl::close()
@@ -234,23 +146,21 @@ bool socket::impl::handle_can_write()
 {
     if (!_f.is_write()) {
         _f.mark_write();
-        if (_wb->used_size) {
-            return try_write();
-        }
+        return try_write();
     }
     return true;
 }
 
 bool socket::impl::handle_read()
 {
+    const auto ptr = _rb->chunk;
     const auto max_size = _rb->used_size;
     size_t size = 0;
     {
-        const auto ptr = _rb->chunk;
         scoped_call_flag s(_f);
         do {
             const auto t = _c->on_recv_data(ptr + size, max_size - size);
-            if (0 == t || _f.is_close()) {
+            if (!t || _f.is_close()) {
                 break;
             }
             size += t;
@@ -260,18 +170,18 @@ bool socket::impl::handle_read()
     if (_f.is_close()) {
         return false;
     }
-
-    if (size > max_size) {
-        size = max_size;
+    if (size > 0) {
+        _rb->discard_used((std::min)(size, max_size));
     }
-
-    _rb->discard_used(size);
 
     return true;
 }
 
 bool socket::impl::try_write()
 {
+    if (!_wb->used_size || !_f.is_write()) {
+        return true;
+    }
     if (!_wb->try_write(_rs)) {
         return false;
     }

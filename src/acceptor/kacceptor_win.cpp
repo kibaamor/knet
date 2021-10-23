@@ -9,7 +9,7 @@ using namespace knet;
 LPFN_ACCEPTEX get_accept_ex(rawsocket_t rs)
 {
     static thread_local LPFN_ACCEPTEX _accept_ex = nullptr;
-    if (nullptr == _accept_ex) {
+    if (!_accept_ex) {
         GUID guid = WSAID_ACCEPTEX;
         DWORD dw = 0;
         WSAIoctl(rs, SIO_GET_EXTENSION_FUNCTION_POINTER,
@@ -41,7 +41,7 @@ struct accept_io {
         memset(&ol, 0, sizeof(ol));
 
         const auto accept_ex = get_accept_ex(rs);
-        if (nullptr == accept_ex) {
+        if (!accept_ex) {
             return false;
         }
 
@@ -89,10 +89,8 @@ public:
 
     void post_all(rawsocket_t srv_rs, int family)
     {
-        for (; nullptr != _free_ios; _free_ios = _free_ios->next) {
-            if (!_free_ios->post(srv_rs, family)) {
-                return;
-            }
+        while (_free_ios && _free_ios->post(srv_rs, family)) {
+            _free_ios = _free_ios->next;
         }
     }
 
@@ -137,8 +135,8 @@ bool acceptor::impl::start(const address& addr)
 
     _plr.reset(new poller(*this));
 
-    if (RAWSOCKET_ERROR == bind(_rs, addr.as_ptr<sockaddr>(), addr.get_socklen())
-        || RAWSOCKET_ERROR == listen(_rs, SOMAXCONN)
+    if (bind(_rs, addr.as_ptr<sockaddr>(), addr.get_socklen())
+        || listen(_rs, SOMAXCONN)
         || !_plr->add(_rs, this)) {
         close_rawsocket(_rs);
         return false;
@@ -155,6 +153,11 @@ void acceptor::impl::stop()
     close_rawsocket(_rs);
     _plr.reset();
     _ios.reset();
+}
+
+bool acceptor::impl::get_sockaddr(address& addr) const
+{
+    return INVALID_RAWSOCKET != _rs && get_rawsocket_sockaddr(_rs, addr);
 }
 
 bool acceptor::impl::on_pollevent(void* key, void* evt)

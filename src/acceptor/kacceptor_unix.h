@@ -1,7 +1,7 @@
 #pragma once
 #include "../../include/knet/kacceptor.h"
-#include "../internal/kpoller.h"
 #include "../internal/kplatform.h"
+#include "../internal/kpoller.h"
 
 namespace knet {
 
@@ -11,13 +11,11 @@ public:
     ~impl() override;
 
     void update();
-
     bool start(const address& addr);
     void stop();
+    bool get_sockaddr(address& addr) const;
 
     bool on_pollevent(void* key, void* evt) override;
-
-    rawsocket_t get_rawsocket() const { return _rs; }
 
 private:
     workable& _wkr;

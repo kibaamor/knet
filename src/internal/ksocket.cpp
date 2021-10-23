@@ -1,10 +1,11 @@
 #include "ksocket.h"
+#include "ksocket_utils.h"
+
 #ifdef _WIN32
 #include "socket/ksocket_win.h"
 #else
 #include "socket/ksocket_unix.h"
 #endif
-#include "ksocket_utils.h"
 
 namespace knet {
 

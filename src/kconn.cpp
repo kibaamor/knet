@@ -30,11 +30,6 @@ size_t conn::on_recv_data(char* data, size_t size)
     return do_on_recv_data(data, size);
 }
 
-void conn::on_timer(int64_t ms, const userdata& ud)
-{
-    do_on_timer(ms, ud);
-}
-
 timerid_t conn::add_timer(int64_t ms, const userdata& ud)
 {
     if (is_disconnecting()) {
@@ -50,9 +45,14 @@ void conn::del_timer(timerid_t tid)
     }
 }
 
+void conn::on_timer(int64_t ms, const userdata& ud)
+{
+    do_on_timer(ms, ud);
+}
+
 bool conn::send_data(buffer* buf, size_t num)
 {
-    return nullptr != _s && _s->write(buf, num);
+    return _s && _s->write(buf, num);
 }
 
 void conn::disconnect()
@@ -64,22 +64,22 @@ void conn::disconnect()
 
 bool conn::is_disconnecting() const
 {
-    return nullptr == _s || _s->is_closing();
+    return !_s || _s->is_closing();
 }
 
 bool conn::get_sockaddr(address& addr) const
 {
-    return nullptr != _s && _s->get_sockaddr(addr);
+    return _s && _s->get_sockaddr(addr);
 }
 
 bool conn::get_peeraddr(address& addr) const
 {
-    return nullptr != _s && _s->get_peeraddr(addr);
+    return _s && _s->get_peeraddr(addr);
 }
 
 bool conn::set_sockbuf_size(size_t size)
 {
-    return nullptr != _s && _s->set_sockbuf_size(size);
+    return _s && _s->set_sockbuf_size(size);
 }
 
 } // namespace knet

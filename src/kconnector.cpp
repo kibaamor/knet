@@ -17,7 +17,7 @@ bool connector::connect(const address& addr)
         return false;
     }
 
-    if (RAWSOCKET_ERROR == ::connect(rs, addr.as_ptr<sockaddr>(), addr.get_socklen())) {
+    if (::connect(rs, addr.as_ptr<sockaddr>(), addr.get_socklen())) {
         kdebug("connect() failed");
         close_rawsocket(rs);
         return false;

@@ -38,8 +38,8 @@ bool acceptor::impl::start(const address& addr)
 
     _plr.reset(new poller(*this));
 
-    if (RAWSOCKET_ERROR == bind(_rs, addr.as_ptr<sockaddr>(), addr.get_socklen())
-        || RAWSOCKET_ERROR == listen(_rs, SOMAXCONN)
+    if (bind(_rs, addr.as_ptr<sockaddr>(), addr.get_socklen())
+        || listen(_rs, SOMAXCONN)
         || !_plr->add(_rs, this)) {
         close_rawsocket(_rs);
         return false;
@@ -52,6 +52,11 @@ void acceptor::impl::stop()
 {
     close_rawsocket(_rs);
     _plr.reset();
+}
+
+bool acceptor::impl::get_sockaddr(address& addr) const
+{
+    return INVALID_RAWSOCKET != _rs && get_rawsocket_sockaddr(_rs, addr);
 }
 
 bool acceptor::impl::on_pollevent(void* key, void* evt)

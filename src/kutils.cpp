@@ -37,7 +37,7 @@ public:
                   << ", max:" << rt.rlim_max << std::endl;
 #endif // KNET_ENABLE_DEBUG_LOG
 
-        if (0 == ret) {
+        if (!ret) {
             rt.rlim_cur = rt.rlim_max;
 
 #ifdef __APPLE__

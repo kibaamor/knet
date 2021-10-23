@@ -59,7 +59,7 @@ static_assert(std::is_same<rawsocket_t, SOCKET>::value, "rawsocket_t and SOCKET 
 // https://android.googlesource.com/platform/system/core.git/+/refs/heads/master/libutils/include/utils/Compat.h
 #ifndef TEMP_FAILURE_RETRY
 #define TEMP_FAILURE_RETRY(exp) ({         \
-    typeof (exp) _rc;                      \
+    decltype (exp) _rc;                    \
     do {                                   \
         _rc = (exp);                       \
     } while (_rc == -1 && errno == EINTR); \

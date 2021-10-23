@@ -79,7 +79,7 @@ void socket::impl::close()
 bool socket::impl::handle_pollevent(void* evt)
 {
     auto e = reinterpret_cast<OVERLAPPED_ENTRY*>(evt);
-    const auto buf = CONTAINING_RECORD(e->lpOverlapped, socket::impl::sockbuf, ol);
+    const auto buf = CONTAINING_RECORD(e->lpOverlapped, sockbuf, ol);
     const auto size = static_cast<size_t>(e->dwNumberOfBytesTransferred);
 
     kassert(buf == _rb.get() || buf == _wb.get());

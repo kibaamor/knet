@@ -1,14 +1,10 @@
 #include "cecho_conn.h"
-#include <iostream>
 #include <knet/kconnector.h>
 #include <knet/kasync_worker.h>
 #include <knet/kutils.h>
 
 int main(int argc, char** argv)
 {
-    std::ios::sync_with_stdio(false);
-    std::cin.tie(nullptr);
-
     // parse command line
     const char* ip = argc > 1 ? argv[1] : "localhost";
     const char* port = argc > 2 ? argv[2] : "8888";

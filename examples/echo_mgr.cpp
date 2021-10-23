@@ -1,7 +1,5 @@
 #include "echo_mgr.h"
 #include <knet/kutils.h>
-#include <string>
-#include <iostream>
 
 echo_mgr mgr;
 
@@ -45,6 +43,9 @@ void echo_mgr::update(int64_t delta_ms)
 
 void echo_mgr::check_console_input()
 {
+    std::ios::sync_with_stdio(false);
+    std::cin.tie(nullptr);
+
     if (_t) {
         return;
     }

@@ -6,12 +6,6 @@
 
 int main(int argc, char** argv)
 {
-    using namespace knet;
-
-    // initialize knet
-    std::ios::sync_with_stdio(false);
-    std::cin.tie(nullptr);
-
     // parse command line
     const char* port = argc > 2 ? argv[2] : "8888";
     const auto max_idle_ms = argc > 2 ? std::atoi(argv[2]) : 996;

@@ -1,6 +1,5 @@
 #include "cecho_conn.h"
 #include <knet/kutils.h>
-#include <iostream>
 #include <cassert>
 #include <algorithm>
 

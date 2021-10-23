@@ -22,7 +22,7 @@ struct sockbuf {
         }
     }
 
-    bool check_can_write(const buffer* buf, size_t num) const
+    bool can_save_data(const buffer* buf, size_t num) const
     {
         size_t total_size = 0;
         for (size_t i = 0; i < num; ++i) {
@@ -33,7 +33,7 @@ struct sockbuf {
         return total_size < unused_size();
     }
 
-    void write(const buffer* buf, size_t num)
+    void save_data(const buffer* buf, size_t num)
     {
         for (size_t i = 0; i < num; ++i) {
             auto b = buf + i;

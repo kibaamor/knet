@@ -50,10 +50,10 @@ bool socket::impl::init(poller& plr, conn_factory& cf)
 
 bool socket::impl::write(buffer* buf, size_t num)
 {
-    if (!buf || !num || is_closing() || !_wb->check_can_write(buf, num)) {
+    if (!buf || !num || is_closing() || !_wb->can_save_data(buf, num)) {
         return false;
     }
-    _wb->write(buf, num);
+    _wb->save_data(buf, num);
     return try_write();
 }
 

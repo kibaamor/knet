@@ -55,16 +55,6 @@ rawsocket_t create_rawsocket(int domain, bool nonblock)
         }
     } while (false);
 
-#ifdef SO_NOSIGPIPE
-    if (INVALID_RAWSOCKET != rs) {
-        int on = 1;
-        if (!set_rawsocket_opt(rs, SOL_SOCKET, SO_NOSIGPIPE, &on, sizeof(on))) {
-            kdebug("set_rawsocket_opt(SO_NOSIGPIPE) failed!");
-            close_rawsocket(rs);
-        }
-    }
-#endif // SO_NOSIGPIPE
-
     return rs;
 #endif // _WIN32
 }

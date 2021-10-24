@@ -46,6 +46,7 @@ static_assert(std::is_same<rawsocket_t, SOCKET>::value, "rawsocket_t and SOCKET 
 #include <sys/time.h>
 #include <sys/ioctl.h>
 #include <netdb.h>
+#include <sys/uio.h>
 
 #define __debugbreak() __builtin_trap()
 #define WSAGetLastError() errno
@@ -78,6 +79,7 @@ constexpr int RAWSOCKET_ERROR = -1;
 //-------------------------------------------------------------------------------------
 // common headers
 #include <string.h>
+#include <cstddef>
 #include <array>
 
 //-------------------------------------------------------------------------------------

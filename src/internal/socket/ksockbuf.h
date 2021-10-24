@@ -33,7 +33,7 @@ struct sockbuf {
     void batch_save_data(const buffer* buf, size_t num)
     {
         for (size_t i = 0; i < num; ++i) {
-            save_data(buf[i].get_data(), buf[i].get_size());
+            save_data(buf[i].data, buf[i].size);
         }
     }
 

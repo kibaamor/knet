@@ -23,8 +23,8 @@ inline size_t buffer_total_size(const buffer* buf, size_t num)
 {
     size_t total_size = 0;
     for (size_t i = 0; i < num; ++i) {
-        kassert(buf[i].get_data() && buf[i].get_size());
-        total_size += buf[i].get_size();
+        kassert(buf[i].data && buf[i].size);
+        total_size += buf[i].size;
     }
     return total_size;
 }

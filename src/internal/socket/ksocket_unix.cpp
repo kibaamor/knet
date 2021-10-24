@@ -70,11 +70,11 @@ bool socket::impl::write(const buffer* buf, size_t num)
 
         _f.unmark_write();
         size_t i = 0;
-        for (; i < num && used >= buf[i].get_size(); ++i) {
-            used -= buf[i].get_size();
+        for (; i < num && used >= buf[i].size; ++i) {
+            used -= buf[i].size;
         }
         if (used) {
-            _wb->save_data(buf[i].get_data() + used, buf[i].get_size() - used);
+            _wb->save_data(buf[i].data + used, buf[i].size - used);
             ++i;
         }
         if (i < num) {

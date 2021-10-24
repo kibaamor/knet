@@ -21,7 +21,7 @@ public:
     {
         if (conn::send_data(buf, num)) {
             for (size_t i = 0; i < num; ++i) {
-                mgr.total_send += buf[i].get_size();
+                mgr.total_send += buf[i].size;
             }
             return true;
         }

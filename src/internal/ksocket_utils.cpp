@@ -96,8 +96,15 @@ bool rawsocket_sendv(rawsocket_t rs, const buffer* buf, size_t num, size_t& used
 
 #ifdef _WIN32
 
+    static_assert(sizeof(buffer) == sizeof(WSABUF), "buffer and WSABUF must be same size");
+    static_assert(offsetof(buffer, data) == offsetof(WSABUF, buf),
+        "buffer and WSABUF must be same memory layout for data field");
+    static_assert(offsetof(buffer, size) == offsetof(WSABUF, len),
+        "buffer and WSABUF must be same memory layout for size field");
+
     DWORD n = 0;
-    if (!WSASend(rs, buf, num, &n, 0, nullptr, nullptr)) {
+    WSABUF* b = const_cast<WSABUF*>(reinterpret_cast<const WSABUF*>(buf));
+    if (!WSASend(rs, b, num, &n, 0, nullptr, nullptr)) {
         used = static_cast<size_t>(n);
         return true;
     } else {
@@ -106,7 +113,13 @@ bool rawsocket_sendv(rawsocket_t rs, const buffer* buf, size_t num, size_t& used
 
 #else // !_WIN32
 
-    ssize_t n = TEMP_FAILURE_RETRY(writev(rs, buf, num));
+    static_assert(sizeof(buffer) == sizeof(iovec), "buffer and iovec must be same size");
+    static_assert(offsetof(buffer, data) == offsetof(iovec, iov_base),
+        "buffer and iovec must be same memory layout for data field");
+    static_assert(offsetof(buffer, size) == offsetof(iovec, iov_len),
+        "buffer and iovec must be same memory layout for size field");
+
+    const ssize_t n = TEMP_FAILURE_RETRY(writev(rs, reinterpret_cast<const iovec*>(buf), num));
     if (n >= 0) {
         used = static_cast<size_t>(n);
         return true;

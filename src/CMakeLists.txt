@@ -49,10 +49,10 @@ target_compile_definitions(${PROJECT_NAME}
         $<$<CONFIG:RelWithDebInfo>:KNET_ENABLE_ASSERT>
 )
 
-if (KNET_ENABLE_DEBUG_LOG)
+if (KNET_ENABLE_LOG)
     target_compile_definitions(${PROJECT_NAME}
         PRIVATE
-            KNET_ENABLE_DEBUG_LOG
+            KNET_ENABLE_LOG
     )
 endif()
 

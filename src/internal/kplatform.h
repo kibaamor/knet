@@ -85,14 +85,34 @@ constexpr int RAWSOCKET_ERROR = -1;
 //-------------------------------------------------------------------------------------
 // macros
 
+inline void klog(const char* log, const char* file, int line)
+{
+#ifdef KNET_ENABLE_LOG
+    const auto en = WSAGetLastError();
+    std::cerr << log << " [errno: " << en << "][loc: " << file << ":" << line << "]\n";
+#endif
+}
+
+// kdebug macro
+#ifdef KNET_ENABLE_LOG
+#define kdebug(log) klog(log, __FILE__, __LINE__)
+#else // !KNET_ENABLE_LOG
+#define kdebug(log) // nothing
+#endif // KNET_ENABLE_LOG
+
+// KNET_TO_STR macro
+#define _KNET_TO_STR(x) #x
+#define KNET_TO_STR(x) _KNET_TO_STR(x)
+
 // kassert macro
 #ifdef KNET_ENABLE_ASSERT
 
-#define kassert(cond)       \
-    do {                    \
-        if (!(cond)) {      \
-            __debugbreak(); \
-        }                   \
+#define kassert(cond)                                        \
+    do {                                                     \
+        if (!(cond)) {                                       \
+            kdebug("assert '" KNET_TO_STR(cond) "' failed"); \
+            __debugbreak();                                  \
+        }                                                    \
     } while (false)
 
 #else // !KNET_ENABLE_ASSERT
@@ -100,22 +120,3 @@ constexpr int RAWSOCKET_ERROR = -1;
 #define kassert(cond)
 
 #endif // KNET_ENABLE_ASSERT
-
-// kdebug macro
-#ifdef KNET_ENABLE_DEBUG_LOG
-
-#define kdebug(log) kdebug_impl(log, __FILE__, __LINE__)
-
-namespace knet {
-inline void kdebug_impl(const char* log, const char* file, int line)
-{
-    const auto en = WSAGetLastError();
-    std::cerr << log << " errno:" << en << " file:" << file << " line:" << line << "\n";
-}
-} // namespace knet
-
-#else // !KNET_ENABLE_DEBUG_LOG
-
-#define kdebug(log) // nothing
-
-#endif // KNET_ENABLE_DEBUG_LOG

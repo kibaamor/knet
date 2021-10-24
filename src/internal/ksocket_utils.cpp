@@ -65,7 +65,7 @@ bool rawsocket_recv(rawsocket_t rs, void* buf, size_t num, size_t& used)
 
 #ifdef _WIN32
 
-    const int n = recv(rs, buf, num, 0);
+    const int n = recv(rs, static_cast<char*>(buf), static_cast<int>(num), 0);
     if (n > 0) {
         used = static_cast<size_t>(n);
         return true;
@@ -104,7 +104,7 @@ bool rawsocket_sendv(rawsocket_t rs, const buffer* buf, size_t num, size_t& used
 
     DWORD n = 0;
     WSABUF* b = const_cast<WSABUF*>(reinterpret_cast<const WSABUF*>(buf));
-    if (!WSASend(rs, b, num, &n, 0, nullptr, nullptr)) {
+    if (!WSASend(rs, b, static_cast<DWORD>(num), &n, 0, nullptr, nullptr)) {
         used = static_cast<size_t>(n);
         return true;
     } else {

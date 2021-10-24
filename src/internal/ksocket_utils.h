@@ -19,6 +19,16 @@ inline bool set_rawsocket_cloexec(rawsocket_t rs)
 
 #endif // !_WIN32
 
+inline size_t buffer_total_size(const buffer* buf, size_t num)
+{
+    size_t total_size = 0;
+    for (size_t i = 0; i < num; ++i) {
+        kassert(buf[i].get_data() && buf[i].get_size());
+        total_size += buf[i].get_size();
+    }
+    return total_size;
+}
+
 inline bool set_rawsocket_opt(rawsocket_t rs, int level, int optname,
     const void* optval, socklen_t optlen)
 {
@@ -65,5 +75,7 @@ inline void close_rawsocket(rawsocket_t& rs)
 }
 
 rawsocket_t create_rawsocket(int domain, bool nonblock);
+bool rawsocket_recv(rawsocket_t rs, void* buf, size_t num, size_t& used);
+bool rawsocket_sendv(rawsocket_t rs, const buffer* buf, size_t num, size_t& used);
 
 } // namespace knet

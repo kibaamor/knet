@@ -93,7 +93,7 @@ bool cecho_conn::send_package()
     const auto send_size = u32rand_between(1, _used_buf_size - _send_buf_size);
     buffer buf(_buf + _send_buf_size, send_size);
     if (!send_data(&buf, 1)) {
-        std::cerr << "send_package failed! size:" << buf.size << std::endl;
+        std::cerr << "send_package failed! size:" << buf.get_size() << std::endl;
         return false;
     }
 

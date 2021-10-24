@@ -1,5 +1,6 @@
 #pragma once
 #include "../kplatform.h"
+#include "../ksocket_utils.h"
 
 namespace knet {
 
@@ -13,6 +14,7 @@ struct sockbuf {
 
     char* unused_ptr() { return chunk + used_size; }
     size_t unused_size() const { return sizeof(chunk) - used_size; }
+
     void discard_used(size_t num)
     {
         kassert(num > 0 && used_size >= num);
@@ -22,23 +24,16 @@ struct sockbuf {
         }
     }
 
-    bool can_save_data(const buffer* buf, size_t num) const
+    void save_data(void* data, size_t num)
     {
-        size_t total_size = 0;
-        for (size_t i = 0; i < num; ++i) {
-            auto b = buf + i;
-            kassert(b->size && b->data);
-            total_size += b->size;
-        }
-        return total_size < unused_size();
+        memcpy(unused_ptr(), data, num);
+        used_size += num;
     }
 
-    void save_data(const buffer* buf, size_t num)
+    void batch_save_data(const buffer* buf, size_t num)
     {
         for (size_t i = 0; i < num; ++i) {
-            auto b = buf + i;
-            memcpy(unused_ptr(), b->data, b->size);
-            used_size += b->size;
+            save_data(buf[i].get_data(), buf[i].get_size());
         }
     }
 
@@ -74,49 +69,24 @@ struct sockbuf {
 
     bool try_write(rawsocket_t rs)
     {
-        size_t size = 0;
-        int ret = 0;
-        while (size < used_size) {
-#ifdef SO_NOSIGPIPE
-            ret = TEMP_FAILURE_RETRY(write(rs, chunk + size, used_size - size));
-#else // !SO_NOSIGPIPE
-            ret = TEMP_FAILURE_RETRY(send(rs, chunk + size, used_size - size, MSG_NOSIGNAL));
-#endif // SO_NOSIGPIPE
-            if (RAWSOCKET_ERROR == ret) {
-                if (EAGAIN == errno || EWOULDBLOCK == errno) {
-                    break;
-                }
-                return false;
-            }
-            if (0 == ret) {
-                return false;
-            }
-            size += ret;
+        buffer buf(chunk, used_size);
+        size_t used = 0;
+        if (!rawsocket_sendv(rs, &buf, 1, used)) {
+            return false;
         }
-
-        if (size > 0) {
-            discard_used(size);
+        if (used) {
+            discard_used(used);
         }
-
         return true;
     }
 
     bool try_read(rawsocket_t rs)
     {
-        int ret = 0;
-        while (unused_size() > 0) {
-            ret = TEMP_FAILURE_RETRY(read(rs, unused_ptr(), unused_size()));
-            if (RAWSOCKET_ERROR == ret) {
-                if (EAGAIN == errno || EWOULDBLOCK == errno) {
-                    break;
-                }
-                return false;
-            }
-            if (0 == ret) {
-                return false;
-            }
-            used_size += ret;
+        size_t used = 0;
+        if (!rawsocket_recv(rs, unused_ptr(), unused_size(), used)) {
+            return false;
         }
+        used_size += used;
         return true;
     }
 

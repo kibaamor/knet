@@ -1,6 +1,5 @@
 #include "ksocket_win.h"
 #include "../kpoller.h"
-#include "../ksocket_utils.h"
 #include "../../../include/knet/kconn_factory.h"
 #include <algorithm>
 
@@ -48,13 +47,44 @@ bool socket::impl::init(poller& plr, conn_factory& cf)
     return true;
 }
 
-bool socket::impl::write(buffer* buf, size_t num)
+bool socket::impl::write(const buffer* buf, size_t num)
 {
-    if (!buf || !num || is_closing() || !_wb->can_save_data(buf, num)) {
+    if (!buf || !num || is_closing()) {
         return false;
     }
-    _wb->save_data(buf, num);
-    return try_write();
+
+    auto total_size = buffer_total_size(buf, num);
+    if (total_size > _wb->unused_size()) {
+        return false;
+    }
+
+    if (!_wb->used_size && !_f.is_write()) {
+        size_t used = 0;
+        if (!rawsocket_sendv(_rs, buf, num, used)) {
+            this->close();
+            return false;
+        }
+        if (used == total_size) {
+            return true;
+        }
+
+        size_t i = 0;
+        for (; i < num && used >= buf[i].get_size(); ++i) {
+            used -= buf[i].get_size();
+        }
+        if (used) {
+            _wb->save_data(buf[i].get_data() + used, buf[i].get_size() - used);
+            ++i;
+        }
+        if (i < num) {
+            _wb->batch_save_data(&buf[i], num - i);
+        }
+    } else {
+        _wb->batch_save_data(buf, num);
+        return try_write();
+    }
+
+    return true;
 }
 
 void socket::impl::close()

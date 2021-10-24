@@ -21,7 +21,7 @@ bool socket::init(poller& plr, conn_factory& cf)
     return _impl->init(plr, cf);
 }
 
-bool socket::write(buffer* buf, size_t num)
+bool socket::write(const buffer* buf, size_t num)
 {
     return _impl->write(buf, num);
 }

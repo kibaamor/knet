@@ -17,11 +17,11 @@ public:
         mgr.inst_num -= 1;
     }
 
-    bool send_data(buffer* buf, size_t num)
+    bool send_data(const buffer* buf, size_t num)
     {
         if (conn::send_data(buf, num)) {
             for (size_t i = 0; i < num; ++i) {
-                mgr.total_send += buf[i].size;
+                mgr.total_send += buf[i].get_size();
             }
             return true;
         }

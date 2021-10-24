@@ -69,4 +69,62 @@ rawsocket_t create_rawsocket(int domain, bool nonblock)
 #endif // _WIN32
 }
 
+bool rawsocket_recv(rawsocket_t rs, void* buf, size_t num, size_t& used)
+{
+    used = 0;
+
+#ifdef _WIN32
+
+    const int n = recv(rs, buf, num, 0);
+    if (n > 0) {
+        used = static_cast<size_t>(n);
+        return true;
+    } else if (!n) {
+        return false;
+    } else {
+        return WSAEWOULDBLOCK == WSAGetLastError();
+    }
+
+#else // !_WIN32
+
+    ssize_t n = TEMP_FAILURE_RETRY(recv(rs, buf, num, 0));
+    if (n > 0) {
+        used = static_cast<size_t>(n);
+        return true;
+    } else if (!n) {
+        return false;
+    } else {
+        return EAGAIN == errno || EWOULDBLOCK == errno;
+    }
+
+#endif // _WIN32
+}
+
+bool rawsocket_sendv(rawsocket_t rs, const buffer* buf, size_t num, size_t& used)
+{
+    used = 0;
+
+#ifdef _WIN32
+
+    DWORD n = 0;
+    if (!WSASend(rs, buf, num, &n, 0, nullptr, nullptr)) {
+        used = static_cast<size_t>(n);
+        return true;
+    } else {
+        return WSAEWOULDBLOCK == WSAGetLastError();
+    }
+
+#else // !_WIN32
+
+    ssize_t n = TEMP_FAILURE_RETRY(writev(rs, buf, num));
+    if (n >= 0) {
+        used = static_cast<size_t>(n);
+        return true;
+    } else {
+        return EAGAIN == errno || EWOULDBLOCK == errno;
+    }
+
+#endif // _WIN32
+}
+
 } // namespace knet

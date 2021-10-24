@@ -50,7 +50,7 @@ void conn::on_timer(int64_t ms, const userdata& ud)
     do_on_timer(ms, ud);
 }
 
-bool conn::send_data(buffer* buf, size_t num)
+bool conn::send_data(const buffer* buf, size_t num)
 {
     return _s && _s->write(buf, num);
 }

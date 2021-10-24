@@ -25,7 +25,7 @@ public:
     void del_timer(timerid_t tid);
     void on_timer(int64_t ms, const userdata& ud);
 
-    bool send_data(buffer* buf, size_t num);
+    bool send_data(const buffer* buf, size_t num);
 
     void disconnect();
     bool is_disconnecting() const;

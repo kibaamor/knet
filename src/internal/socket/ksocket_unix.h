@@ -13,7 +13,7 @@ public:
     ~impl();
 
     bool init(poller& plr, conn_factory& cf);
-    bool write(buffer* buf, size_t num);
+    bool write(const buffer* buf, size_t num);
     void close();
     bool is_closing() const { return _f.is_close(); }
     bool handle_pollevent(void* evt);

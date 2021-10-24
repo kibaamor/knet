@@ -65,6 +65,12 @@ bool acceptor::impl::on_pollevent(void* key, void* evt)
 #ifdef __APPLE__
         auto rs = TEMP_FAILURE_RETRY(accept(_rs, nullptr, 0));
         if (INVALID_RAWSOCKET == rs) {
+            if (ECONNABORTED == errno) {
+                continue;
+            }
+            if (EMFILE == errno || ENFILE == errno) {
+                kdebug("too many open file!");
+            }
             if (EAGAIN != errno && EWOULDBLOCK != errno) {
                 kdebug("accept() failed!");
             }
@@ -83,6 +89,12 @@ bool acceptor::impl::on_pollevent(void* key, void* evt)
 #else
         auto rs = TEMP_FAILURE_RETRY(accept4(_rs, nullptr, 0, SOCK_NONBLOCK | SOCK_CLOEXEC));
         if (INVALID_RAWSOCKET == rs) {
+            if (ECONNABORTED == errno) {
+                continue;
+            }
+            if (EMFILE == errno || ENFILE == errno) {
+                kdebug("too many open file!");
+            }
             if (EAGAIN != errno && EWOULDBLOCK != errno) {
                 kdebug("accept4() failed!");
             }

@@ -1,5 +1,5 @@
 #pragma once
-#include "../../include/knet/knetfwd.h"
+#include "../../include/knet/kconn.h"
 
 namespace knet {
 
@@ -18,9 +18,10 @@ public:
     bool is_closing() const;
     bool handle_pollevent(void* evt);
     void dispose();
-    bool set_sockbuf_size(size_t size);
+    bool get_stat(conn::stat& s) const;
     bool get_sockaddr(address& addr) const;
     bool get_peeraddr(address& addr) const;
+    bool set_sockbuf_size(size_t size);
 
 private:
     class impl;

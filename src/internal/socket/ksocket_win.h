@@ -17,6 +17,7 @@ public:
     void close();
     bool is_closing() const { return _f.is_close(); }
     bool handle_pollevent(void* evt);
+    bool get_stat(conn::stat& s) const;
 
     rawsocket_t get_rawsocket() const { return _rs; }
 
@@ -36,6 +37,8 @@ private:
 
     std::unique_ptr<sockbuf> _rb;
     std::unique_ptr<sockbuf> _wb;
+
+    KNET_SOCKET_STAT_CODE(conn::stat _stat)
 };
 
 } // namespace knet

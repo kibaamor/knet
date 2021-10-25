@@ -56,6 +56,13 @@ if (KNET_ENABLE_LOG)
     )
 endif()
 
+if (KNET_SOCKET_STAT)
+    target_compile_definitions(${PROJECT_NAME}
+        PRIVATE
+            KNET_SOCKET_STAT
+    )
+endif()
+
 install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/
     DESTINATION include
     )

@@ -11,7 +11,7 @@ public:
     }
 
     connid_gener(connid_t init, connid_t step)
-        : _cur(init)
+        : _cur(init - step)
         , _step(step)
     {
     }
@@ -47,8 +47,8 @@ public:
 protected:
     virtual conn* do_create_conn() = 0;
     virtual void do_destroy_conn(conn* c) { delete c; }
-    virtual void do_update() { }
-    virtual void do_on_timer(conn* c, int64_t ms, const userdata& ud) { }
+    virtual void do_update() {}
+    virtual void do_on_timer(conn* c, int64_t ms, const userdata& ud) {}
 
 protected:
     connid_gener _gener;

@@ -12,6 +12,11 @@ conn::conn(conn_factory& cf)
 
 conn::~conn() = default;
 
+bool conn::send_data(const buffer* buf, size_t num)
+{
+    return _s && _s->write(buf, num);
+}
+
 void conn::on_connected(socket* s)
 {
     _s = s;
@@ -28,6 +33,18 @@ void conn::on_disconnect()
 size_t conn::on_recv_data(char* data, size_t size)
 {
     return do_on_recv_data(data, size);
+}
+
+void conn::disconnect()
+{
+    if (!is_disconnecting()) {
+        _s->close();
+    }
+}
+
+bool conn::is_disconnecting() const
+{
+    return !_s || _s->is_closing();
 }
 
 timerid_t conn::add_timer(int64_t ms, const userdata& ud)
@@ -50,21 +67,9 @@ void conn::on_timer(int64_t ms, const userdata& ud)
     do_on_timer(ms, ud);
 }
 
-bool conn::send_data(const buffer* buf, size_t num)
+bool conn::get_stat(stat& s) const
 {
-    return _s && _s->write(buf, num);
-}
-
-void conn::disconnect()
-{
-    if (!is_disconnecting()) {
-        _s->close();
-    }
-}
-
-bool conn::is_disconnecting() const
-{
-    return !_s || _s->is_closing();
+    return _s && _s->get_stat(s);
 }
 
 bool conn::get_sockaddr(address& addr) const

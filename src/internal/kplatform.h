@@ -120,3 +120,10 @@ inline void klog(const char* log, const char* file, int line)
 #define kassert(cond)
 
 #endif // KNET_ENABLE_ASSERT
+
+// KNET_SOCKET_STAT
+#ifdef KNET_SOCKET_STAT
+#define KNET_SOCKET_STAT_CODE(x) x;
+#else // !KNET_SOCKET_STAT
+#define KNET_SOCKET_STAT_CODE(x)
+#endif // KNET_SOCKET_STAT

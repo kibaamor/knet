@@ -4,6 +4,8 @@
 
 using namespace knet;
 
+constexpr int64_t TIMER_ID_DUMP_STAT = 8888;
+
 class echo_conn : public conn {
 public:
     explicit echo_conn(conn_factory& cf)
@@ -55,6 +57,10 @@ protected:
         if (!set_sockbuf_size(mgr.sockbuf_size)) {
             std::cerr << get_connid() << " set_sockbuf_size failed!\n";
         }
+
+        if (0 == get_connid()) {
+            add_timer(now_ms() + 1000, TIMER_ID_DUMP_STAT);
+        }
     }
 
     void do_on_disconnect() override
@@ -65,6 +71,20 @@ protected:
     void do_on_timer(int64_t ms, const userdata& ud) override
     {
         mgr << get_connid() << " on timer: " << ms << "\n";
+        if (ud.data.i64 == TIMER_ID_DUMP_STAT) {
+            conn::stat s;
+            if (get_stat(s)) {
+                std::cerr
+                    << "[stat] connid:" << get_connid()
+                    << ", send:" << s.send_count
+                    << ", write:" << s.write_count
+                    << ", copy:" << s.copy_count
+                    << ", recv:" << s.read_count
+                    << ", read:" << s.read_count
+                    << "\n";
+                add_timer(now_ms() + 1000, TIMER_ID_DUMP_STAT);
+            }
+        }
     }
 
     size_t do_on_recv_data(char* data, size_t size) override

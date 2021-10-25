@@ -15,11 +15,13 @@ endif()
 message("CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
 
 option(KNET_ENABLE_LOG "Show log on cerr" ON)
+option(KNET_SOCKET_STAT "Statistics socket api call" ON)
 option(KNET_BUILD_EXAMPLE "Build exmaple" ON)
 option(KNET_BUILD_TEST "Build test" ON)
 
 message("CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX}")
 message("KNET_ENABLE_LOG: ${KNET_ENABLE_LOG}")
+message("KNET_SOCKET_STAT: ${KNET_SOCKET_STAT}")
 message("KNET_BUILD_EXAMPLE: ${KNET_BUILD_EXAMPLE}")
 message("KNET_BUILD_TEST: ${KNET_BUILD_TEST}")
 

@@ -64,10 +64,13 @@ bool socket::impl::write(const buffer* buf, size_t num)
             this->close();
             return false;
         }
+
+        KNET_SOCKET_STAT_CODE(++_stat.write_count)
         if (used == total_size) {
             return true;
         }
 
+        KNET_SOCKET_STAT_CODE(++_stat.copy_count)
         size_t i = 0;
         for (; i < num && used >= buf[i].size; ++i) {
             used -= buf[i].size;
@@ -80,6 +83,7 @@ bool socket::impl::write(const buffer* buf, size_t num)
             _wb->batch_save_data(&buf[i], num - i);
         }
     } else {
+        KNET_SOCKET_STAT_CODE(++_stat.copy_count)
         _wb->batch_save_data(buf, num);
         return try_write();
     }
@@ -147,6 +151,16 @@ bool socket::impl::handle_pollevent(void* evt)
     return ret;
 }
 
+bool socket::impl::get_stat(conn::stat& s) const
+{
+#ifdef KNET_SOCKET_STAT
+    KNET_SOCKET_STAT_CODE(s = _stat)
+    return true;
+#else // !KNET_SOCKET_STAT
+    return false;
+#endif // KNET_SOCKET_STAT
+}
+
 bool socket::impl::start()
 {
     {
@@ -173,6 +187,7 @@ bool socket::impl::try_read()
     if (!_rb->post_read(_rs)) {
         return false;
     }
+    KNET_SOCKET_STAT_CODE(++_stat.read_count)
     _f.mark_read();
     return true;
 }
@@ -185,6 +200,7 @@ bool socket::impl::try_write()
     if (!_wb->post_write(_rs)) {
         return false;
     }
+    KNET_SOCKET_STAT_CODE(++_stat.write_count)
     _f.mark_write();
     return true;
 }
@@ -199,6 +215,7 @@ bool socket::impl::handle_read(size_t size)
     {
         scoped_call_flag s(_f);
         do {
+            KNET_SOCKET_STAT_CODE(++_stat.recv_count)
             const auto t = _c->on_recv_data(ptr + size, max_size - size);
             if (!t || _f.is_close()) {
                 break;

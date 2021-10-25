@@ -93,7 +93,7 @@ inline void klog(const char* log, const char* file, int line)
 {
 #ifdef KNET_ENABLE_LOG
     const auto en = WSAGetLastError();
-    std::cerr << log << " [errno: " << en << ", " << strerror(en) << "][loc: " << file << ":" << line << "]\n";
+    std::cerr << log << " [errno: " << en << "][file: " << file << ":" << line << "]\n";
 #endif
 }
 

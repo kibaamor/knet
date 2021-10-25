@@ -47,7 +47,7 @@ bool connector::connect(const address& addr, int timeout_ms)
     }
 
     do {
-        const auto ret = TEMP_FAILURE_RETRY(select(rs + 1, nullptr, &ws, nullptr, ptv));
+        const auto ret = TEMP_FAILURE_RETRY(select(static_cast<int>(rs) + 1, nullptr, &ws, nullptr, ptv));
         if (RAWSOCKET_ERROR == ret) {
             kdebug("select() failed!");
             break;
@@ -58,7 +58,7 @@ bool connector::connect(const address& addr, int timeout_ms)
 
         int opt = 0;
         socklen_t len = sizeof(opt);
-        if (getsockopt(rs, SOL_SOCKET, SO_ERROR, &opt, &len)) {
+        if (getsockopt(rs, SOL_SOCKET, SO_ERROR, reinterpret_cast<char*>(&opt), &len)) {
             kdebug("getsockopt(SO_ERROR) failed!");
             break;
         }

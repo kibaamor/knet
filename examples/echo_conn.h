@@ -48,7 +48,7 @@ protected:
             return;
         }
 
-        if (mgr.random_disconnect > 0 && 0 == u32rand_between(0, mgr.random_disconnect)) {
+        if (get_connid() && mgr.random_disconnect && !u32rand_between(0, mgr.random_disconnect)) {
             std::cerr << get_connid() << " random disconnect at do_on_connected\n";
             disconnect();
             return;
@@ -58,7 +58,7 @@ protected:
             std::cerr << get_connid() << " set_sockbuf_size failed!\n";
         }
 
-        if (0 == get_connid()) {
+        if (!get_connid()) {
             add_timer(now_ms() + 1000, TIMER_ID_DUMP_STAT);
         }
     }
@@ -96,7 +96,7 @@ protected:
             return size;
         }
 
-        if (mgr.random_disconnect > 0 && 0 == u32rand_between(0, mgr.random_disconnect)) {
+        if (get_connid() && mgr.random_disconnect && !u32rand_between(0, mgr.random_disconnect)) {
             std::cerr << get_connid() << " random disconnect at do_on_recv_data\n";
             disconnect();
             return size;

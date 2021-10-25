@@ -4,21 +4,8 @@
 
 #pragma pack(push)
 #pragma pack(1)
-struct echo_package {
-    // assume that we have same endian between sender and receiver
-    uint32_t size; // total package size (include header size)
-    uint32_t id; // package id
-
-    static constexpr uint32_t get_hdr_size()
-    {
-        return sizeof(size) + sizeof(id);
-    }
-
-    uint32_t& last_u32()
-    {
-        auto end = reinterpret_cast<char*>(this) + size;
-        return *reinterpret_cast<uint32_t*>(end - sizeof(uint32_t));
-    }
+struct msg_hdr {
+    uint32_t size; // data size (without header)
 };
 #pragma pack(pop)
 
@@ -27,7 +14,7 @@ struct echo_mgr final {
     uint32_t max_delay_ms = 0;
     uint32_t max_idle_ms = 0;
     uint32_t random_disconnect = 10000;
-    uint32_t sockbuf_size = 128 * 1024;
+    uint32_t sockbuf_size = knet::SOCKET_RWBUF_SIZE / 4; // for test purpose
 
     std::atomic_bool can_log = { false };
     std::atomic_bool disconnect_all = { false };

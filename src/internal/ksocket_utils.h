@@ -98,12 +98,12 @@ inline rawsocket_t create_rawsocket(int domain)
     return rs;
 }
 
-inline bool rawsocket_recv(rawsocket_t rs, void* buf, size_t num, size_t& used)
+inline bool rawsocket_recv(rawsocket_t rs, char* buf, size_t num, size_t& used)
 {
     used = 0;
 
 #ifdef _WIN32
-    const int n = recv(rs, static_cast<char*>(buf), static_cast<int>(num), 0);
+    const int n = recv(rs, buf, static_cast<int>(num), 0);
     if (n > 0) {
         used = static_cast<size_t>(n);
         return true;
@@ -113,15 +113,23 @@ inline bool rawsocket_recv(rawsocket_t rs, void* buf, size_t num, size_t& used)
         return WSAEWOULDBLOCK == WSAGetLastError();
     }
 #else // !_WIN32
-    ssize_t n = TEMP_FAILURE_RETRY(recv(rs, buf, num, 0));
-    if (n > 0) {
-        used = static_cast<size_t>(n);
-        return true;
-    } else if (!n) {
-        return false;
-    } else {
-        return EAGAIN == errno || EWOULDBLOCK == errno;
+    while (used < num) {
+        ssize_t n = recv(rs, buf + used, num - used, 0);
+        if (n > 0) {
+            used += static_cast<size_t>(n);
+        } else if (!n) {
+            return false;
+        } else {
+            if (EINTR == errno) {
+                continue;
+            }
+            if (EAGAIN == errno || EWOULDBLOCK == errno) {
+                break;
+            }
+            return false;
+        }
     }
+    return true;
 #endif // _WIN32
 }
 

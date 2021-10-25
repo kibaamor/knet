@@ -2,6 +2,7 @@
 #include "internal/kplatform.h"
 #ifndef _WIN32
 #include <sys/resource.h>
+#include <sys/signal.h>
 #endif
 #include <random>
 
@@ -13,6 +14,7 @@ public:
     {
         init_netlib();
         setup_rlimit();
+        setup_signal();
     }
 
     void init_netlib()
@@ -40,13 +42,20 @@ public:
         }
 #endif // !_WIN32
     }
+
+    void setup_signal()
+    {
+#ifndef _WIN32
+        signal(SIGPIPE, SIG_IGN);
+#endif // !_WIN32
+    }
 }; // namespace
 
 AutoInit g_ai;
 
 std::default_random_engine& get_random_engine()
 {
-    static thread_local std::default_random_engine re{ std::random_device()() };
+    static thread_local std::default_random_engine re { std::random_device()() };
     return re;
 }
 

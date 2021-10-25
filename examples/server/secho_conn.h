@@ -24,8 +24,16 @@ private:
                 << ", last_recv_ms: " << _last_recv_ms
                 << ", now_ms: " << now
                 << ", delta_ms: " << now - _last_recv_ms << "\n";
-            disconnect();
-            return;
+
+            if (!get_connid()) {
+                std::cerr << "connid: " << get_connid()
+                          << ", last_recv_ms: " << _last_recv_ms
+                          << ", now_ms: " << now
+                          << ", delta_ms: " << now - _last_recv_ms << "\n";
+            } else {
+                disconnect();
+                return;
+            }
         }
 
         set_idle_timer();

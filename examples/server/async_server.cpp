@@ -6,8 +6,8 @@
 int main(int argc, char** argv)
 {
     // parse command line
-    const char* port = argc > 2 ? argv[2] : "8888";
-    const auto max_idle_ms = argc > 2 ? std::atoi(argv[2]) : 996;
+    const char* port = argc > 1 ? argv[1] : "8888";
+    const auto max_idle_ms = argc > 2 ? std::atoi(argv[2]) : 5000;
     const auto thread_num = argc > 3 ? std::atoi(argv[3]) : std::thread::hardware_concurrency();
 
     // log parameter info

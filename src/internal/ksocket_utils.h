@@ -113,23 +113,14 @@ inline bool rawsocket_recv(rawsocket_t rs, char* buf, size_t num, size_t& used)
         return WSAEWOULDBLOCK == WSAGetLastError();
     }
 #else // !_WIN32
-    while (used < num) {
-        ssize_t n = recv(rs, buf + used, num - used, 0);
-        if (n > 0) {
-            used += static_cast<size_t>(n);
-        } else if (!n) {
-            return false;
-        } else {
-            if (EINTR == errno) {
-                continue;
-            }
-            if (EAGAIN == errno || EWOULDBLOCK == errno) {
-                break;
-            }
-            return false;
-        }
+    const ssize_t n = TEMP_FAILURE_RETRY(read(rs, buf + used, num - used));
+    if (n > 0) {
+        used += static_cast<size_t>(n);
+    } else if (!n) {
+        return false;
+    } else {
+        return EAGAIN == errno || EWOULDBLOCK == errno;
     }
-    return true;
 #endif // _WIN32
 }
 

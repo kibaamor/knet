@@ -52,7 +52,7 @@ bool cecho_conn::send_msg(size_t size)
         size = u32rand_between(sizeof(uint32_t), sizeof(buf));
     }
 
-    _hdr.size = size;
+    _hdr.size = static_cast<uint32_t>(size);
     *reinterpret_cast<uint32_t*>(buf + size - sizeof(uint32_t)) = _token = u32rand();
 
     _bufs[1].data = buf;

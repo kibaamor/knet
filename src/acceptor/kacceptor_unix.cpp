@@ -25,7 +25,7 @@ bool acceptor::impl::start(const address& addr)
     }
 
     _family = addr.get_rawfamily();
-    _rs = create_rawsocket(_family, true);
+    _rs = create_rawsocket(_family);
     if (INVALID_RAWSOCKET == _rs) {
         return false;
     }

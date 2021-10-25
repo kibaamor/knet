@@ -33,7 +33,7 @@ struct accept_io {
 
     bool post(rawsocket_t srv_rs, int family)
     {
-        rs = create_rawsocket(family, true);
+        rs = create_rawsocket(family);
         if (INVALID_RAWSOCKET == rs) {
             return false;
         }
@@ -122,7 +122,7 @@ bool acceptor::impl::start(const address& addr)
     }
 
     _family = addr.get_rawfamily();
-    _rs = create_rawsocket(_family, true);
+    _rs = create_rawsocket(_family);
     if (INVALID_RAWSOCKET == _rs) {
         return false;
     }

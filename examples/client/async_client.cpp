@@ -53,7 +53,7 @@ int main(int argc, char** argv)
                 break;
             }
         } else if (inst_num < client_num) {
-            if (!cnctor.connect(addr)) {
+            if (!cnctor.connect(addr, 1000)) {
                 std::cerr << "connect failed! address: " << addr << std::endl;
             }
         }

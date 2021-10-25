@@ -23,6 +23,9 @@
 #include <intrin.h>
 #include <type_traits>
 
+#define ioctl ioctlsocket
+#define TEMP_FAILURE_RETRY(x) x
+
 namespace knet {
 
 using sa_family_t = ADDRESS_FAMILY;
@@ -47,6 +50,7 @@ static_assert(std::is_same<rawsocket_t, SOCKET>::value, "rawsocket_t and SOCKET 
 #include <sys/ioctl.h>
 #include <netdb.h>
 #include <sys/uio.h>
+#include <sys/select.h>
 
 #define __debugbreak() __builtin_trap()
 #define WSAGetLastError() errno
@@ -89,7 +93,7 @@ inline void klog(const char* log, const char* file, int line)
 {
 #ifdef KNET_ENABLE_LOG
     const auto en = WSAGetLastError();
-    std::cerr << log << " [errno: " << en << "][loc: " << file << ":" << line << "]\n";
+    std::cerr << log << " [errno: " << en << ", " << strerror(en) << "][loc: " << file << ":" << line << "]\n";
 #endif
 }
 

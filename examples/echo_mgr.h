@@ -12,7 +12,7 @@ struct msg_hdr {
 struct echo_mgr final {
     bool is_server = true;
     uint32_t max_idle_ms = 0;
-    uint32_t random_disconnect = 10000;
+    uint32_t random_disconnect = 100000;
     uint32_t sockbuf_size = knet::SOCKET_RWBUF_SIZE / 4; // for test purpose
 
     std::atomic_bool can_log = { false };

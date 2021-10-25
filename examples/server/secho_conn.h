@@ -20,10 +20,10 @@ private:
 
         const auto now = knet::now_ms();
         if (_last_recv_ms && now > _last_recv_ms + mgr.max_idle_ms) {
-            std::cerr << "kick client: " << get_connid()
-                      << ", last_recv_ms: " << _last_recv_ms
-                      << ", now_ms: " << now
-                      << ", delta_ms: " << now - _last_recv_ms << "\n";
+            mgr << "kick client: " << get_connid()
+                << ", last_recv_ms: " << _last_recv_ms
+                << ", now_ms: " << now
+                << ", delta_ms: " << now - _last_recv_ms << "\n";
             disconnect();
             return;
         }

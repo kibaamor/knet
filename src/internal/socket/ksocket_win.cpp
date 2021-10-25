@@ -58,6 +58,8 @@ bool socket::impl::write(const buffer* buf, size_t num)
         return false;
     }
 
+    KNET_SOCKET_STAT_CODE(++_stat.send_count)
+
     if (!_wb->used_size && !_f.is_write()) {
         size_t used = 0;
         if (!rawsocket_sendv(_rs, buf, num, used)) {

@@ -116,6 +116,7 @@ inline bool rawsocket_recv(rawsocket_t rs, char* buf, size_t num, size_t& used)
     const ssize_t n = TEMP_FAILURE_RETRY(read(rs, buf + used, num - used));
     if (n > 0) {
         used += static_cast<size_t>(n);
+        return true;
     } else if (!n) {
         return false;
     } else {

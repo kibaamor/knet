@@ -32,12 +32,8 @@ void echo_mgr::update(int64_t delta_ms)
 
     std::cout << "instance: " << inst_num
               << ", connection: " << conn_num
-              << ", send: " << send_mb << " MB/S";
-    if (is_server) {
-        std::cout << ", recv: " << recv_num / 1024 / 1024 << " MB/S\n";
-    } else {
-        std::cout << ", recv: " << recv_num << " Pkg/S\n";
-    }
+              << ", send: " << send_mb << " MB/S"
+              << ", recv: " << recv_num << " Pkg/S\n";
     std::cout.flush();
 }
 

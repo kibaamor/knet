@@ -11,7 +11,6 @@ struct msg_hdr {
 
 struct echo_mgr final {
     bool is_server = true;
-    uint32_t max_delay_ms = 0;
     uint32_t max_idle_ms = 0;
     uint32_t random_disconnect = 10000;
     uint32_t sockbuf_size = knet::SOCKET_RWBUF_SIZE / 4; // for test purpose
@@ -27,8 +26,6 @@ struct echo_mgr final {
     ~echo_mgr();
     void update(int64_t delta_ms);
     void check_console_input();
-
-    int64_t get_rand_delay_ms() const { return knet::u32rand_between(0, max_delay_ms); }
 
 private:
     int64_t _total_ms = 0;

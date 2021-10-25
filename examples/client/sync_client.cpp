@@ -9,14 +9,12 @@ int main(int argc, char** argv)
     const char* ip = argc > 1 ? argv[1] : "localhost";
     const char* port = argc > 2 ? argv[2] : "8888";
     const auto client_num = argc > 3 ? std::atoi(argv[3]) : 1;
-    const auto max_delay_ms = argc > 4 ? std::atoi(argv[4]) : 10;
 
     // log parameter info
     std::cout << "Hi, KNet(Sync Client)" << std::endl
               << "ip:" << ip << std::endl
               << "port: " << port << std::endl
-              << "client_num: " << client_num << std::endl
-              << "max_delay_ms: " << max_delay_ms << std::endl;
+              << "client_num: " << client_num << std::endl;
 
     // parse ip address
     address addr;
@@ -34,7 +32,6 @@ int main(int argc, char** argv)
 
     // check console input
     mgr.is_server = false;
-    mgr.max_delay_ms = max_delay_ms;
     mgr.can_log = true;
     mgr.check_console_input();
 

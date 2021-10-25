@@ -27,17 +27,7 @@ public:
     {
 #ifndef _WIN32
         struct rlimit rt = {};
-        auto ret = getrlimit(RLIMIT_NOFILE, &rt);
-
-#ifdef KNET_ENABLE_LOG
-        auto en = errno;
-        std::cerr << "open file limit. getrlimit: " << ret
-                  << ", errno:" << en
-                  << ", cur:" << rt.rlim_cur
-                  << ", max:" << rt.rlim_max << std::endl;
-#endif // KNET_ENABLE_LOG
-
-        if (!ret) {
+        if (!getrlimit(RLIMIT_NOFILE, &rt)) {
             rt.rlim_cur = rt.rlim_max;
 
 #ifdef __APPLE__
@@ -47,14 +37,6 @@ public:
 #endif // __APPLE__
 
             setrlimit(RLIMIT_NOFILE, &rt);
-
-#ifdef KNET_ENABLE_LOG
-            en = errno;
-            std::cerr << "open file limit. setrlimit: " << ret
-                      << ", errno:" << en
-                      << ", cur:" << rt.rlim_cur
-                      << ", max:" << rt.rlim_max << std::endl;
-#endif // KNET_ENABLE_LOG
         }
 #endif // !_WIN32
     }
@@ -64,7 +46,7 @@ AutoInit g_ai;
 
 std::default_random_engine& get_random_engine()
 {
-    static thread_local std::default_random_engine re { std::random_device()() };
+    static thread_local std::default_random_engine re{ std::random_device()() };
     return re;
 }
 

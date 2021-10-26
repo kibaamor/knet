@@ -114,8 +114,7 @@ before_build:
   - sh: cmake . -B build -DCMAKE_BUILD_TYPE=${CONFIGURATION}
 
 build_script:
-  - ps: cmake --build build
+  - ps: cmake --build build --config ${env:CONFIGURATION}
 
 test_script:
-  - ps: cd ${env:APPVEYOR_BUILD_FOLDER}/build
-  - ps: ctest
+  - ps: ctest --test-dir build --build-config ${env:CONFIGURATION}

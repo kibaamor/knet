@@ -110,11 +110,12 @@ configuration:
 before_build:
   - ps: gci env:* | sort-object name
   - ps: cmake --version
-  - cmd: cmake . -B build -DCMAKE_BUILD_TYPE=%CONFIGURATION% -A %PLATFORM%
-  - sh: cmake . -B build -DCMAKE_BUILD_TYPE=${CONFIGURATION}
+  - cmd: cmake . -B build -D CMAKE_BUILD_TYPE=%CONFIGURATION% -A %PLATFORM%
+  - sh: cmake . -B build -D CMAKE_BUILD_TYPE=${CONFIGURATION}
 
 build_script:
   - ps: cmake --build build --config ${env:CONFIGURATION}
 
 test_script:
-  - ps: ctest --test-dir build --build-config ${env:CONFIGURATION}
+  - ps: cd build
+  - ps: ctest -C ${env:CONFIGURATION}

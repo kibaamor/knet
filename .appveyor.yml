@@ -1,98 +1,52 @@
-version: "{build}"
+version: "{build}-{branch}"
 
 environment:
   matrix:
-    - job_name: Ubuntu GCC 5
-      APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1604
-      job_group: Linux build
-    - job_name: Ubuntu GCC 7
-      APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu
-      job_group: Linux build
-    - job_name: Ubuntu GCC 8
-      APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu
-      job_group: Linux build
-    - job_name: Ubuntu GCC 9
-      APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu
-      job_group: Linux build
-
     - job_name: macOS XCode 9
-      APPVEYOR_BUILD_WORKER_IMAGE: macos
-      job_group: macOS build
+      APPVEYOR_BUILD_WORKER_IMAGE: macOS
     - job_name: macOS XCode 10
-      APPVEYOR_BUILD_WORKER_IMAGE: macos
-      job_group: macOS build
+      APPVEYOR_BUILD_WORKER_IMAGE: macOS
     - job_name: macOS XCode 11
-      APPVEYOR_BUILD_WORKER_IMAGE: macos
-      job_group: macOS build
+      APPVEYOR_BUILD_WORKER_IMAGE: macOS
     - job_name: macOS XCode 12
-      APPVEYOR_BUILD_WORKER_IMAGE: macos
-      job_group: macOS build
-
-matrix:
-  fast_finish: true
+      APPVEYOR_BUILD_WORKER_IMAGE: macOS
 
 for:
   - matrix:
       only:
-        - job_name: Ubuntu GCC 5
-    environment:
-      CC: gcc-5
-      CXX: g++-5
-  - matrix:
-      only:
-        - job_name: Ubuntu GCC 7
-    environment:
-      CC: gcc-7
-      CXX: g++-7
-  - matrix:
-      only:
-        - job_name: Ubuntu GCC 8
-    environment:
-      CC: gcc-8
-      CXX: g++-8
-  - matrix:
-      only:
-        - job_name: Ubuntu GCC 9
-    environment:
-      CC: gcc-9
-      CXX: g++-9
-
-  - matrix:
-      only:
         - job_name: macOS XCode 9
     init:
-      - xcode-select -switch /Applications/Xcode_9.4.1.app
+      - sudo xcode-select -s /Applications/Xcode_9.4.1.app
   - matrix:
       only:
         - job_name: macOS XCode 10
     init:
-      - xcode-select -switch /Applications/Xcode_10.3.app
+      - sudo xcode-select -s /Applications/Xcode_10.3.app
   - matrix:
       only:
         - job_name: macOS XCode 11
     init:
-      - xcode-select -switch /Applications/Xcode_11.7.app
+      - sudo xcode-select -s /Applications/Xcode_11.7.app
   - matrix:
       only:
         - job_name: macOS XCode 12
     init:
-      - xcode-select -switch /Applications/Xcode_12.3.app
+      - sudo xcode-select -s /Applications/Xcode_12.3.app
 
 configuration:
   - Debug
-  - Release
-  - MinSizeRel
-  - RelWithDebInfo
 
 before_build:
   - ps: gci env:* | sort-object name
-  - ps: cmake --version
+  - cmake --version
   - cmd: cmake . -B build -D CMAKE_BUILD_TYPE=%CONFIGURATION% -A %PLATFORM%
   - sh: cmake . -B build -D CMAKE_BUILD_TYPE=${CONFIGURATION}
 
 build_script:
-  - ps: cmake --build build --config ${env:CONFIGURATION}
+  - cmd: cmake --build build --config %CONFIGURATION% -j %NUMBER_OF_PROCESSORS%
+  - sh: cmake --build build --config ${CONFIGURATION} -j $(nproc)
 
 test_script:
-  - ps: cd build
-  - ps: ctest -C ${env:CONFIGURATION}
+  - cd build
+  - cmd: ctest -C %CONFIGURATION% -j %NUMBER_OF_PROCESSORS%
+  - sh: ctest -C ${CONFIGURATION} -j $(nproc)

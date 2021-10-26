@@ -112,20 +112,15 @@ configuration:
   - RelWithDebInfo
 
 before_build:
-  - ps: >-
-      cmake --version
-      cd ${env:APPVEYOR_BUILD_FOLDER}
-  - cmd: >-
-      cmake . -B build -A %PLATFORM%
-  - sh: >-
-      cmake . -B build
+  - ps: cmake --version
+  - ps: cd ${env:APPVEYOR_BUILD_FOLDER}
+  - cmd: cmake . -B build -A %PLATFORM%
+  - sh: cmake . -B build
 
 build_script:
-  - ps: >-
-      cd ${env:APPVEYOR_BUILD_FOLDER}
-      cmake --build build --config ${env:CONFIGURATION}
+  - ps: cd ${env:APPVEYOR_BUILD_FOLDER}
+  - ps: cmake --build build --config ${env:CONFIGURATION}
 
 test_script:
-  - ps: >-
-      cd ${env:APPVEYOR_BUILD_FOLDER}/build
-      ctest -C ${env:CONFIGURATION}
+  - ps: cd ${env:APPVEYOR_BUILD_FOLDER}/build
+  - ps: ctest -C ${env:CONFIGURATION}

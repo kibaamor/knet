@@ -47,10 +47,6 @@ matrix:
 for:
   - matrix:
       only:
-        - job_group: Windows build
-
-  - matrix:
-      only:
         - job_name: Ubuntu GCC 5
     environment:
       CC: gcc-5
@@ -112,15 +108,14 @@ configuration:
   - RelWithDebInfo
 
 before_build:
+  - ps: gci env:* | sort-object name
   - ps: cmake --version
-  - ps: cd ${env:APPVEYOR_BUILD_FOLDER}
-  - cmd: cmake . -B build -A %PLATFORM%
-  - sh: cmake . -B build
+  - cmd: cmake . -B build -DCMAKE_BUILD_TYPE=%CONFIGURATION% -A %PLATFORM%
+  - sh: cmake . -B build -DCMAKE_BUILD_TYPE=${CONFIGURATION}
 
 build_script:
-  - ps: cd ${env:APPVEYOR_BUILD_FOLDER}
-  - ps: cmake --build build --config ${env:CONFIGURATION}
+  - ps: cmake --build build
 
 test_script:
   - ps: cd ${env:APPVEYOR_BUILD_FOLDER}/build
-  - ps: ctest -C ${env:CONFIGURATION}
+  - ps: ctest

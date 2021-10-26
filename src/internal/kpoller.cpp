@@ -42,7 +42,7 @@ bool poller::add(rawsocket_t rs, void* key)
 #if defined(_WIN32)
     auto s = reinterpret_cast<HANDLE>(rs);
     auto k = reinterpret_cast<ULONG_PTR>(key);
-    return CreateIoCompletionPort(s, _h, k, 0);
+    return !!CreateIoCompletionPort(s, _h, k, 0);
 #elif defined(__APPLE__)
     struct kevent ev[2];
     EV_SET(&ev[0], rs, EVFILT_READ, EV_ADD | EV_ENABLE | EV_CLEAR, 0, 0, key);

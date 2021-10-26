@@ -13,7 +13,7 @@ inline bool set_rawsocket_nonblock(rawsocket_t rs)
 inline bool set_rawsocket_cloexec(rawsocket_t rs)
 {
 #ifdef _WIN32
-    return SetHandleInformation(reinterpret_cast<HANDLE>(rs), HANDLE_FLAG_INHERIT, 0);
+    return !!SetHandleInformation(reinterpret_cast<HANDLE>(rs), HANDLE_FLAG_INHERIT, 0);
 #else // !_WIN32
     return RAWSOCKET_ERROR != ioctl(rs, FIOCLEX);
 #endif // _WIN32

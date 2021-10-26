@@ -16,22 +16,22 @@ for:
       only:
         - job_name: macOS XCode 9
     init:
-      - sudo xcode-select -s /Applications/Xcode_9.4.1.app
+      - sudo xcode-select -s /Applications/Xcode-9.4.1.app
   - matrix:
       only:
         - job_name: macOS XCode 10
     init:
-      - sudo xcode-select -s /Applications/Xcode_10.3.app
+      - sudo xcode-select -s /Applications/Xcode-10.3.app
   - matrix:
       only:
         - job_name: macOS XCode 11
     init:
-      - sudo xcode-select -s /Applications/Xcode_11.7.app
+      - sudo xcode-select -s /Applications/Xcode-11.7.app
   - matrix:
       only:
         - job_name: macOS XCode 12
     init:
-      - sudo xcode-select -s /Applications/Xcode_12.3.app
+      - sudo xcode-select -s /Applications/Xcode-12.3.app
 
 configuration:
   - Debug

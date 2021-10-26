@@ -1,16 +1,108 @@
 version: "{build}"
 
-image:
-  - Visual Studio 2015
-  - Visual Studio 2017
-  - Visual Studio 2019
+environment:
+  matrix:
+    - job_name: Visual Studio 2015
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+      job_group: Windows build
+    - job_name: Visual Studio 2017
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      job_group: Windows build
+    - job_name: Visual Studio 2019
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+      job_group: Windows build
+
+    - job_name: Ubuntu GCC 5
+      APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1604
+      job_group: Linux build
+    - job_name: Ubuntu GCC 6
+      APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1604
+      job_group: Linux build
+    - job_name: Ubuntu GCC 7
+      APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu
+      job_group: Linux build
+    - job_name: Ubuntu GCC 8
+      APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu
+      job_group: Linux build
+    - job_name: Ubuntu GCC 9
+      APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu
+      job_group: Linux build
+
+    - job_name: macOS XCode 9
+      APPVEYOR_BUILD_WORKER_IMAGE: macos
+      job_group: macOS build
+    - job_name: macOS XCode 10
+      APPVEYOR_BUILD_WORKER_IMAGE: macos
+      job_group: macOS build
+    - job_name: macOS XCode 11
+      APPVEYOR_BUILD_WORKER_IMAGE: macos
+      job_group: macOS build
+    - job_name: macOS XCode 12
+      APPVEYOR_BUILD_WORKER_IMAGE: macos
+      job_group: macOS build
 
 matrix:
   fast_finish: true
 
-platform:
-  - Win32
-  - x64
+for:
+  - matrix:
+      only:
+        - job_group: Windows build
+    platform:
+      - Win32
+      - x64
+
+  - matrix:
+      only:
+        - job_name: Ubuntu GCC 5
+    environment:
+      CC: gcc-5
+      CXX: g++-5
+  - matrix:
+      only:
+        - job_name: Ubuntu GCC 6
+    environment:
+      CC: gcc-6
+      CXX: g++-6
+  - matrix:
+      only:
+        - job_name: Ubuntu GCC 7
+    environment:
+      CC: gcc-7
+      CXX: g++-7
+  - matrix:
+      only:
+        - job_name: Ubuntu GCC 8
+    environment:
+      CC: gcc-8
+      CXX: g++-8
+  - matrix:
+      only:
+        - job_name: Ubuntu GCC 9
+    environment:
+      CC: gcc-9
+      CXX: g++-9
+
+  - matrix:
+      only:
+        - job_name: macOS XCode 9
+    init:
+      - xcode-select -switch /Applications/Xcode_9.4.1.app
+  - matrix:
+      only:
+        - job_name: macOS XCode 10
+    init:
+      - xcode-select -switch /Applications/Xcode_10.3.app
+  - matrix:
+      only:
+        - job_name: macOS XCode 11
+    init:
+      - xcode-select -switch /Applications/Xcode_11.7.app
+  - matrix:
+      only:
+        - job_name: macOS XCode 12
+    init:
+      - xcode-select -switch /Applications/Xcode_12.3.app
 
 configuration:
   - Debug
@@ -19,14 +111,20 @@ configuration:
   - RelWithDebInfo
 
 before_build:
-  - cmd: cmake --version
-  - cmd: cd %APPVEYOR_BUILD_FOLDER%
-  - cmd: cmake . -B build -A %PLATFORM%
+  - ps: >-
+      cmake --version
+      cd ${env:APPVEYOR_BUILD_FOLDER}
+  - cmd: >-
+      cmake . -B build -A %PLATFORM%
+  - sh: ->
+      cmake . -B build
 
 build_script:
-  - cmd: cd %APPVEYOR_BUILD_FOLDER%
-  - cmd: cmake --build build --config %CONFIGURATION%
+  - ps: >-
+      cd ${env:APPVEYOR_BUILD_FOLDER}
+      cmake --build build --config ${env:CONFIGURATION}
 
 test_script:
-  - cmd: cd %APPVEYOR_BUILD_FOLDER%\build
-  - cmd: ctest -C %CONFIGURATION%
+  - ps: >-
+      cd ${env:APPVEYOR_BUILD_FOLDER}/build
+      ctest -C ${env:CONFIGURATION}

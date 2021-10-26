@@ -2,20 +2,7 @@ version: "{build}"
 
 environment:
   matrix:
-    - job_name: Visual Studio 2015
-      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
-      job_group: Windows build
-    - job_name: Visual Studio 2017
-      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
-      job_group: Windows build
-    - job_name: Visual Studio 2019
-      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
-      job_group: Windows build
-
     - job_name: Ubuntu GCC 5
-      APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1604
-      job_group: Linux build
-    - job_name: Ubuntu GCC 6
       APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1604
       job_group: Linux build
     - job_name: Ubuntu GCC 7
@@ -51,12 +38,6 @@ for:
     environment:
       CC: gcc-5
       CXX: g++-5
-  - matrix:
-      only:
-        - job_name: Ubuntu GCC 6
-    environment:
-      CC: gcc-6
-      CXX: g++-6
   - matrix:
       only:
         - job_name: Ubuntu GCC 7

@@ -2,8 +2,22 @@ version: "{build}-{branch}"
 
 environment:
   matrix:
-    - job_name: macOS XCode 9
-      APPVEYOR_BUILD_WORKER_IMAGE: macOS
+    - job_name: Visual Studio 2015
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+    - job_name: Visual Studio 2017
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+    - job_name: Visual Studio 2019
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+
+    - job_name: Ubuntu GCC 5
+      APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1604
+    - job_name: Ubuntu GCC 7
+      APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu
+    - job_name: Ubuntu GCC 8
+      APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu
+    - job_name: Ubuntu GCC 9
+      APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu
+
     - job_name: macOS XCode 10
       APPVEYOR_BUILD_WORKER_IMAGE: macOS
     - job_name: macOS XCode 11
@@ -14,33 +28,60 @@ environment:
 for:
   - matrix:
       only:
-        - job_name: macOS XCode 9
-    install:
-      - sudo xcode-select -s /Applications/Xcode-9.4.1.app
+        - job_name: Ubuntu GCC 5
+    environment:
+      CC: gcc-5
+      CXX: g++-5
+  - matrix:
+      only:
+        - job_name: Ubuntu GCC 7
+    environment:
+      CC: gcc-7
+      CXX: g++-7
+  - matrix:
+      only:
+        - job_name: Ubuntu GCC 8
+    environment:
+      CC: gcc-8
+      CXX: g++-8
+  - matrix:
+      only:
+        - job_name: Ubuntu GCC 9
+    environment:
+      CC: gcc-9
+      CXX: g++-9
+
   - matrix:
       only:
         - job_name: macOS XCode 10
-    install:
+    init:
       - sudo xcode-select -s /Applications/Xcode-10.3.app
   - matrix:
       only:
         - job_name: macOS XCode 11
-    install:
+    init:
       - sudo xcode-select -s /Applications/Xcode-11.7.app
   - matrix:
       only:
         - job_name: macOS XCode 12
-    install:
+    init:
       - sudo xcode-select -s /Applications/Xcode-12.3.app
+
+platform:
+  - Win32
+  - x64
 
 configuration:
   - Debug
+  - Release
+  - MinSizeRel
+  - RelWithDebInfo
 
 before_build:
   - ps: gci env:* | sort-object name
   - cmake --version
-  - cmd: cmake -B build -D CMAKE_BUILD_TYPE=%CONFIGURATION% -A %PLATFORM%
-  - sh: cmake -B build -D CMAKE_BUILD_TYPE=${CONFIGURATION}
+  - cmd: cmake . -B build -D CMAKE_BUILD_TYPE=%CONFIGURATION% -A %PLATFORM%
+  - sh: cmake . -B build -D CMAKE_BUILD_TYPE=${CONFIGURATION}
 
 build_script:
   - cmd: cmake --build build --config %CONFIGURATION% -j %NUMBER_OF_PROCESSORS%

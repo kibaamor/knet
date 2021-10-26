@@ -15,22 +15,22 @@ for:
   - matrix:
       only:
         - job_name: macOS XCode 9
-    init:
+    install:
       - sudo xcode-select -s /Applications/Xcode-9.4.1.app
   - matrix:
       only:
         - job_name: macOS XCode 10
-    init:
+    install:
       - sudo xcode-select -s /Applications/Xcode-10.3.app
   - matrix:
       only:
         - job_name: macOS XCode 11
-    init:
+    install:
       - sudo xcode-select -s /Applications/Xcode-11.7.app
   - matrix:
       only:
         - job_name: macOS XCode 12
-    init:
+    install:
       - sudo xcode-select -s /Applications/Xcode-12.3.app
 
 configuration:
@@ -39,8 +39,8 @@ configuration:
 before_build:
   - ps: gci env:* | sort-object name
   - cmake --version
-  - cmd: cmake . -B build -D CMAKE_BUILD_TYPE=%CONFIGURATION% -A %PLATFORM%
-  - sh: cmake . -B build -D CMAKE_BUILD_TYPE=${CONFIGURATION}
+  - cmd: cmake -B build -D CMAKE_BUILD_TYPE=%CONFIGURATION% -A %PLATFORM%
+  - sh: cmake -B build -D CMAKE_BUILD_TYPE=${CONFIGURATION}
 
 build_script:
   - cmd: cmake --build build --config %CONFIGURATION% -j %NUMBER_OF_PROCESSORS%

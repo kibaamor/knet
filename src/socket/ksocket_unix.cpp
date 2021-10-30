@@ -5,7 +5,7 @@ namespace knet {
 
 struct socket::impl::sockbuf {
     size_t used_size = 0;
-    char chunk[SOCKET_RWBUF_SIZE - sizeof(used_size)] = {};
+    char chunk[SOCKET_RWBUF_SIZE] = {};
 
     char* unused_ptr()
     {

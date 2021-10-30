@@ -10,7 +10,7 @@ struct sockbuf_base {
 };
 
 struct socket::impl::sockbuf : sockbuf_base {
-    char chunk[SOCKET_RWBUF_SIZE - sizeof(sockbuf_base)] = {};
+    char chunk[SOCKET_RWBUF_SIZE] = {};
 
     char* unused_ptr()
     {

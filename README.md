@@ -6,7 +6,6 @@ A cross platform lock-free and timer-supported C++11 network library.
 
 [![AppVeyor](https://img.shields.io/appveyor/build/kibaamor/knet/master?label=AppVeyor&style=flat-square)](https://ci.appveyor.com/project/KibaAmor/knet)
 [![Travis CI](https://img.shields.io/travis/kibaamor/knet/master?label=Travis%20CI&style=flat-square)](https://www.travis-ci.com/github/KibaAmor/knet)
-[![Coverity](https://img.shields.io/coverity/scan/20462?label=Coverity&style=flat-square)](https://scan.coverity.com/projects/kibaamor-knet)
 [![License](https://img.shields.io/github/license/kibaamor/knet?label=License&style=flat-square)](./LICENSE)
 [![Standard](https://img.shields.io/badge/C++-11-blue.svg?style=flat-square)](https://github.com/kibaamor/knet)
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FKibaAmor%2Fknet.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FKibaAmor%2Fknet?ref=badge_shield)
@@ -107,9 +106,9 @@ In fact, both *connecting to server* and *accepting connection from client* are 
 #### Protocol
 
 ```txt
-┌─────────────────────────────┬──────┐
-│ total package size(4 bytes) │ data │
-└─────────────────────────────┴──────┘
+┌────────────────────┬──────┐
+│ data size(4 bytes) │ data │
+└───-────────────────┴──────┘
 ```
 
 4 bytes package header and data follow.
@@ -117,6 +116,7 @@ In fact, both *connecting to server* and *accepting connection from client* are 
 #### Echo Server
 
 The echo server sends the received data back to the client intact.
+
 A timer is also set to check whether a client message is received within the specified time, and the connection to the client is closed if the client message is not received within the specified time.
 
 The server provides two types:
@@ -127,6 +127,7 @@ The server provides two types:
 ### Echo Client
 
 The client actively connects to the server after starting (and automatically reconnects the server if the connection is not available), and when the connection is successful, it actively sends an `incomplete` network package to the server.
+
 When the network package returned by the server is received, the data envelope is verified and disconnected if it fails.
 
 The client provides two types:

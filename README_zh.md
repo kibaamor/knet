@@ -6,7 +6,6 @@
 
 [![AppVeyor](https://img.shields.io/appveyor/build/kibaamor/knet/master?label=AppVeyor&style=flat-square)](https://ci.appveyor.com/project/KibaAmor/knet)
 [![Travis CI](https://img.shields.io/travis/kibaamor/knet/master?label=Travis%20CI&style=flat-square)](https://www.travis-ci.com/github/KibaAmor/knet)
-[![Coverity](https://img.shields.io/coverity/scan/20462?label=Coverity&style=flat-square)](https://scan.coverity.com/projects/kibaamor-knet)
 [![License](https://img.shields.io/github/license/kibaamor/knet?label=License&style=flat-square)](./LICENSE)
 [![Standard](https://img.shields.io/badge/C++-11-blue.svg?style=flat-square)](https://github.com/kibaamor/knet)
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FKibaAmor%2Fknet.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FKibaAmor%2Fknet?ref=badge_shield)
@@ -106,11 +105,18 @@ knet的核心概念是：`socket的生产-消费`。
 
 #### 通信协议
 
-网络包前4个字节为整个网络包(包头+数据)的大小，紧跟在后面的为网络包数据。
+```txt
+┌───────────────┬──────┐
+│ 数据大小(4字节) │ 数据 │
+└───-───────────┴──────┘
+```
+
+网络包前4个字节为后面数据的大小，紧跟在后面的为数据。
 
 #### echo服务器
 
 echo服务器将接收到的数据原封不动的发回给客户端。
+
 同时还设置了定时器检查是否在指定的时间内收到了客户端的消息，如果未在指定时间收到客户端消息，将关闭与客户端的连接。
 
 服务器提供了两种：
@@ -121,6 +127,7 @@ echo服务器将接收到的数据原封不动的发回给客户端。
 ### echo客户端
 
 客户端启动后主动连接服务器（如果连接不上服务器，则会自动重连服务器），连接成功后，会主动给服务器发送`不完整的`网络包。
+
 在收到服务器返回的网络包时，会对数据封包进行校验，失败时会断开连接。
 
 客户端也提供了两种：

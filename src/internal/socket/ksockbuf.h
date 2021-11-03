@@ -6,11 +6,11 @@ namespace knet {
 
 struct sockbuf {
 #ifdef _WIN32
-    WSAOVERLAPPED ol = {}; // must be the first member to use CONTAINING_RECORD
+    WSAOVERLAPPED ol; // must be the first member to use CONTAINING_RECORD
     bool cancel = false;
 #endif // _WIN32
     size_t used_size = 0;
-    char chunk[SOCKET_RWBUF_SIZE] = {};
+    char chunk[SOCKET_RWBUF_SIZE];
 
     char* unused_ptr() { return chunk + used_size; }
     size_t unused_size() const { return sizeof(chunk) - used_size; }

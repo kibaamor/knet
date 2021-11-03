@@ -25,7 +25,7 @@ public:
 
 private:
     class impl;
-    std::unique_ptr<impl> _impl;
+    impl* _impl;
 };
 
 } // namespace knet

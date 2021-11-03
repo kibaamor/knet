@@ -11,10 +11,13 @@ namespace knet {
 
 socket::socket(rawsocket_t rs)
 {
-    _impl.reset(new impl(*this, rs));
+    _impl = new impl(*this, rs);
 }
 
-socket::~socket() = default;
+socket::~socket()
+{
+    delete _impl;
+}
 
 bool socket::init(poller& plr, conn_factory& cf)
 {

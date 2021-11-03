@@ -79,6 +79,7 @@ protected:
                     << ", send:" << s.send_count
                     << ", write:" << s.write_count
                     << ", copy:" << s.copy_count
+                    << ", move:" << s.move_count
                     << ", recv:" << s.read_count
                     << ", read:" << s.read_count
                     << "\n";

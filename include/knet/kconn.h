@@ -18,7 +18,8 @@ public:
     struct stat {
         uint32_t send_count = 0; // send_data
         uint32_t write_count = 0; // writev
-        uint32_t copy_count = 0; // memcpy
+        uint32_t copy_count = 0; // memcpy for send
+        uint32_t move_count = 0; // memmove for send
 
         uint32_t recv_count = 0; // on_recv_data
         uint32_t read_count = 0; // read
@@ -49,9 +50,9 @@ public:
 protected:
     bool set_sockbuf_size(size_t size);
 
-    virtual void do_on_connected() {}
-    virtual void do_on_disconnect() {}
-    virtual void do_on_timer(int64_t ms, const userdata& ud) {}
+    virtual void do_on_connected() { }
+    virtual void do_on_disconnect() { }
+    virtual void do_on_timer(int64_t ms, const userdata& ud) { }
     virtual size_t do_on_recv_data(char* data, size_t size) = 0;
 
 private:

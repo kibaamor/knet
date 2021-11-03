@@ -231,6 +231,11 @@ bool socket::impl::handle_read(size_t size)
     }
     if (size > 0) {
         _rb->discard_used((std::min)(size, max_size));
+#ifdef KNET_SOCKET_STAT
+        if (_rb->used_size) {
+            KNET_SOCKET_STAT_CODE(++_stat.move_count)
+        }
+#endif // KNET_SOCKET_STAT
     }
 
     return true;

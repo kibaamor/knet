@@ -5,7 +5,6 @@
 一个跨平台的无锁且支持定时器的C++11网络库。
 
 [![AppVeyor](https://img.shields.io/appveyor/build/kibaamor/knet/master?label=AppVeyor&style=flat-square)](https://ci.appveyor.com/project/KibaAmor/knet)
-[![Travis CI](https://img.shields.io/travis/kibaamor/knet/master?label=Travis%20CI&style=flat-square)](https://www.travis-ci.com/github/KibaAmor/knet)
 [![License](https://img.shields.io/github/license/kibaamor/knet?label=License&style=flat-square)](./LICENSE)
 [![Standard](https://img.shields.io/badge/C++-11-blue.svg?style=flat-square)](https://github.com/kibaamor/knet)
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FKibaAmor%2Fknet.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FKibaAmor%2Fknet?ref=badge_shield)
@@ -24,8 +23,7 @@
     - [echo服务器和客户端](#echo服务器和客户端)
       - [通信协议](#通信协议)
       - [echo服务器](#echo服务器)
-    - [echo客户端](#echo客户端)
-    - [代码质量](#代码质量)
+      - [echo客户端](#echo客户端)
   - [授权](#授权)
 
 --------
@@ -124,7 +122,7 @@ echo服务器将接收到的数据原封不动的发回给客户端。
 - 同步方式的echo服务端[examples/server/sync_server.cpp](./examples/server/sync_server.cpp)
 - 异步方式的echo服务端[examples/server/async_server.cpp](./examples/server/async_server.cpp)
 
-### echo客户端
+#### echo客户端
 
 客户端启动后主动连接服务器（如果连接不上服务器，则会自动重连服务器），连接成功后，会主动给服务器发送`不完整的`网络包。
 
@@ -134,10 +132,6 @@ echo服务器将接收到的数据原封不动的发回给客户端。
 
 - 同步方式的echo客户端[examples/client/sync_client.cpp](./examples/client/sync_client.cpp)
 - 异步方式的echo客户端[examples/client/async_client.cpp](./examples/client/async_client.cpp)
-
-### 代码质量
-
-[![代码质量状态](https://codescene.io/projects/7651/status.svg)](https://codescene.io/projects/7651/jobs/latest-successful/results)
 
 ## 授权
 

@@ -1,5 +1,5 @@
 #pragma once
-#include "kinternal.h"
+#include "kplatform.h"
 
 namespace knet {
 

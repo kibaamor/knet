@@ -1,6 +1,6 @@
-set(COMMON_FILES 
-    echo_conn.h
-    echo_conn.cpp 
+set(COMMON_FILES
+    cecho_conn.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/../echo_conn.h
     ${CMAKE_CURRENT_SOURCE_DIR}/../echo_mgr.h
     ${CMAKE_CURRENT_SOURCE_DIR}/../echo_mgr.cpp)
 

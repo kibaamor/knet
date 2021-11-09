@@ -1,40 +1,35 @@
-#include "echo_conn.h"
-#include <iostream>
+#include "cecho_conn.h"
 #include <knet/kconnector.h>
 #include <knet/kasync_worker.h>
 #include <knet/kutils.h>
 
 int main(int argc, char** argv)
 {
-    std::ios::sync_with_stdio(false);
-    std::cin.tie(nullptr);
-
     // parse command line
     const char* ip = argc > 1 ? argv[1] : "localhost";
     const char* port = argc > 2 ? argv[2] : "8888";
     const auto client_num = argc > 3 ? std::atoi(argv[3]) : 1000;
-    const auto max_delay_ms = argc > 4 ? std::atoi(argv[4]) : 10;
-    const auto thread_num = argc > 5 ? std::atoi(argv[5]) : 16;
+    const auto timeout_ms = argc > 4 ? std::atoi(argv[4]) : -1;
+    const auto thread_num = argc > 5 ? std::atoi(argv[5]) : std::thread::hardware_concurrency();
 
     // log parameter info
     std::cout << "Hi, KNet(Async Client)" << std::endl
               << "ip:" << ip << std::endl
               << "port: " << port << std::endl
               << "client_num: " << client_num << std::endl
-              << "max_delay_ms: " << max_delay_ms << std::endl
+              << "timeout_ms: " << timeout_ms << std::endl
               << "thread_num: " << thread_num << std::endl;
 
     // parse ip address
-    const auto fa = family_t::Ipv4;
     address addr;
-    if (!address::resolve_one(ip, port, fa, addr)) {
+    if (!address::resolve_one(ip, port, family_t::Ipv4, addr)) {
         std::cerr << "resolve address " << ip << ":" << port << " failed!" << std::endl;
         return -1;
     }
 
     // create worker
-    cecho_conn_factory_creator cfc;
-    async_worker wkr(cfc);
+    echo_conn_factory<cecho_conn> cf;
+    async_worker wkr(cf);
     if (!wkr.start(thread_num)) {
         std::cerr << "async_echo_conn_mgr::start failed" << std::endl;
         return -1;
@@ -44,11 +39,9 @@ int main(int argc, char** argv)
     connector cnctor(wkr);
 
     // check console input
-    auto& mgr = echo_mgr::get_instance();
-    mgr.set_is_server(false);
+    mgr.is_server = false;
+    mgr.can_log = false;
     mgr.check_console_input();
-    mgr.set_max_delay_ms(max_delay_ms);
-    mgr.set_enable_log(false);
 
     auto last_ms = now_ms();
     while (true) {
@@ -56,13 +49,15 @@ int main(int argc, char** argv)
         const auto delta_ms = (beg_ms > last_ms ? beg_ms - last_ms : 0);
         last_ms = beg_ms;
 
-        const auto conn_num = mgr.get_conn_num();
-        if (mgr.get_disconnect_all()) {
-            if (0 == conn_num)
+        const auto inst_num = mgr.inst_num.load();
+        if (mgr.disconnect_all) {
+            if (0 == inst_num) {
                 break;
-        } else if (conn_num < client_num) {
-            if (!cnctor.connect(addr))
+            }
+        } else if (inst_num < client_num) {
+            if (!cnctor.connect(addr, timeout_ms)) {
                 std::cerr << "connect failed! address: " << addr << std::endl;
+            }
         }
 
         mgr.update(delta_ms);

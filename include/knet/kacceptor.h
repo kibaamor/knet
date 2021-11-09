@@ -1,6 +1,5 @@
 #pragma once
 #include "kworker.h"
-#include "kaddress.h"
 
 namespace knet {
 
@@ -10,10 +9,8 @@ public:
     ~acceptor();
 
     void update();
-
     bool start(const address& addr);
     void stop();
-
     bool get_sockaddr(address& addr) const;
 
 private:

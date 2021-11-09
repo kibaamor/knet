@@ -15,11 +15,10 @@ public:
     ~worker() override;
 
     void update();
-
     void add_work(rawsocket_t rs) override;
 
-private:
-    virtual void do_update() { }
+protected:
+    virtual void do_update() {}
 
 private:
     class impl;

@@ -1,8 +1,11 @@
 #pragma once
-#include "../internal/ksocket.h"
-#include "../internal/kflag.h"
+#include "../ksocket.h"
+#include "../kflag.h"
+#include "ksockbuf.h"
 
 namespace knet {
+
+class conn;
 
 class socket::impl {
 public:
@@ -10,20 +13,20 @@ public:
     ~impl();
 
     bool init(poller& plr, conn_factory& cf);
-
-    bool write(buffer* buf, size_t num);
+    bool write(const buffer* buf, size_t num);
     void close();
     bool is_closing() const { return _f.is_close(); }
     bool handle_pollevent(void* evt);
+    bool get_stat(conn::stat& s) const;
 
     rawsocket_t get_rawsocket() const { return _rs; }
 
 private:
     bool start();
-    bool try_read();
+    bool handle_can_read();
+    bool handle_can_write();
+    bool handle_read();
     bool try_write();
-    bool handle_read(size_t size);
-    void handle_write(size_t size);
 
 private:
     socket& _s;
@@ -32,9 +35,10 @@ private:
     flag _f;
     conn* _c = nullptr;
 
-    struct sockbuf;
     std::unique_ptr<sockbuf> _rb;
     std::unique_ptr<sockbuf> _wb;
+
+    KNET_SOCKET_STAT_CODE(conn::stat _stat)
 };
 
 } // namespace knet

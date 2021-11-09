@@ -1,10 +1,10 @@
 #include "../include/knet/kutils.h"
-#include "internal/kinternal.h"
-#include <random>
+#include "internal/kplatform.h"
 #ifndef _WIN32
 #include <sys/resource.h>
+#include <sys/signal.h>
 #endif
-#include <iostream>
+#include <random>
 
 namespace {
 
@@ -12,46 +12,44 @@ class AutoInit {
 public:
     AutoInit()
     {
+        init_netlib();
+        setup_rlimit();
+        setup_signal();
+    }
+
+    void init_netlib()
+    {
 #ifdef _WIN32
-
         WSADATA wsadata;
-        ::WSAStartup(MAKEWORD(2, 2), &wsadata);
+        WSAStartup(MAKEWORD(2, 2), &wsadata);
+#endif // _WIN32
+    }
 
-#else
-
+    void setup_rlimit()
+    {
+#ifndef _WIN32
         struct rlimit rt = {};
-        auto ret = getrlimit(RLIMIT_NOFILE, &rt);
-
-#ifdef KNET_DEBUG
-        auto en = errno;
-        std::cerr << "open file limit. getrlimit: " << ret
-                  << ", errno:" << en
-                  << ", cur:" << rt.rlim_cur
-                  << ", max:" << rt.rlim_max << std::endl;
-#endif // KNET_DEBUG
-
-        if (0 == ret) {
+        if (!getrlimit(RLIMIT_NOFILE, &rt)) {
             rt.rlim_cur = rt.rlim_max;
 
 #ifdef __APPLE__
-            if (rt.rlim_cur > OPEN_MAX)
+            if (rt.rlim_cur > OPEN_MAX) {
                 rt.rlim_cur = OPEN_MAX;
-#endif
+            }
+#endif // __APPLE__
 
             setrlimit(RLIMIT_NOFILE, &rt);
-
-#ifdef KNET_DEBUG
-            en = errno;
-            std::cerr << "open file limit. setrlimit: " << ret
-                      << ", errno:" << en
-                      << ", cur:" << rt.rlim_cur
-                      << ", max:" << rt.rlim_max << std::endl;
-#endif // KNET_DEBUG
         }
-
 #endif // !_WIN32
     }
-};
+
+    void setup_signal()
+    {
+#ifndef _WIN32
+        signal(SIGPIPE, SIG_IGN);
+#endif // !_WIN32
+    }
+}; // namespace
 
 AutoInit g_ai;
 
@@ -99,19 +97,19 @@ int64_t now_ms()
 #endif
 
 #if (_WIN32_WINNT >= _WIN32_WINNT_WIN8)
-    ::GetSystemTimePreciseAsFileTime(&ft);
+    GetSystemTimePreciseAsFileTime(&ft);
 #else
-    ::GetSystemTimeAsFileTime(&ft);
+    GetSystemTimeAsFileTime(&ft);
 #endif
 
     ui.LowPart = ft.dwLowDateTime;
     ui.HighPart = ft.dwHighDateTime;
     return static_cast<int64_t>((ui.QuadPart - 116444736000000000) / 10000);
 
-#else // _WIN32
+#else // !_WIN32
 
     timeval now;
-    ::gettimeofday(&now, nullptr);
+    gettimeofday(&now, nullptr);
     return static_cast<int64_t>(now.tv_sec * 1000 + now.tv_usec / 1000);
 
 #endif // _WIN32
@@ -120,13 +118,13 @@ int64_t now_ms()
 void sleep_ms(int64_t ms)
 {
 #ifdef _WIN32
-    ::Sleep(static_cast<DWORD>(ms));
-#else
+    Sleep(static_cast<DWORD>(ms));
+#else // !_WIN32
     struct timespec ts;
     ts.tv_sec = ms / 1000;
     ts.tv_nsec = (ms - ts.tv_sec * 1000) * 1000ul * 1000ul;
-    ::nanosleep(&ts, nullptr);
-#endif
+    nanosleep(&ts, nullptr);
+#endif // _WIN32
 }
 
 struct tm ms2tm(int64_t ms, bool local)
@@ -134,10 +132,10 @@ struct tm ms2tm(int64_t ms, bool local)
     time_t tt = ms / 1000;
     struct tm t;
 #ifdef _WIN32
-    local ? ::localtime_s(&t, &tt) : ::gmtime_s(&t, &tt);
-#else
-    local ? ::localtime_r(&tt, &t) : ::gmtime_r(&tt, &t);
-#endif
+    local ? localtime_s(&t, &tt) : gmtime_s(&t, &tt);
+#else // !_WIN32
+    local ? localtime_r(&tt, &t) : gmtime_r(&tt, &t);
+#endif // _WIN32
     return t;
 }
 

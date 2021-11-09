@@ -9,7 +9,7 @@ public:
     explicit connector(workable& wkr);
     ~connector();
 
-    bool connect(const address& addr);
+    bool connect(const address& addr, int timeout_ms);
 
 private:
     workable& _wkr;

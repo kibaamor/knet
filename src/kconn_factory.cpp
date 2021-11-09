@@ -59,8 +59,9 @@ public:
     void update()
     {
         if (!_timer2del.empty()) {
-            for (const auto& tk : _timer2del)
+            for (const auto& tk : _timer2del) {
                 _timers.erase(tk);
+            }
             _timer2del.clear();
         }
 
@@ -70,8 +71,9 @@ public:
 
             for (auto iter = _timers.begin(); iter != _timers.end();) {
                 const auto& tk = iter->first;
-                if (tk.tid > base_tid)
+                if (tk.tid > base_tid) {
                     break;
+                }
 
                 _cf.on_timer(tk.cid, (tk.tid >> TIMERID_BIT_COUNT), iter->second);
                 iter = _timers.erase(iter);
@@ -79,8 +81,9 @@ public:
         }
 
         if (!_timer2add.empty()) {
-            for (const auto& pr : _timer2add)
+            for (const auto& pr : _timer2add) {
                 _timers.emplace(pr);
+            }
             _timer2add.clear();
         }
     }
@@ -145,8 +148,10 @@ void conn_factory::del_timer(connid_t cid, timerid_t tid)
 void conn_factory::on_timer(connid_t cid, int64_t ms, const userdata& ud)
 {
     auto c = get_conn(cid);
-    if (nullptr != c)
+    if (c) {
         c->on_timer(ms, ud);
+        do_on_timer(c, ms, ud);
+    }
 }
 
 } // namespace knet

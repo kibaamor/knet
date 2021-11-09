@@ -1,7 +1,5 @@
 #pragma once
 #include "knetfwd.h"
-#include <iostream>
-#include <vector>
 
 namespace knet {
 
@@ -14,14 +12,13 @@ enum class family_t : int {
 class address final {
 public:
     static bool resolve_all(const std::string& node_name, const std::string& service_name,
-        std::vector<address>& addrs);
+        family_t fa, std::vector<address>& addrs);
     static bool resolve_one(const std::string& node_name, const std::string& service_name,
         family_t fa, address& addr);
+    static int get_rawfamily_by_family(family_t fa);
+    static family_t get_family_by_rawfamily(int rfa);
 
 public:
-    bool pton(family_t fa, const std::string& addr, uint16_t port);
-    bool ntop(std::string& addr, uint16_t& port) const;
-
     template <typename T>
     T* as_ptr()
     {
@@ -36,8 +33,11 @@ public:
         return reinterpret_cast<const T*>(_addr);
     }
 
+    bool pton(family_t fa, const std::string& addr, uint16_t port);
+    bool ntop(std::string& addr, uint16_t& port) const;
+
     int get_rawfamily() const;
-    family_t get_family() const;
+    family_t get_family() const { return get_family_by_rawfamily(get_rawfamily()); }
     int get_socklen() const;
     std::string to_string() const;
 
@@ -51,13 +51,10 @@ namespace std {
 
 inline string to_string(knet::family_t fa)
 {
-    switch (fa) {
-    case knet::family_t::Ipv4:
+    if (fa == knet::family_t::Ipv4) {
         return "Ipv4";
-    case knet::family_t::Ipv6:
+    } else if (fa == knet::family_t::Ipv6) {
         return "Ipv6";
-    default:
-        break;
     }
     return "Unknown";
 }

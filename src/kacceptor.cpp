@@ -32,8 +32,7 @@ void acceptor::stop()
 
 bool acceptor::get_sockaddr(address& addr) const
 {
-    auto rs = _impl->get_rawsocket();
-    return INVALID_RAWSOCKET != rs && get_rawsocket_sockaddr(rs, addr);
+    return _impl->get_sockaddr(addr);
 }
 
 } // namespace knet

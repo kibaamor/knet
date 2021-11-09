@@ -1,7 +1,8 @@
 #include "../include/knet/kasync_worker.h"
 #include "../include/knet/kutils.h"
 #include "internal/kspscqueue.h"
-#include "internal/kinternal.h"
+#include "internal/kplatform.h"
+#include "internal/ksocket_utils.h"
 
 namespace knet {
 
@@ -24,16 +25,18 @@ void async_worker::add_work(rawsocket_t rs)
         _index = (_index + 1) % N;
 
         auto wq = static_cast<workqueue_t*>(inf.q);
-        if (wq->push(rs))
+        if (wq->push(rs)) {
             return;
+        }
     }
     close_rawsocket(rs);
 }
 
 bool async_worker::start(size_t thread_num)
 {
-    if (0 == thread_num || !_infos.empty())
+    if (!thread_num || !_infos.empty()) {
         return false;
+    }
 
     _infos.resize(thread_num);
     for (size_t i = 0; i < thread_num; ++i) {
@@ -54,13 +57,15 @@ bool async_worker::start(size_t thread_num)
 
 void async_worker::stop()
 {
-    if (_infos.empty())
+    if (_infos.empty()) {
         return;
+    }
 
     do_stop();
 
-    for (auto& inf : _infos)
+    for (auto& inf : _infos) {
         inf.r = false;
+    }
 
     for (auto& inf : _infos) {
         auto q = static_cast<workqueue_t*>(inf.q);
@@ -85,8 +90,9 @@ void async_worker::worker_thread(info* i)
     while (i->r) {
         const auto beg_ms = now_ms();
 
-        while (q->pop(rs))
+        while (q->pop(rs)) {
             wkr->add_work(rs);
+        }
 
         wkr->update();
 
@@ -98,8 +104,9 @@ void async_worker::worker_thread(info* i)
     wkr.reset();
     cf.reset();
 
-    while (q->pop(rs))
+    while (q->pop(rs)) {
         close_rawsocket(rs);
+    }
 }
 
 } // namespace knet

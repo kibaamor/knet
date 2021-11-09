@@ -5,7 +5,6 @@
 A cross platform lock-free and timer-supported C++11 network library.
 
 [![AppVeyor](https://img.shields.io/appveyor/build/kibaamor/knet/master?label=AppVeyor&style=flat-square)](https://ci.appveyor.com/project/KibaAmor/knet)
-[![Travis CI](https://img.shields.io/travis/kibaamor/knet/master?label=Travis%20CI&style=flat-square)](https://www.travis-ci.com/github/KibaAmor/knet)
 [![License](https://img.shields.io/github/license/kibaamor/knet?label=License&style=flat-square)](./LICENSE)
 [![Standard](https://img.shields.io/badge/C++-11-blue.svg?style=flat-square)](https://github.com/kibaamor/knet)
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FKibaAmor%2Fknet.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FKibaAmor%2Fknet?ref=badge_shield)
@@ -24,8 +23,7 @@ A cross platform lock-free and timer-supported C++11 network library.
     - [Echo Server and Client](#echo-server-and-client)
       - [Protocol](#protocol)
       - [Echo Server](#echo-server)
-    - [Echo Client](#echo-client)
-    - [Code Quality](#code-quality)
+      - [Echo Client](#echo-client)
   - [License](#license)
 
 --------
@@ -124,7 +122,7 @@ The server provides two types:
 - Synchronous Echo Server[examples/server/sync_server.cpp](./examples/server/sync_server.cpp)
 - Asynchronous Echo Server[examples/server/async_server.cpp](./examples/server/async_server.cpp)
 
-### Echo Client
+#### Echo Client
 
 The client actively connects to the server after starting (and automatically reconnects the server if the connection is not available), and when the connection is successful, it actively sends an `incomplete` network package to the server.
 
@@ -134,10 +132,6 @@ The client provides two types:
 
 - Synchronous Echo Client[examples/client/sync_client.cpp](./examples/client/sync_client.cpp)
 - Asynchronous Echo Client[examples/client/async_client.cpp](./examples/client/async_client.cpp)
-
-### Code Quality
-
-[![Code quality status](https://codescene.io/projects/7651/status.svg)](https://codescene.io/projects/7651/jobs/latest-successful/results)
 
 ## License
 
